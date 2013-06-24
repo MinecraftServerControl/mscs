@@ -9,6 +9,7 @@
 # Description:    Minecraft Server Control Script
 ### END INIT INFO
 
+
 # ---------------------------------------------------------------------------
 # Minecraft Server Control Script
 #
@@ -56,11 +57,14 @@ Options:
 EOF
 )
 
+
 # User Account & Server Location
 # ---------------------------------------------------------------------------
 # Who we run as and where we run from.
 
-# User name used to run all commands.
+
+# User name used to run all commands. Be sure to create this user if it
+# doesn't already exist (sudo adduser minecraft).
 USER_NAME="minecraft"
 
 # The location of server software and data.
@@ -139,7 +143,8 @@ WORLDS_LOCATION="$LOCATION/worlds"
 #   epsilon	25569
 WORLDS_CONF="$LOCATION/worlds.conf"
 
-# Default world name, port, and IP address if the worlds.conf file is missing.
+# Default world name, port, and IP address if the worlds.conf file is
+# missing.
 DEFAULT_WORLD="world"
 DEFAULT_PORT="25565"
 DEFAULT_IP=""
@@ -223,7 +228,8 @@ MAPS_LOCATION="$LOCATION/maps"
 # Lib-Notify Configuration
 # ---------------------------------------------------------------------------
 
-# Use lib-notify to print a message on your desktop of important server events.
+# Use lib-notify to print a message on your desktop of important server
+# events.
 # 0 - Do not use lib-notify.
 # 1 - Display server events using lib-notify.
 USE_LIBNOTIFY=0
@@ -603,7 +609,8 @@ rotateLog() {
 	# Look at all the logfiles
 	for i in $LOGLIST; do
 		LOG_NUMBER=$(ls $i | cut -d "." -f 3)
-		 # If we're working with server.log, append .1 then compress it.
+		# If we're working with server.log, append .1 then compress
+		# it.
 		if [ -z $LOG_NUMBER ]; then
 			LOG_NUMBER="1"
 			execute "cp $WORLD_DIR/server.log $WORLD_DIR/server.log.$LOG_NUMBER" $USER_NAME
@@ -719,11 +726,13 @@ stop() {
 	# Erase the world's users file since we won't be able to catch
 	# anyone logging off.
 	execute "printf \"\" > \"$WORLDS_LOCATION/$1.users\"" $USER_NAME
-	# Synchronize the mirror image of the world prior to closing, if required.
+	# Synchronize the mirror image of the world prior to closing, if
+	# required.
 	if [ $ENABLE_MIRROR -eq 1 ] && [ -d $MIRROR_PATH ]; then
 		syncMirrorImage $1
 	fi
-	# Remove the lock file on Redhat and derivatives if all world servers are stopped.
+	# Remove the lock file on Redhat and derivatives if all world servers
+	# are stopped.
 	if [ -e "/var/lock/subsys/minecraft_server" ]; then
 		NUM=0
 		for WORLD in $ALL_WORLDS; do
@@ -750,7 +759,8 @@ forceStop() {
 	sleep 5
 	# Kill the process ids of the world server.
 	kill -9 $PIDS > /dev/null 2>&1
-	# Remove the lock file on Redhat and derivatives if it is still around.
+	# Remove the lock file on Redhat and derivatives if it is still
+	# around.
 	rm -f /var/lock/subsys/minecraft_server
 }
 
@@ -844,7 +854,8 @@ overviewer() {
 # ---------------------------------------------------------------------------
 
 
-# Make sure that Java, Perl, Python, Rsync, GNU Screen, and GNU Wget are installed.
+# Make sure that Java, Perl, Python, Rsync, GNU Screen, and GNU Wget are
+# installed.
 if [ ! -e "$JAVA" ]; then
 	printf "ERROR: Java not found!\n"
 	printf "Try installing this with:\n"
@@ -890,16 +901,20 @@ fi
 
 # Make sure that the minecraft user exists.
 if [ ! -n "$(grep $USER_NAME /etc/passwd)" ]; then
-	printf "ERROR: This script requires that a user account named $USER_NAME exist on this system.\n"
-	printf "Either modify the USER_NAME variable in this script, or try adding this user:\n"
+	printf "ERROR: This script requires that a user account named "
+	printf "$USER_NAME exist on this system.\nEither modify the "
+	printf "USER_NAME variable in this script, or try adding this "
+	printf "user:\n"
 	printf "sudo adduser $USER_NAME\n"
 	exit 1
 fi
 
 # Warn if the script is running with the wrong user.
 if [ $(id -u) -ne 0 ] && [ "$(whoami)" != "$USER_NAME" ]; then
-	printf "WARNING: This script appears to have been started by the wrong user.\n"
-	printf "Expected to find the user: $USER_NAME.  You can try to log on to this user:\n"
+	printf "WARNING: This script appears to have been started by the "
+	printf "wrong user.\n"
+	printf "Expected to find the user: $USER_NAME.  You can try to log "
+	printf "on to this user:\n"
 	printf "su $USER_NAME\n"
 	exit 1
 fi
@@ -969,7 +984,8 @@ case "$1" in
 	restart|reload|force-restart|force-reload)
 		# Figure out which worlds to restart.
 		WORLDS=$(checkOptionalArgument "$ALL_WORLDS" $0 $1 $2)
-		# Restart each world requested, start those not already running.
+		# Restart each world requested, start those not already
+		# running.
 		printf "Restarting Minecraft Server:"
 		for WORLD in $WORLDS; do
 			printf " $WORLD"
@@ -1007,7 +1023,8 @@ case "$1" in
 	sync|synchronize)
 		# Make sure the Mirror image option is enabled.
 		if [ $ENABLE_MIRROR -ne 1 ]; then
-			printf "Mirror image option not enabled, unable to synchronize.\n";
+			printf "Mirror image option not enabled, unable to "
+			printf "synchronize.\n";
 			exit 1
 		fi
 		# Figure out which worlds to synchronize.
@@ -1173,4 +1190,3 @@ case "$1" in
 	;;
 esac
 exit 0
-
