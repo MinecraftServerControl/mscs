@@ -1,0 +1,1076 @@
+#! /bin/sh
+### BEGIN INIT INFO
+# Provides:       minecraft_server
+# Required-Start: $remote_fs $syslog
+# Required-Stop:  $remote_fs $syslog
+# Default-Start:  3 4 5
+# Default-Stop:   0 1 2 6
+# chkconfig:      345 50 50
+# Description:    Minecraft Server control script.
+### END INIT INFO
+
+# Minecraft Server control script.
+#
+# Options:
+#   start <world>         - Start the Minecraft world server.  Start all world
+#                           servers by default.
+#   stop <world>          - Stop the Minecraft world server.  Stop all world
+#                           servers by default.
+#   force-stop <world>    - Forcibly stop the Minecraft world server.  Forcibly
+#                           stop all world servers by default.
+#   restart <world>       - Restart the Minecraft world server.  Restart all
+#                           world servers by default.
+#   force-restart <world> - Forcibly restart the Minecraft world server.
+#                           Forcibly restart all world servers by default.
+#   status <world>        - Display the status of the Minecraft world server.
+#                           Display the status of all world servers by default.
+#   sync <world>          - Synchronize the data stored in the mirror images of
+#                           the Minecraft world server.  Synchronizes all of
+#                           the world servers by default.  This option is only
+#                           available when the mirror image option is enabled.
+#   send <world> <cmd>    - Send a command to a Minecraft world server.
+#   screen <world>        - Display the Screen for the Minecraft world server.
+#   watch <world>         - Watch the log file for the Minecraft world server.
+#   logrotate <world>     - Rotate the server.log file.  Rotate the server.log
+#                           file for all worlds by default.
+#   backup <world>        - Backup the Minecraft world.  Backup all worlds by
+#                           default.
+#   map <world>           - Run the Minecraft Overviewer mapping software on
+#                           the Minecraft world.  Map all worlds by default.
+#   update                - Update a software package.  Update the client and 
+#                           server software.
+
+
+# User name used to run all commands.
+USER_NAME="minecraft"
+
+# The location of server software and data.
+LOCATION="/home/$USER_NAME"
+
+
+## Required software.
+
+JAVA=$(which java)
+PERL=$(which perl)
+PYTHON=$(which python)
+RSYNC=$(which rsync)
+SCREEN=$(which screen)
+WGET=$(which wget)
+RDIFF_BACKUP=$(which rdiff-backup)
+
+
+## Generic options.
+
+# Automatically restart the Minecraft server when a SEVERE error is caught.
+#   0 - Do not auto restart.
+#   1 - Auto restart.
+AUTO_RESTART_ON_ERROR=0
+
+
+## Minecraft server options.
+
+# Choose only one server distribution, leave the other commented out.
+
+# Default Mojang server distribution.
+SERVER_JAR="minecraft_server.jar"
+SERVER_URL="http://www.minecraft.net/download/minecraft_server.jar"
+SERVER_ARGS="nogui"
+
+# CraftBukkit server distribution.
+# SERVER_URL="http://repo.bukkit.org/service/local/artifact/maven/redirect?g=org.bukkit&a=craftbukkit&v=RELEASE&r=releases"
+# SERVER_JAR="craftbukkit.jar"
+# SERVER_ARGS=""
+
+# Generic server options.
+INITIAL_MEMORY="128M"
+MAXIMUM_MEMORY="2048M"
+SERVER_LOCATION="$LOCATION/minecraft_server"
+SERVER_COMMAND="$JAVA -Xms$INITIAL_MEMORY -Xmx$MAXIMUM_MEMORY -jar $SERVER_LOCATION/$SERVER_JAR $SERVER_ARGS"
+
+
+## Minecraft client options.
+CLIENT_JAR="minecraft.jar"
+CLIENT_URL="https://s3.amazonaws.com/MinecraftDownload/minecraft.jar"
+CLIENT_LOCATION="$LOCATION/.minecraft/bin"
+
+
+## World configuration.
+
+# The location to store files for each world server.
+WORLDS_LOCATION="$LOCATION/worlds"
+
+# List of worlds and the ports they are running on.  This file will
+# be generated if missing.
+#
+# Note: The world name should not contain a space.  Leave the ip
+# address blank if not needed.
+#
+# # Minecraft world configuration file
+# # <world>	<port>	<ip>
+#   alpha	25565
+#   beta	25566
+#   gamma	25567
+#   delta	25568
+#   epsilon	25569
+WORLDS_CONF="$LOCATION/worlds.conf"
+
+# Default world name, port, and IP address if the worlds.conf file is missing.
+DEFAULT_WORLD="world"
+DEFAULT_PORT="25565"
+DEFAULT_IP=""
+
+
+## Global Message Of The Day file (MOTD).
+
+# Location of the file to display to users on login.  Nothing will be done if
+# this file does not exist.
+MOTD="$LOCATION/motd.txt"
+
+
+## MOTD can contain color codes as follows:
+#  §0 - black
+#  §1 - blue
+#  §2 - dark green
+#  §3 - aqua
+#  §4 - dark red
+#  §5 - purple
+#  §6 - gold
+#  §7 - gray
+#  §8 - dark gray
+#  §9 - light blue
+#  §a - green
+#  §b - teal
+#  §c - red
+#  §d - magenta
+#  §e - yellow
+#  §f - white
+
+
+## Backup configuration.
+
+# Location to store backups.
+BACKUP_LOCATION="$LOCATION/backups"
+
+# Location of the backup log file.
+BACKUP_LOG="$BACKUP_LOCATION/backup.log"
+
+# Length in days that backups survive.
+BACKUP_DURATION=31
+
+## Server Log Configuration
+
+# How many rotations of server.log to keep
+LOG_COUNT=10
+
+
+## Mirror image options.
+
+# Create a mirror image of the world data on system startup, and
+# update that mirror image on system shutdown.
+#
+# IMPORTANT: If using this option, the admin should schedule
+# periodic synchronizations of the mirror image using cron
+# to avoid data loss.
+#
+# 0 - Do not use a mirror image, default.
+# 1 - Use a mirror image.
+ENABLE_MIRROR=0
+
+# The location to store the mirror image.
+#
+# NOTE: This is usually a ramdisk.
+MIRROR_PATH="/dev/shm/minecraft"
+
+
+## Mincecraft Overviewer mapping software options.
+OVERVIEWER_BIN=$(which overviewer.py)
+MAPS_URL="http://minecraft.server.com/maps"
+MAPS_LOCATION="$LOCATION/maps"
+
+## Lib-notify configuration.
+
+# Use lib-notify to print a message on your desktop of important server events.
+# 0 - Do not use lib-notify.
+# 1 - Display server events using lib-notify.
+USE_LIBNOTIFY=0
+
+# The username and display that messages will be routed to.
+LIBNOTIFY_USER_NAME=$USER_NAME
+LIBNOTIFY_DISPLAY=":0.0"
+
+
+## Internal Methods.
+
+# Execute the given command.
+#
+# @param 1 The command to execute.
+# @param 2 The user name to execute the command with.
+execute() {
+	if [ $(id -u) -eq 0 ]; then
+		# Script is running as root, switch user and execute
+		# the command.
+		su -c "$1" $2
+	else
+		# Script is running as a user, just execute the command.
+		sh -c "$1"
+	fi
+}
+
+# Get the PIDs of the Screen and Java process for the world server.
+#
+# @param 1 The world server of interest.
+# @return The Screen and Java PIDs
+getProcessIDs() {
+	local SCREEN_PID JAVA_PID
+	SCREEN_PID=$(execute "$SCREEN -ls" $USER_NAME | $PERL -ne 'if ($_ =~ /^\t(\d+)\.minecraft-'$1'\s+/) { print $1; }')
+	JAVA_PID=$(ps -a -u $USER_NAME -o pid,ppid,comm | $PERL -ne 'if ($_ =~ /^\s*(\d+)\s+'$SCREEN_PID'\s+java/) { print $1; }')
+	echo "$SCREEN_PID $JAVA_PID"
+}
+
+# Check to see if the world server is running.
+#
+# @param 1 The world server of interest.
+# @return A 1 if the server is thought to be running, a 0 otherwise.
+serverRunning() {
+	local PIDS
+	PIDS=$(getProcessIDs $1)
+	# Try to determine if the world is running.
+	if [ -n "$(echo $PIDS | cut -d ' ' -f1)" ] && [ -n "$(echo $PIDS | cut -d ' ' -f2)" ]; then
+		echo 1
+	else
+		echo 0
+	fi
+}
+
+# Send a command to the world server.
+#
+# @param 1 The world server of interest.
+# @param 2 The command to send.
+sendCommand() {
+	local COMMAND PID
+	COMMAND=$(printf "$2\r")
+	PID=$(echo $(getProcessIDs $1) | cut -d ' ' -f1)
+	execute "$SCREEN -S $PID.minecraft-$1 -p 0 -X stuff \"$COMMAND\"" $USER_NAME
+	if [ $? -ne 0 ]; then
+		printf "Error sending command to server $1.\n"
+		exit 1
+	fi
+}
+
+# Connect to the Screen of a world server.
+#
+# @param 1 The world server of interest.
+displayScreen() {
+	local PID TTY_PERMISSIONS
+	PID=$(echo $(getProcessIDs $1) | cut -d ' ' -f1)
+	TTY_PERMISSIONS=$($PERL -e 'printf "%04o", ((stat(shift))[2] & 07777);' $(tty))
+	# Make sure that we have read/write access to the tty.
+	execute "chmod o+rw $(tty)" > /dev/null 2>&1
+	if [ $? -ne 0 ]; then
+		printf "Error changing the permissions of the tty.\n"
+		printf "Try giving user '$USER_NAME' access to the tty with:\n"
+		printf "  chmod o+rw $(tty)\n"
+		printf "\n"
+		printf "Attempting to load the screen anyway.\n"
+	fi
+	printf "About to load the screen for world $1.\n"
+	printf "To exit the screen, hit Ctrl+A then type the letter d.\n"
+	sleep 5
+	# Connect to the screen of the world server.
+	execute "$SCREEN -x $PID.minecraft-$1" $USER_NAME
+	if [ $? -ne 0 ]; then
+		printf "Error connecting to Screen.\n"
+		execute "chmod $TTY_PERMISSIONS $(tty)" > /dev/null 2>&1
+		exit 1
+	fi
+	execute "chmod $TTY_PERMISSIONS $(tty)" > /dev/null 2>&1
+}
+
+# Check whether the item is in the list.
+#
+# @param 1 The item being searched for.
+# @param 2 The list being searched.
+# @return A 1 if the list contains the item, a 0 otherwise.
+listContains() {
+	local MATCH ITEM
+	MATCH=0
+	for ITEM in $2; do
+		if [ "$ITEM" = "$1" ]; then
+			MATCH=1
+		fi
+	done
+	echo $MATCH
+}
+
+# Grab the port for the given world.
+#
+# @param 1 The world server of interest.
+# @return The port that the world is configured to use.
+getPort() {
+	local PORT
+	PORT=$(execute "cat $WORLDS_CONF" $USER_NAME | $PERL -ne 'if ($_ =~ /^'$1'\s+(\d+)/) { print "$1"; }')
+	echo $PORT
+}
+
+# Grab the IP address for the given world.
+#
+# @param 1 The world server of interest.
+# @return The IP address that the world is configured to run on.
+getIP() {
+	local IP
+	IP=$(execute "cat $WORLDS_CONF" $USER_NAME | $PERL -ne 'if ($_ =~ /^'$1'\s+\d+\s+([\d\.]+)/) { print "$1"; }')
+	echo $IP
+}
+
+# Grab the first line of the Message of the Day file as a summary, and strip
+# any color codes from it.
+getMOTD() {
+	local MOTD_SUMMARY
+	MOTD_SUMMARY=""
+	if [ -e "$MOTD" ]; then
+		MOTD_SUMMARY=$(head -n 1 $MOTD | $PERL -ne '$_ =~ s/§[0-9a-fA-F]//g; print;')
+	fi
+	echo $MOTD_SUMMARY
+}
+
+# Grab the list of worlds.
+#
+# @return The list of worlds.
+getWorlds() {
+	local WORLDS
+	WORLDS=$(execute "cat $WORLDS_CONF" $USER_NAME | $PERL -ne 'if ($_ =~ /^(\w+)\s+(\d+)/) { print "$1 "; }')
+	echo $WORLDS
+}
+
+# Modify the value of a key/value combo in a properties file.
+#
+# @param 1 The properties file of interest.
+# @param 2 The key to modify.
+# @param 3 The value to assign to the key.
+setPropertiesValue() {
+	local KEY_VALUE
+	# Make sure that the properties file exists.
+	execute "touch $1" $USER_NAME
+	# Replace the key/value combo if it already exists, otherwise just
+	# append it to the end of the file.
+	KEY_VALUE=$($PERL -ne 'if ($_ =~ /^('$2'=.*)$/) { print "$1"; }' $1)
+	if [ -n "$KEY_VALUE" ]; then
+		execute "$PERL -i -ne 'if (\$_ =~ /^$2=.*$/) { print \"$2=$3\\n\"; } else { print; }' $1" $USER_NAME
+	else
+		execute "printf \"$2=$3\\n\" >> $1" $USER_NAME
+	fi
+}
+
+# Send a message to the desktop using lib-notify, if it is available.
+#
+# @param 1 The summary of the message to send.
+# @param 2 The body of the message to send.
+libNotify() {
+	local NOTIFY
+	NOTIFY=$(which notify-send)
+	if [ -e "$NOTIFY" ]; then
+		execute "DISPLAY=$LIBNOTIFY_DISPLAY $NOTIFY \"$1\" \"$2\"" $LIBNOTIFY_USER_NAME > /dev/null 2>&1
+	fi
+}
+
+# Send the contents of the Message Of The Day (MOTD) to the user.
+#
+# @param 1 The world server of interest.
+# @param 2 The user being told the contents of the motd file.
+tellMOTD() {
+	local LINE
+	if [ -e "$MOTD" ]; then
+		while read LINE; do
+			sendCommand $1 "tell $2 $LINE"
+		done < $MOTD
+	fi
+}
+
+# Check to see if the user is in the ops.txt file of the specified world.
+#
+# @param 1 The world server of interest.
+# @param 2 The user being checked.
+checkUserIsAdmin() {
+	local IS_ADMIN
+	IS_ADMIN=$(cat $WORLDS_LOCATION/$1/ops.txt | $PERL -ne 'if ($_ =~ /^'$2'$/i) { print "1"; }')
+	echo $IS_ADMIN
+}
+
+# Check for the optional argument.  If the argument is not supplied, return
+# the original list.  If the argument is supplied, verify that it is a member
+# of the list, then modify the list to just contain that member.
+#
+# @param 1 The original list.
+# @param 2 The name of the script.
+# @param 3 The command line argument used.
+# @param 4 The optional command line argument.
+# @return Either the original list, or the optional command line argument.
+checkOptionalArgument() {
+	local LIST
+	LIST="$1"
+	# Check for the optional command line argument.
+	if [ -n "$4"  ] && [ $(listContains $4 "$1") -eq 1 ]; then
+		LIST="$4"
+	elif [ -n "$4" ]; then
+			printf "Optional argument '$4' not recognized.\n"
+			printf "  Usage:  $2 $3 <optional argument>\n"
+		exit 1
+	fi
+	echo "$LIST"
+}
+
+# Check for users logging into a world.  If a user logs in, perform
+# login functions.
+#
+# @param 1 The world server of interest.
+# @param 2 The message to check for users logging in.
+checkForLogin() {
+	local LOGIN PLAYER_NAME
+	LOGIN=$(echo "$2" | $PERL -ne 'if ($_ =~ /(\w+)\s*\[\/([0-9\.]+)\:(\d+)\] logged in with entity id (\d+)/) { print "$1\t$2\t$3\t$4"; }')
+	if [ -n "$LOGIN" ]; then
+		PLAYER_NAME=$(printf "$LOGIN" | cut -f1)
+		# Add the user to the world.users file.
+		execute "printf \"$LOGIN\n\" >> \"$WORLDS_LOCATION/$1.users\"" $USER_NAME
+		# Announce the user logging in via lib-notify.
+		if [ $USE_LIBNOTIFY ]; then
+			libNotify "Minecraft - $1" "$PLAYER_NAME has logged into world."
+		fi
+		# Whisper the MOTD to the user logging in.
+		tellMOTD $1 $PLAYER_NAME
+	fi
+}
+
+# Check for users logging out of a world.  If a user logs out, perform the
+# logout functions.
+#
+# @param 1 The world server of interest.
+# @param 2 The message to check for users logging out.
+checkForLogout() {
+	local LOGOUT BAN PLAYER_NAME
+	LOGOUT=$(echo "$2" | $PERL -ne 'if ($_ =~ /(\w+) lost connection\: (.+)/) { print "$1\t$2"; }')
+	BAN=$(echo "$2" | $PERL -ne 'if ($_ =~ /Disconnecting (\w+)\s*\[\/([0-9\.\:]+)\]\: You are banned/) { print "$1\t$2"; }')
+	if [ -n "$LOGOUT" ]; then
+		PLAYER_NAME=$(printf "$LOGOUT" | cut -f1)
+		# Remove the user from the world.users file.
+		execute "$PERL -i -ne 'print unless /^$PLAYER_NAME\t[0-9\.]+\t\d+\d+/;' $WORLDS_LOCATION/$1.users" $USER_NAME
+		# Announce the user logging out via lib-notify.
+		if [ $USE_LIBNOTIFY ]; then
+			libNotify "Minecraft - $1" "$PLAYER_NAME has logged out of world."
+		fi
+	elif [ -n "$BAN" ]; then
+		PLAYER_NAME=$(printf "$BAN" | cut -f1)
+		# Remove the user from the world.users file.
+		execute "$PERL -i -ne 'print unless /^$PLAYER_NAME\t[0-9\.]+\t\d+\d+/;' $WORLDS_LOCATION/$1.users" $USER_NAME
+		# Announce the user ban via lib-notify.
+		if [ $USE_LIBNOTIFY ]; then
+			libNotify "Minecraft - $1" "$PLAYER_NAME has been banned from the world."
+		fi
+	fi
+}
+
+# Parse through the log file for the given world.  Uses checkFor methods to
+# find events such as users logging in or out.
+#
+# @param 1 The world server generating the log to parse.
+parseLog() {
+	local LINE DATE TIME TYPE MESSAGE
+	while read LINE; do
+		LINE=$(echo "$LINE" | $PERL -ne 'if ($_ =~ /(.+) (.+) \[(\w+)\] (.+)/) { print "$1\t$2\t$3\t$4"; }')
+		DATE=$(echo "$LINE" | cut -f1)
+		TIME=$(echo "$LINE" | cut -f2)
+		TYPE=$(echo "$LINE" | cut -f3)
+		MESSAGE=$(echo "$LINE" | cut -f4)
+		case "$TYPE" in
+			INFO)
+				checkForLogin $1 "$MESSAGE"
+				checkForLogout $1 "$MESSAGE"
+			;;
+			SEVERE)
+				if [ $AUTO_RESTART_ON_ERROR -eq 1 ]; then
+					sendCommand $1 "say The server is experiencing issues, restarting in 5 seconds..."
+					sleep 5
+					stop $1
+					sleep 5
+					start $1
+				fi
+			;;
+			WARNING)
+			;;
+			*)
+			;;
+		esac
+	done
+}
+
+# Rotates the world server log file.
+#
+# @param 1 The world server generating the log to rotate.
+rotateLog() {
+	local WORLD_DIR LOG_LIST LOG_LINES LOG_NUMBER
+	WORLD_DIR="$WORLDS_LOCATION/$1"
+	# Use the mirror copy of the world directory if enabled.
+	if [ $ENABLE_MIRROR -eq 1 ] && [ -d $MIRROR_PATH ]; then
+		WORLD_DIR="$MIRROR_PATH/$1"
+	fi
+	# Make sure that the server.log file exists.
+	execute "touch $WORLD_DIR/server.log" $USER_NAME
+	# Scan the log for entires and skip rotate is none are found.
+	LOG_LINES="$(cat "$WORLD_DIR/server.log" | wc -l )"
+	if [ $LOG_LINES -le 1 ]; then
+		printf "\nNo new log entries to rotate. No changes made.\n"
+		return 0
+	fi
+	# Server logfiles in chronological order.
+	LOGLIST=$(ls -r $WORLD_DIR/server.log* | grep -v lck)
+	# Look at all the logfiles
+	for i in $LOGLIST; do
+		LOG_NUMBER=$(ls $i | cut -d "." -f 3)
+		 # If we're working with server.log, append .1 then compress it.
+		if [ -z $LOG_NUMBER ]; then
+			LOG_NUMBER="1"
+			execute "cp $WORLD_DIR/server.log $WORLD_DIR/server.log.$LOG_NUMBER" $USER_NAME
+			execute "gzip $WORLD_DIR/server.log.$LOG_NUMBER" $USER_NAME
+		# Otherwise, check if the file number is under $LOG_COUNT.
+		elif [ $LOG_NUMBER -ge $LOG_COUNT ]; then
+			# If so, delete it.
+			execute "rm -f $i" $USER_NAME
+		else
+			# Otherwise, add one to the number.
+			LOG_NUMBER=$(($LOG_NUMBER+1))
+			execute "mv -f $i $WORLD_DIR/server.log.$LOG_NUMBER.gz" $USER_NAME
+		fi
+	done
+	# Blank the existing logfile to renew it.
+	execute "cp /dev/null $WORLD_DIR/server.log" $USER_NAME
+}
+
+# Watch the world server log file.
+#
+# @param 1 The world server generating the log to watch.
+watchLog() {
+	local PID WORLD_DIR
+	WORLD_DIR="$WORLDS_LOCATION/$1"
+	# Use the mirror copy of the world directory if enabled.
+	if [ $ENABLE_MIRROR -eq 1 ] && [ -d $MIRROR_PATH ]; then
+		WORLD_DIR="$MIRROR_PATH/$1"
+	fi
+	# Make sure that the server.log file exists.
+	if [ -e "$WORLD_DIR/server.log" ]; then
+		# Watch the log.
+		PID=$(echo $(getProcessIDs $1) | cut -d ' ' -f2)
+		tail -n0 -f --pid=$PID $WORLD_DIR/server.log
+	fi
+}
+
+# Synchronizes the data stored in the mirror images.
+#
+# @param 1 The world server to sync.
+syncMirrorImage() {
+	# Sync the world server.
+	execute "$RSYNC -rt $MIRROR_PATH/$1/* $WORLDS_LOCATION/$1" $USER_NAME
+	if [ $? -ne 0 ]; then
+		printf "Error synchronizing mirror images for world $1.\n"
+		exit 1
+	fi
+}
+
+# Start the world server and the log processor.  Generate the appropriate
+# environment for the server if it doesn't already exist.
+#
+# @param 1 The world server to start.
+start() {
+	local PID WORLD_DIR
+	# Make sure that the world's directory exists.
+	WORLD_DIR="$WORLDS_LOCATION/$1"
+	execute "mkdir -p $WORLD_DIR" $USER_NAME
+	# Make sure that the server.properties file holds the correct values.
+	setPropertiesValue $WORLDS_LOCATION/$1/server.properties "level-name"  "$1"
+	setPropertiesValue $WORLDS_LOCATION/$1/server.properties "server-port" "$(getPort $1)"
+	setPropertiesValue $WORLDS_LOCATION/$1/server.properties "server-ip"   "$(getIP $1)"
+	setPropertiesValue $WORLDS_LOCATION/$1/server.properties "motd"        "$(getMOTD)"
+	# Make a mirror image of the world directory if requested.
+	if [ $ENABLE_MIRROR -eq 1 ] && [ -d $MIRROR_PATH ]; then
+		execute "mkdir -p $MIRROR_PATH/$1" $USER_NAME
+		execute "cp -R $WORLDS_LOCATION/$1/* $MIRROR_PATH/$1" $USER_NAME
+		WORLD_DIR="$MIRROR_PATH/$1"
+	elif [ $ENABLE_MIRROR -eq 1 ]; then
+		printf "Error copying the world data to the mirror location, path not found.\n"
+		exit 1
+	fi
+	# Change to the world's directory.
+	cd $WORLD_DIR
+	# Make sure that the server.log file exists.
+	execute "touch server.log" $USER_NAME
+	# Erase the world's users file before starting up the world, in
+	# case it is not already empty for some reason.
+	execute "printf \"\" > \"$WORLDS_LOCATION/$1.users\"" $USER_NAME
+	# Start the server.
+	execute "$SCREEN -dmS minecraft-$1 $SERVER_COMMAND" $USER_NAME
+	if [ $? -ne 0 ]; then
+		printf "Error starting the server.\n"
+		exit 1
+	fi
+	# Grab the Process ID of the world server.
+	PID=$(echo $(getProcessIDs $1) | cut -d ' ' -f2)
+	if [ ! -n "$PID" ]; then
+		printf "Error starting the server, the Process ID was not found.\n"
+		exit 1
+	fi
+	# Start the log processor.
+	tail -n0 -f --pid=$PID $WORLD_DIR/server.log | parseLog $1 &
+	# Create a lock file on RedHat and derivatives.
+	if [ -d "/var/lock/subsys" ]; then
+		touch /var/lock/subsys/minecraft_server
+	fi
+}
+
+# Stop the world server.
+#
+# @param 1 The world server to stop.
+stop() {
+	local WORLD NUM
+	sendCommand $1 "stop"
+	# Erase the world's users file since we won't be able to catch
+	# anyone logging off.
+	execute "printf \"\" > \"$WORLDS_LOCATION/$1.users\"" $USER_NAME
+	# Synchronize the mirror image of the world prior to closing, if required.
+	if [ $ENABLE_MIRROR -eq 1 ] && [ -d $MIRROR_PATH ]; then
+		syncMirrorImage $1
+	fi
+	# Remove the lock file on Redhat and derivatives if all world servers are stopped.
+	if [ -e "/var/lock/subsys/minecraft_server" ]; then
+		NUM=0
+		for WORLD in $ALL_WORLDS; do
+			if [ "$1" != "$WORLD" ] && [ $(serverRunning $WORLD) -eq 1 ]; then
+				NUM=$(($NUM + 1))
+			fi
+		done
+		if [ $NUM -eq 0 ]; then
+			rm -f /var/lock/subsys/minecraft_server
+		fi
+	fi
+}
+
+# Forcibly stop the world server.
+#
+# @param 1 The world server to forcibly stop.
+forceStop() {
+	local PIDS
+	PIDS=$(getProcessIDs $1)
+	# Try to stop the server cleanly first.
+	stop $1
+	sleep 5
+	# Kill the process ids of the world server.
+	kill -9 $PIDS > /dev/null 2>&1
+	# Remove the lock file on Redhat and derivatives if it is still around.
+	rm -f /var/lock/subsys/minecraft_server
+}
+
+# Backup the world server.
+#
+# @param 1 The world server to backup.
+worldBackup() {
+	# Make sure that the backup location exists.
+	execute "mkdir -p $BACKUP_LOCATION" $USER_NAME
+	# Create the backup.
+	execute "$RDIFF_BACKUP -v5 --print-statistics $WORLDS_LOCATION/$1 $BACKUP_LOCATION/$1 >> $BACKUP_LOG" $USER_NAME
+	# Cleanup old backups.
+	if [ $BACKUP_DURATION -gt 0 ]; then
+		execute "$RDIFF_BACKUP --remove-older-than ${BACKUP_DURATION}D --force $BACKUP_LOCATION/$1 >> $BACKUP_LOG" $USER_NAME
+	fi
+}
+
+# update the Minecraft client software.
+updateClientSoftware() {
+	execute "mkdir -p $CLIENT_LOCATION" $USER_NAME
+	# Backup the old client jar.
+	if [ -e "$CLIENT_LOCATION/$CLIENT_JAR" ]; then
+		execute "mv -f \"$CLIENT_LOCATION/$CLIENT_JAR\" \"$CLIENT_LOCATION/$CLIENT_JAR.old\"" $USER_NAME
+	fi
+	# Download the new Minecraft client software
+	execute "$WGET -qO \"$CLIENT_LOCATION/$CLIENT_JAR\" \"$CLIENT_URL\"" $USER_NAME
+	# Check for error and restore backup if found.
+	if [ $? -ne 0 ]; then
+		printf "\nError updating the Minecraft client software.\n"
+		if [ -e "$CLIENT_LOCATION/$CLIENT_JAR.old" ]; then
+			execute "mv -f \"$CLIENT_LOCATION/$CLIENT_JAR.old\" \"$CLIENT_LOCATION/$CLIENT_JAR\"" $USER_NAME
+		fi
+	fi
+}
+
+# Update the Minecraft server software.
+updateServerSoftware() {
+	execute "mkdir -p $SERVER_LOCATION" $USER_NAME
+	# Backup the old minecraft.jar file.
+	if [ -e "$SERVER_LOCATION/$SERVER_JAR" ]; then
+		execute "mv -f \"$SERVER_LOCATION/$SERVER_JAR\" \"$SERVER_LOCATION/$SERVER_JAR.old\"" $USER_NAME
+	fi
+	# Download the new minecraft server software.
+	execute "$WGET -qO \"$SERVER_LOCATION/$SERVER_JAR\" \"$SERVER_URL\"" $USER_NAME
+	# Check for error and restore backup if found.
+	if [ $? -ne 0 ]; then
+		printf "\nError updating the Minecraft server software.\n"
+		if [ -e "$SERVER_LOCATION/$SERVER_JAR.old" ]; then
+			execute "mv -f $SERVER_LOCATION/$SERVER_JAR.old $SERVER_LOCATION/$SERVER_JAR" $USER_NAME
+		fi
+		exit 1
+	fi
+}
+
+# Run Minecraft Overviewer mapping software on the world.  Generates an
+# index.html file using the Google Maps API.
+#
+# @param 1 The world server to map with Overviewer.
+overviewer() {
+	# Make sure the maps directory exists.
+	execute "mkdir -p $MAPS_LOCATION/$1" $USER_NAME
+	# Make sure the Minecraft client is available.
+	if [ ! -e "$CLIENT_LOCATION/$CLIENT_JAR" ]; then
+		updateClientSoftware
+	fi
+	# Make sure that the world files are actually there before mapping.
+	if [ -e "$WORLDS_LOCATION/$1/server.properties" ]; then
+		# Check for Overviewer settings file.
+		if [ -e "$WORLDS_LOCATION/$1/overviewer-settings.py" ]; then
+			# Generate map and POI with custom settings.
+			execute "$OVERVIEWER_BIN --config=$WORLDS_LOCATION/$1/overviewer-settings.py" $USER_NAME
+			execute "$OVERVIEWER_BIN --config=$WORLDS_LOCATION/$1/overviewer-settings.py --genpoi" $USER_NAME
+		else
+			# Generate map with default settings.
+			execute "$OVERVIEWER_BIN --rendermodes=normal,lighting,cave --processes 1 $WORLDS_LOCATION/$1/$1 $MAPS_LOCATION/$1" $USER_NAME > /dev/null 2>&1
+		fi
+	fi
+}
+
+
+## Begin.
+
+
+# Make sure that Java, Perl, Python, Rsync, GNU Screen, and GNU Wget are installed.
+if [ ! -e "$JAVA" ]; then
+	printf "ERROR: Java not found!\n"
+	printf "Try installing this with:\n"
+	printf "sudo apt-get install openjdk-6-jdk"
+	exit 1
+fi
+if [ ! -e "$PERL" ]; then
+	printf "ERROR: Perl not found!\n"
+	printf "Try installing this with:\n"
+	printf "sudo apt-get install perl\n"
+	exit 1
+fi
+if [ ! -e "$PYTHON" ]; then
+	printf "ERROR: Python not found!\n"
+	printf "Try installing this with:\n"
+	printf "sudo apt-get install python\n"
+	exit 1
+fi
+if [ ! -e "$RSYNC" ] && [ $ENABLE_MIRROR -eq 1 ]; then
+	printf "ERROR: Rsync not found!\n"
+	printf "Try installing this with:\n"
+	printf "sudo apt-get install rsync\n"
+	exit 1
+fi
+if [ ! -e "$SCREEN" ]; then
+	printf "ERROR: GNU Screen not found!\n"
+	printf "Try installing this with:\n"
+	printf "sudo apt-get install screen\n"
+	exit 1
+fi
+if [ ! -e "$WGET" ]; then
+	printf "ERROR: GNU Wget not found!\n"
+	printf "Try installing this with:\n"
+	printf "sudo apt-get install wget\n"
+	exit 1
+fi
+if [ ! -e "$RDIFF_BACKUP" ]; then
+	printf "ERROR: rdiff-backup not found!\n"
+	printf "Try installing this with:\n"
+	printf "sudo apt-get install rdiff-backup\n"
+	exit 1
+fi
+
+# Make sure that the minecraft user exists.
+if [ ! -n "$(grep $USER_NAME /etc/passwd)" ]; then
+	printf "ERROR: This script requires that a user account named $USER_NAME exist on this system.\n"
+	printf "Either modify the USER_NAME variable in this script, or try adding this user:\n"
+	printf "sudo adduser $USER_NAME\n"
+	exit 1
+fi
+
+# Warn if the script is running with the wrong user.
+if [ $(id -u) -ne 0 ] && [ "$(whoami)" != "$USER_NAME" ]; then
+	printf "WARNING: This script appears to have been started by the wrong user.\n"
+	printf "Expected to find the user: $USER_NAME.  You can try to log on to this user:\n"
+	printf "su $USER_NAME\n"
+	exit 1
+fi
+
+# Generate a default worlds.conf file if it does not already exist.
+if [ ! -e "$WORLDS_CONF" ]; then
+	execute "printf \"# Minecraft world configuration file\n\" > $WORLDS_CONF" $USER_NAME
+	execute "printf \"# <world>\t<port>\t<ip>\n\" >> $WORLDS_CONF" $USER_NAME
+	execute "printf \"$DEFAULT_WORLD\t$DEFAULT_PORT\t$DEFAULT_IP\n\" >> $WORLDS_CONF" $USER_NAME
+fi
+
+# Make sure that the server software exists.
+if [ ! -e "$SERVER_LOCATION/$SERVER_JAR" ]; then
+	printf "Server software not found, downloading it...\n"
+	updateServerSoftware
+fi
+
+# Update old worlds.conf files.
+if [ -e "$WORLDS_CONF" ] && [ "$(grep '<eport>' $WORLDS_CONF)" != ""  ]; then
+	execute "cp $WORLDS_CONF $WORLDS_CONF.old" $USER_NAME
+	execute "$PERL -i -ne 'if (\$_ =~ /#\s*<world>\s+<eport>\s+<iport>\s+<ip>/) { print \"# <world>\t<port>\t<ip>\n\"; } else { print; }' $WORLDS_CONF" $USER_NAME
+	execute "$PERL -i -ne 'if (\$_ =~ /(\w+)\s+(\d+)\s+\d+\s*([\d\.]*)/) { printf \"%s\t%d\t%s\n\",\$1,\$2,\$3; } else { print; }' $WORLDS_CONF" $USER_NAME
+fi
+
+# Grab the list of worlds.
+ALL_WORLDS=$(getWorlds)
+
+# Respond to the command line arguments.
+case "$1" in
+	start)
+		# Figure out which worlds to start.
+		WORLDS=$(checkOptionalArgument "$ALL_WORLDS" $0 $1 $2)
+		# Start each world requested, if not already running.
+		printf "Starting Minecraft Server:"
+		for WORLD in $WORLDS; do
+			if [ $(serverRunning $WORLD) -eq 0 ]; then
+				printf " $WORLD"
+				start $WORLD
+			fi
+		done
+		printf "\n"
+	;;
+	stop|force-stop)
+		# Figure out which worlds to stop.
+		WORLDS=$(checkOptionalArgument "$ALL_WORLDS" $0 $1 $2)
+		# Stop each world requested, if running.
+		printf "Stopping Minecraft Server:"
+		for WORLD in $WORLDS; do
+			# Try to stop the world cleanly.
+			if [ $(serverRunning $WORLD) -eq 1 ]; then
+				printf " $WORLD"
+				sendCommand $WORLD "say The server is about to go down."
+				sendCommand $WORLD "save-all"
+				sendCommand $WORLD "save-off"
+				sendCommand $WORLD "say The server is going down in 5 seconds..."
+				sleep 5
+				if [ "$1" = "force-stop" ]; then
+					forceStop $WORLD
+				else
+					stop $WORLD
+				fi
+				sleep 5
+			fi
+		done
+		printf "\n"
+	;;
+	restart|reload|force-restart|force-reload)
+		# Figure out which worlds to restart.
+		WORLDS=$(checkOptionalArgument "$ALL_WORLDS" $0 $1 $2)
+		# Restart each world requested, start those not already running.
+		printf "Restarting Minecraft Server:"
+		for WORLD in $WORLDS; do
+			printf " $WORLD"
+			if [ $(serverRunning $WORLD) -eq 1 ]; then
+				sendCommand $WORLD "say The server is about to restart."
+				sendCommand $WORLD "save-all"
+				sendCommand $WORLD "save-off"
+				sendCommand $WORLD "say Restarting in 5 seconds..."
+				sleep 5
+				if [ "$(echo \"$1\" | cut -d '-' -f1)" = "force" ]; then
+					forceStop $WORLD
+				else
+					stop $WORLD
+				fi
+				sleep 5
+			fi
+			start $WORLD
+		done
+		printf "\n"
+	;;
+	status|show)
+		# Figure out which worlds to show the status for.
+		WORLDS=$(checkOptionalArgument "$ALL_WORLDS" $0 $1 $2)
+		# Show the status of each world requested.
+		printf "Minecraft Server Status:\n"
+		for WORLD in $WORLDS; do
+			printf "  $WORLD: "
+			if [ $(serverRunning $WORLD) -eq 1 ]; then
+				printf "running (%d users online).\n" $(cat $WORLDS_LOCATION/$WORLD.users | wc -l)
+			else
+				printf "not running.\n"
+			fi
+		done
+	;;
+	sync|synchronize)
+		# Make sure the Mirror image option is enabled.
+		if [ $ENABLE_MIRROR -ne 1 ]; then
+			printf "Mirror image option not enabled, unable to synchronize.\n";
+			exit 1
+		fi
+		# Figure out which worlds to synchronize.
+		WORLDS=$(checkOptionalArgument "$ALL_WORLDS" $0 $1 $2)
+		# Synchronize the images for each world.
+		printf "Synchronizing Minecraft Server:"
+		for WORLD in $WORLDS; do
+			if [ $(serverRunning $WORLD) -eq 1 ]; then
+				printf " $WORLD"
+				sendCommand $WORLD "save-off"
+				syncMirrorImage $WORLD
+				sendCommand $WORLD "save-on"
+			fi
+		done
+		printf "\n"
+	;;
+	send)
+		# Check for the world command line argument.
+		if [ -n "$2" ] && [ $(listContains $2 "$ALL_WORLDS") -eq 1 ] && [ -n "$3" ]; then
+			WORLD=$2
+			shift 2
+			printf "Send command to world $WORLD: $*\n"
+			sendCommand $WORLD "$*"
+		else
+			printf "Usage:  $0 $1 <world> <command>\n"
+			printf "   ie:  $0 $1 world say Hello World!\n"
+			exit 1
+		fi
+	;;
+	screen)
+		# Check for the world command line argument.
+		if [ -n "$2" ] && [ $(listContains $2 "$ALL_WORLDS") -eq 1 ]; then
+			displayScreen $2
+		else
+			if [ -n "$2" ]; then
+				printf "Minecraft world $2 not found!\n"
+			else
+				printf "Minecraft world not provided!\n"
+			fi
+			printf "  Usage:  $0 $1 <world>\n"
+			exit 1
+		fi
+	;;
+	watch)
+		# Check for the world command line argument.
+		if [ -n "$2" ] && [ $(listContains $2 "$ALL_WORLDS") -eq 1 ]; then
+			watchLog $2
+		else
+			if [ -n "$2" ]; then
+				printf "Minecraft world $2 not found!\n"
+			else
+				printf "Minecraft world not provided!\n"
+			fi
+			printf "  Usage:  $0 $1 <world>\n"
+			exit 1
+		fi
+	;;
+	logrotate)
+		# Figure out which worlds to rotate the log.
+		WORLDS=$(checkOptionalArgument "$ALL_WORLDS" $0 $1 $2)
+		# Backup each world requested.
+		printf "Rotating Server Log:"
+		for WORLD in $WORLDS; do
+			printf " $WORLD"
+			rotateLog $WORLD
+		done
+		printf "\n"
+	;;
+	backup)
+		# Figure out which worlds to backup.
+		WORLDS=$(checkOptionalArgument "$ALL_WORLDS" $0 $1 $2)
+		# Backup each world requested.
+		printf "Backing up Minecraft Server:"
+		for WORLD in $WORLDS; do
+			printf " $WORLD"
+			if [ $(serverRunning $WORLD) -eq 1 ]; then
+				sendCommand $WORLD "say Backing up the world."
+				sendCommand $WORLD "save-all"
+				sendCommand $WORLD "save-off"
+				sleep 20
+				worldBackup $WORLD
+				sendCommand $WORLD "save-on"
+				sendCommand $WORLD "say Backup complete."
+			else
+				worldBackup $WORLD
+			fi
+		done
+		printf "\n"
+	;;
+	update)
+		printf "Updating the Minecraft Server software...\n"
+		# If the server software is being updated, stop all of
+		# the world servers and backup the worlds.
+		printf "Stopping Minecraft Server:"
+		for WORLD in $ALL_WORLDS; do
+			if [ $(serverRunning $WORLD) -eq 1 ]; then
+				printf " $WORLD"
+				sendCommand $WORLD "say The server software is being updated."
+				sendCommand $WORLD "say Server restart is imminent."
+				sendCommand $WORLD "save-all"
+				sendCommand $WORLD "save-off"
+				sendCommand $WORLD "say Restarting in 5 seconds."
+				sleep 5
+				stop $WORLD
+			fi
+		done
+		printf "\n"
+		printf "Backing up Minecraft Server:"
+		for WORLD in $ALL_WORLDS; do
+			printf " $WORLD"
+			worldBackup $WORLD
+		done
+		printf "\n"
+		printf "Updating software package:"
+		# Update the client software.
+		printf " client"
+		updateClientSoftware
+		# Update the server software.
+		printf " server"
+		updateServerSoftware
+		printf "\n"
+		printf "Starting Minecraft Server:"
+		for WORLD in $ALL_WORLDS; do
+			printf " $WORLD"
+			start $WORLD
+		done
+		printf "\n"
+	;;
+	map|overviewer)
+		# Make sure that the Minecraft Overviewer software exists.
+		if [ ! -e "$OVERVIEWER_BIN" ]; then
+			printf "Mincraft Overviewer software not found.\n"
+			exit 1
+		fi
+		# Figure out which worlds to map.
+		WORLDS=$(checkOptionalArgument "$ALL_WORLDS" $0 $1 $2)
+		# Run Minecraft Overviewer on each world requested.
+		printf "Running Minecraft Overviewer mapping:"
+		for WORLD in $WORLDS; do
+			printf " $WORLD"
+			if [ $(serverRunning $WORLD) -eq 1 ]; then
+				sendCommand $WORLD "say The world is about to be mapped with Minecraft Overviewer."
+				sendCommand $WORLD "save-all"
+				sendCommand $WORLD "save-off"
+				sleep 20
+				worldBackup $WORLD
+				overviewer $WORLD
+				sendCommand $WORLD "save-on"
+				sendCommand $WORLD "say Mapping is complete.  You can access the maps at:"
+				sendCommand $WORLD "say $MAPS_URL/$WORLD"
+			else
+				worldBackup $WORLD
+				overviewer $WORLD
+			fi
+		done
+		printf "\n"
+	;;
+	*)
+		printf "Usage: $0 {start|stop|force-stop|restart|force-restart|status|sync|send|screen|watch|logrotate|backup|update|map} {Optional: world or software package}\n"
+		exit 1
+	;;
+esac
+exit 0
+
