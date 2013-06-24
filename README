@@ -22,7 +22,6 @@ than root.  As such, you need to create the user before using this script:
 
 sudo adduser minecraft
 
-
 If the Minecraft server software is not located when the server start command
 is issued, the software will be downloaded to the proper location:
   /home/minecraft/minecraft_server/minecraft_server.jar
@@ -52,7 +51,6 @@ installed by running:
 sudo apt-get install openjdk-6-jdk perl screen wget rdiff-backup iptables
 
 
-
 Mapping Software
 -----------------------------
 The script now uses the Minecraft Overviewer mapping software to generate
@@ -80,7 +78,6 @@ beta 25566
 gamma 25567
 delta 25568
 epsilon 25569
-
 
 
 Firewall / NAT
@@ -134,7 +131,6 @@ that you can use.
 -A INPUT -m state --state NEW -m tcp -p tcp --dport 25565:25575 -j ACCEPT
 
 COMMIT
-
 
 
 Usage
@@ -207,7 +203,6 @@ ie.
 /etc/inid.d/minecraft_server send alpha say Hello world!
 
 
-
 Screen
 -----------------------------
 The screen option allows an admin to connect to and interact with the Screen
@@ -251,7 +246,6 @@ Example motd.txt:
 §fLook out for those §2creepers§f!
 
 
-
 CraftBukkit
 -----------------------------
 To use the CraftBukkit server distribution instead of the default Mojang
@@ -286,7 +280,6 @@ ln -s /home/minecraft/plugins /home/minecraft/worlds/alpha/plugins
 ln -s /home/minecraft/plugins /home/minecraft/worlds/beta/plugins
 
 
-
 Lib Notify
 -----------------------------
 On systems that support lib notify, you can modify the script to print a
@@ -303,9 +296,7 @@ If your username is different than the user used for the Minecraft server,
 replace $USER_NAME in LIBNOTIFY_USER_NAME=$USER_NAME with the correct
 username.
 
-Modify the following lines of code in the script.
-
-## Lib-notify configuration
+Modify the following lines of code in the script:
 
 # To use lib-notify to print a message on your desktop of important server
 events, change the following to a 1.
@@ -314,3 +305,31 @@ USE_LIBNOTIFY=0
 # The username and display that notifications will be routed to.
 LIBNOTIFY_USER_NAME=$USER_NAME
 LIBNOTIFY_DISPLAY=":0.0"
+
+
+License
+-----------------------------
+Copyright (c) 2013, Jason M. Wood <sandain@hotmail.com>
+
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met:
+
+1. Redistributions of source code must retain the above copyright notice,
+   this list of conditions and the following disclaimer.
+2. Redistributions in binary form must reproduce the above copyright
+   notice, this list of conditions and the following disclaimer in the
+   documentation and/or other materials provided with the distribution.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+POSSIBILITY OF SUCH DAMAGE.
