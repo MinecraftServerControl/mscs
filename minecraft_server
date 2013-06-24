@@ -9,36 +9,49 @@
 # Description:    Minecraft Server control script.
 ### END INIT INFO
 
-# Minecraft Server control script.
+# ---------------------------------------------------------------------------
+# Minecraft Server Control Script
 #
-# Options:
-#   start <world>         - Start the Minecraft world server.  Start all world
-#                           servers by default.
-#   stop <world>          - Stop the Minecraft world server.  Stop all world
-#                           servers by default.
-#   force-stop <world>    - Forcibly stop the Minecraft world server.  Forcibly
-#                           stop all world servers by default.
-#   restart <world>       - Restart the Minecraft world server.  Restart all
-#                           world servers by default.
-#   force-restart <world> - Forcibly restart the Minecraft world server.
-#                           Forcibly restart all world servers by default.
-#   status <world>        - Display the status of the Minecraft world server.
-#                           Display the status of all world servers by default.
-#   sync <world>          - Synchronize the data stored in the mirror images of
-#                           the Minecraft world server.  Synchronizes all of
-#                           the world servers by default.  This option is only
-#                           available when the mirror image option is enabled.
-#   send <world> <cmd>    - Send a command to a Minecraft world server.
-#   screen <world>        - Display the Screen for the Minecraft world server.
-#   watch <world>         - Watch the log file for the Minecraft world server.
-#   logrotate <world>     - Rotate the server.log file.  Rotate the server.log
-#                           file for all worlds by default.
-#   backup <world>        - Backup the Minecraft world.  Backup all worlds by
-#                           default.
-#   map <world>           - Run the Minecraft Overviewer mapping software on
-#                           the Minecraft world.  Map all worlds by default.
-#   update                - Update a software package.  Update the client and 
-#                           server software.
+# A powerful command-line control script for Linux-powered Minecraft servers.
+# ---------------------------------------------------------------------------
+
+USAGE=$(cat <<EOF
+Usage: $0 <option>
+
+Options:
+  start <world>         - Start the Minecraft world server.  Start all
+                          world servers by default.
+  stop <world>          - Stop the Minecraft world server.  Stop all world
+                          servers by default.
+  force-stop <world>    - Forcibly stop the Minecraft world server.
+                          Forcibly stop all world servers by default.
+  restart <world>       - Restart the Minecraft world server.  Restart all
+                          world servers by default.
+  force-restart <world> - Forcibly restart the Minecraft world server.
+                          Forcibly restart all world servers by default.
+  status <world>        - Display the status of the Minecraft world server.
+                          Display the status of all world servers by
+                          default.
+  sync <world>          - Synchronize the data stored in the mirror images
+                          of the Minecraft world server.  Synchronizes all
+                          of the world servers by default.  This option is
+                          only available when the mirror image option is
+                          enabled.
+  send <world> <cmd>    - Send a command to a Minecraft world server.
+  screen <world>        - Display the Screen for the Minecraft world
+                          server.
+  watch <world>         - Watch the log file for the Minecraft world
+                          server.
+  logrotate <world>     - Rotate the server.log file.  Rotate the
+                          server.log file for all worlds by default.
+  backup <world>        - Backup the Minecraft world.  Backup all worlds by
+                          default.
+  map <world>           - Run the Minecraft Overviewer mapping software on
+                          the Minecraft world.  Map all worlds by default.
+  update                - Update a software package.  Update the client and
+                          server software.
+EOF
+)
 
 
 # User name used to run all commands.
@@ -1068,7 +1081,9 @@ case "$1" in
 		printf "\n"
 	;;
 	*)
-		printf "Usage: $0 {start|stop|force-stop|restart|force-restart|status|sync|send|screen|watch|logrotate|backup|update|map} {Optional: world or software package}\n"
+		printf "Error, in command line usage.\n"
+		printf "\n"
+		printf "$USAGE\n"
 		exit 1
 	;;
 esac
