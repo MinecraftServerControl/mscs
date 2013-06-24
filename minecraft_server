@@ -6,13 +6,17 @@
 # Default-Start:  3 4 5
 # Default-Stop:   0 1 2 6
 # chkconfig:      345 50 50
-# Description:    Minecraft Server control script.
+# Description:    Minecraft Server Control Script
 ### END INIT INFO
 
 # ---------------------------------------------------------------------------
 # Minecraft Server Control Script
 #
 # A powerful command-line control script for Linux-powered Minecraft servers.
+# ---------------------------------------------------------------------------
+
+
+# Script Usage
 # ---------------------------------------------------------------------------
 
 USAGE=$(cat <<EOF
@@ -48,11 +52,13 @@ Options:
                           default.
   map <world>           - Run the Minecraft Overviewer mapping software on
                           the Minecraft world.  Map all worlds by default.
-  update                - Update a software package.  Update the client and
-                          server software.
+  update                - Update the client and server software.
 EOF
 )
 
+# User Account & Server Location
+# ---------------------------------------------------------------------------
+# Who we run as and where we run from.
 
 # User name used to run all commands.
 USER_NAME="minecraft"
@@ -61,7 +67,9 @@ USER_NAME="minecraft"
 LOCATION="/home/$USER_NAME"
 
 
-## Required software.
+# Required Software
+# ---------------------------------------------------------------------------
+# Detect its presence and location for later.
 
 JAVA=$(which java)
 PERL=$(which perl)
@@ -72,7 +80,8 @@ WGET=$(which wget)
 RDIFF_BACKUP=$(which rdiff-backup)
 
 
-## Generic options.
+# Global Server Configuration
+# ---------------------------------------------------------------------------
 
 # Automatically restart the Minecraft server when a SEVERE error is caught.
 #   0 - Do not auto restart.
@@ -80,8 +89,8 @@ RDIFF_BACKUP=$(which rdiff-backup)
 AUTO_RESTART_ON_ERROR=0
 
 
-## Minecraft server options.
-
+# Minecraft Server Settings
+# ---------------------------------------------------------------------------
 # Choose only one server distribution, leave the other commented out.
 
 # Default Mojang server distribution.
@@ -101,13 +110,16 @@ SERVER_LOCATION="$LOCATION/minecraft_server"
 SERVER_COMMAND="$JAVA -Xms$INITIAL_MEMORY -Xmx$MAXIMUM_MEMORY -jar $SERVER_LOCATION/$SERVER_JAR $SERVER_ARGS"
 
 
-## Minecraft client options.
+# Minecraft Client Settings
+# ---------------------------------------------------------------------------
+
 CLIENT_JAR="minecraft.jar"
 CLIENT_URL="https://s3.amazonaws.com/MinecraftDownload/minecraft.jar"
 CLIENT_LOCATION="$LOCATION/.minecraft/bin"
 
 
-## World configuration.
+# World (Server Instance) Configuration
+# ---------------------------------------------------------------------------
 
 # The location to store files for each world server.
 WORLDS_LOCATION="$LOCATION/worlds"
@@ -133,7 +145,8 @@ DEFAULT_PORT="25565"
 DEFAULT_IP=""
 
 
-## Global Message Of The Day file (MOTD).
+# Global Message Of The Day file (MOTD)
+# ---------------------------------------------------------------------------
 
 # Location of the file to display to users on login.  Nothing will be done if
 # this file does not exist.
@@ -159,7 +172,8 @@ MOTD="$LOCATION/motd.txt"
 #  §f - white
 
 
-## Backup configuration.
+# Backup Configuration
+# ---------------------------------------------------------------------------
 
 # Location to store backups.
 BACKUP_LOCATION="$LOCATION/backups"
@@ -170,13 +184,16 @@ BACKUP_LOG="$BACKUP_LOCATION/backup.log"
 # Length in days that backups survive.
 BACKUP_DURATION=31
 
-## Server Log Configuration
+
+# Server Log Configuration
+# ---------------------------------------------------------------------------
 
 # How many rotations of server.log to keep
 LOG_COUNT=10
 
 
-## Mirror image options.
+# Mirror image options
+# ---------------------------------------------------------------------------
 
 # Create a mirror image of the world data on system startup, and
 # update that mirror image on system shutdown.
@@ -195,12 +212,16 @@ ENABLE_MIRROR=0
 MIRROR_PATH="/dev/shm/minecraft"
 
 
-## Mincecraft Overviewer mapping software options.
+# Mincecraft Overviewer Mapping Software Options
+# ---------------------------------------------------------------------------
+
 OVERVIEWER_BIN=$(which overviewer.py)
 MAPS_URL="http://minecraft.server.com/maps"
 MAPS_LOCATION="$LOCATION/maps"
 
-## Lib-notify configuration.
+
+# Lib-Notify Configuration
+# ---------------------------------------------------------------------------
 
 # Use lib-notify to print a message on your desktop of important server events.
 # 0 - Do not use lib-notify.
@@ -212,12 +233,20 @@ LIBNOTIFY_USER_NAME=$USER_NAME
 LIBNOTIFY_DISPLAY=":0.0"
 
 
-## Internal Methods.
+# ---------------------------------------------------------------------------
+# Internal Methods
+# ---------------------------------------------------------------------------
+#
+# NOTE: Nothing below this point should need to be edited directly.
+# ---------------------------------------------------------------------------
 
+
+# ---------------------------------------------------------------------------
 # Execute the given command.
 #
 # @param 1 The command to execute.
 # @param 2 The user name to execute the command with.
+# ---------------------------------------------------------------------------
 execute() {
 	if [ $(id -u) -eq 0 ]; then
 		# Script is running as root, switch user and execute
@@ -229,10 +258,12 @@ execute() {
 	fi
 }
 
+# ---------------------------------------------------------------------------
 # Get the PIDs of the Screen and Java process for the world server.
 #
 # @param 1 The world server of interest.
 # @return The Screen and Java PIDs
+# ---------------------------------------------------------------------------
 getProcessIDs() {
 	local SCREEN_PID JAVA_PID
 	SCREEN_PID=$(execute "$SCREEN -ls" $USER_NAME | $PERL -ne 'if ($_ =~ /^\t(\d+)\.minecraft-'$1'\s+/) { print $1; }')
@@ -240,10 +271,12 @@ getProcessIDs() {
 	echo "$SCREEN_PID $JAVA_PID"
 }
 
+# ---------------------------------------------------------------------------
 # Check to see if the world server is running.
 #
 # @param 1 The world server of interest.
 # @return A 1 if the server is thought to be running, a 0 otherwise.
+# ---------------------------------------------------------------------------
 serverRunning() {
 	local PIDS
 	PIDS=$(getProcessIDs $1)
@@ -255,10 +288,12 @@ serverRunning() {
 	fi
 }
 
+# ---------------------------------------------------------------------------
 # Send a command to the world server.
 #
 # @param 1 The world server of interest.
 # @param 2 The command to send.
+# ---------------------------------------------------------------------------
 sendCommand() {
 	local COMMAND PID
 	COMMAND=$(printf "$2\r")
@@ -270,9 +305,11 @@ sendCommand() {
 	fi
 }
 
+# ---------------------------------------------------------------------------
 # Connect to the Screen of a world server.
 #
 # @param 1 The world server of interest.
+# ---------------------------------------------------------------------------
 displayScreen() {
 	local PID TTY_PERMISSIONS
 	PID=$(echo $(getProcessIDs $1) | cut -d ' ' -f1)
@@ -299,11 +336,13 @@ displayScreen() {
 	execute "chmod $TTY_PERMISSIONS $(tty)" > /dev/null 2>&1
 }
 
+# ---------------------------------------------------------------------------
 # Check whether the item is in the list.
 #
 # @param 1 The item being searched for.
 # @param 2 The list being searched.
 # @return A 1 if the list contains the item, a 0 otherwise.
+# ---------------------------------------------------------------------------
 listContains() {
 	local MATCH ITEM
 	MATCH=0
@@ -315,28 +354,34 @@ listContains() {
 	echo $MATCH
 }
 
+# ---------------------------------------------------------------------------
 # Grab the port for the given world.
 #
 # @param 1 The world server of interest.
 # @return The port that the world is configured to use.
+# ---------------------------------------------------------------------------
 getPort() {
 	local PORT
 	PORT=$(execute "cat $WORLDS_CONF" $USER_NAME | $PERL -ne 'if ($_ =~ /^'$1'\s+(\d+)/) { print "$1"; }')
 	echo $PORT
 }
 
+# ---------------------------------------------------------------------------
 # Grab the IP address for the given world.
 #
 # @param 1 The world server of interest.
 # @return The IP address that the world is configured to run on.
+# ---------------------------------------------------------------------------
 getIP() {
 	local IP
 	IP=$(execute "cat $WORLDS_CONF" $USER_NAME | $PERL -ne 'if ($_ =~ /^'$1'\s+\d+\s+([\d\.]+)/) { print "$1"; }')
 	echo $IP
 }
 
+# ---------------------------------------------------------------------------
 # Grab the first line of the Message of the Day file as a summary, and strip
 # any color codes from it.
+# ---------------------------------------------------------------------------
 getMOTD() {
 	local MOTD_SUMMARY
 	MOTD_SUMMARY=""
@@ -346,20 +391,24 @@ getMOTD() {
 	echo $MOTD_SUMMARY
 }
 
+# ---------------------------------------------------------------------------
 # Grab the list of worlds.
 #
 # @return The list of worlds.
+# ---------------------------------------------------------------------------
 getWorlds() {
 	local WORLDS
 	WORLDS=$(execute "cat $WORLDS_CONF" $USER_NAME | $PERL -ne 'if ($_ =~ /^(\w+)\s+(\d+)/) { print "$1 "; }')
 	echo $WORLDS
 }
 
+# ---------------------------------------------------------------------------
 # Modify the value of a key/value combo in a properties file.
 #
 # @param 1 The properties file of interest.
 # @param 2 The key to modify.
 # @param 3 The value to assign to the key.
+# ---------------------------------------------------------------------------
 setPropertiesValue() {
 	local KEY_VALUE
 	# Make sure that the properties file exists.
@@ -374,10 +423,12 @@ setPropertiesValue() {
 	fi
 }
 
+# ---------------------------------------------------------------------------
 # Send a message to the desktop using lib-notify, if it is available.
 #
 # @param 1 The summary of the message to send.
 # @param 2 The body of the message to send.
+# ---------------------------------------------------------------------------
 libNotify() {
 	local NOTIFY
 	NOTIFY=$(which notify-send)
@@ -386,10 +437,12 @@ libNotify() {
 	fi
 }
 
+# ---------------------------------------------------------------------------
 # Send the contents of the Message Of The Day (MOTD) to the user.
 #
 # @param 1 The world server of interest.
 # @param 2 The user being told the contents of the motd file.
+# ---------------------------------------------------------------------------
 tellMOTD() {
 	local LINE
 	if [ -e "$MOTD" ]; then
@@ -399,16 +452,19 @@ tellMOTD() {
 	fi
 }
 
+# ---------------------------------------------------------------------------
 # Check to see if the user is in the ops.txt file of the specified world.
 #
 # @param 1 The world server of interest.
 # @param 2 The user being checked.
+# ---------------------------------------------------------------------------
 checkUserIsAdmin() {
 	local IS_ADMIN
 	IS_ADMIN=$(cat $WORLDS_LOCATION/$1/ops.txt | $PERL -ne 'if ($_ =~ /^'$2'$/i) { print "1"; }')
 	echo $IS_ADMIN
 }
 
+# ---------------------------------------------------------------------------
 # Check for the optional argument.  If the argument is not supplied, return
 # the original list.  If the argument is supplied, verify that it is a member
 # of the list, then modify the list to just contain that member.
@@ -418,6 +474,7 @@ checkUserIsAdmin() {
 # @param 3 The command line argument used.
 # @param 4 The optional command line argument.
 # @return Either the original list, or the optional command line argument.
+# ---------------------------------------------------------------------------
 checkOptionalArgument() {
 	local LIST
 	LIST="$1"
@@ -432,11 +489,13 @@ checkOptionalArgument() {
 	echo "$LIST"
 }
 
+# ---------------------------------------------------------------------------
 # Check for users logging into a world.  If a user logs in, perform
 # login functions.
 #
 # @param 1 The world server of interest.
 # @param 2 The message to check for users logging in.
+# ---------------------------------------------------------------------------
 checkForLogin() {
 	local LOGIN PLAYER_NAME
 	LOGIN=$(echo "$2" | $PERL -ne 'if ($_ =~ /(\w+)\s*\[\/([0-9\.]+)\:(\d+)\] logged in with entity id (\d+)/) { print "$1\t$2\t$3\t$4"; }')
@@ -453,11 +512,13 @@ checkForLogin() {
 	fi
 }
 
+# ---------------------------------------------------------------------------
 # Check for users logging out of a world.  If a user logs out, perform the
 # logout functions.
 #
 # @param 1 The world server of interest.
 # @param 2 The message to check for users logging out.
+# ---------------------------------------------------------------------------
 checkForLogout() {
 	local LOGOUT BAN PLAYER_NAME
 	LOGOUT=$(echo "$2" | $PERL -ne 'if ($_ =~ /(\w+) lost connection\: (.+)/) { print "$1\t$2"; }')
@@ -481,10 +542,12 @@ checkForLogout() {
 	fi
 }
 
+# ---------------------------------------------------------------------------
 # Parse through the log file for the given world.  Uses checkFor methods to
 # find events such as users logging in or out.
 #
 # @param 1 The world server generating the log to parse.
+# ---------------------------------------------------------------------------
 parseLog() {
 	local LINE DATE TIME TYPE MESSAGE
 	while read LINE; do
@@ -515,9 +578,11 @@ parseLog() {
 	done
 }
 
+# ---------------------------------------------------------------------------
 # Rotates the world server log file.
 #
 # @param 1 The world server generating the log to rotate.
+# ---------------------------------------------------------------------------
 rotateLog() {
 	local WORLD_DIR LOG_LIST LOG_LINES LOG_NUMBER
 	WORLD_DIR="$WORLDS_LOCATION/$1"
@@ -557,9 +622,11 @@ rotateLog() {
 	execute "cp /dev/null $WORLD_DIR/server.log" $USER_NAME
 }
 
+# ---------------------------------------------------------------------------
 # Watch the world server log file.
 #
 # @param 1 The world server generating the log to watch.
+# ---------------------------------------------------------------------------
 watchLog() {
 	local PID WORLD_DIR
 	WORLD_DIR="$WORLDS_LOCATION/$1"
@@ -575,9 +642,11 @@ watchLog() {
 	fi
 }
 
+# ---------------------------------------------------------------------------
 # Synchronizes the data stored in the mirror images.
 #
 # @param 1 The world server to sync.
+# ---------------------------------------------------------------------------
 syncMirrorImage() {
 	# Sync the world server.
 	execute "$RSYNC -rt $MIRROR_PATH/$1/* $WORLDS_LOCATION/$1" $USER_NAME
@@ -587,10 +656,12 @@ syncMirrorImage() {
 	fi
 }
 
+# ---------------------------------------------------------------------------
 # Start the world server and the log processor.  Generate the appropriate
 # environment for the server if it doesn't already exist.
 #
 # @param 1 The world server to start.
+# ---------------------------------------------------------------------------
 start() {
 	local PID WORLD_DIR
 	# Make sure that the world's directory exists.
@@ -637,9 +708,11 @@ start() {
 	fi
 }
 
+# ---------------------------------------------------------------------------
 # Stop the world server.
 #
 # @param 1 The world server to stop.
+# ---------------------------------------------------------------------------
 stop() {
 	local WORLD NUM
 	sendCommand $1 "stop"
@@ -664,9 +737,11 @@ stop() {
 	fi
 }
 
+# ---------------------------------------------------------------------------
 # Forcibly stop the world server.
 #
 # @param 1 The world server to forcibly stop.
+# ---------------------------------------------------------------------------
 forceStop() {
 	local PIDS
 	PIDS=$(getProcessIDs $1)
@@ -679,9 +754,11 @@ forceStop() {
 	rm -f /var/lock/subsys/minecraft_server
 }
 
+# ---------------------------------------------------------------------------
 # Backup the world server.
 #
 # @param 1 The world server to backup.
+# ---------------------------------------------------------------------------
 worldBackup() {
 	# Make sure that the backup location exists.
 	execute "mkdir -p $BACKUP_LOCATION" $USER_NAME
@@ -693,7 +770,9 @@ worldBackup() {
 	fi
 }
 
+# ---------------------------------------------------------------------------
 # update the Minecraft client software.
+# ---------------------------------------------------------------------------
 updateClientSoftware() {
 	execute "mkdir -p $CLIENT_LOCATION" $USER_NAME
 	# Backup the old client jar.
@@ -711,7 +790,9 @@ updateClientSoftware() {
 	fi
 }
 
+# ---------------------------------------------------------------------------
 # Update the Minecraft server software.
+# ---------------------------------------------------------------------------
 updateServerSoftware() {
 	execute "mkdir -p $SERVER_LOCATION" $USER_NAME
 	# Backup the old minecraft.jar file.
@@ -730,10 +811,12 @@ updateServerSoftware() {
 	fi
 }
 
+# ---------------------------------------------------------------------------
 # Run Minecraft Overviewer mapping software on the world.  Generates an
 # index.html file using the Google Maps API.
 #
 # @param 1 The world server to map with Overviewer.
+# ---------------------------------------------------------------------------
 overviewer() {
 	# Make sure the maps directory exists.
 	execute "mkdir -p $MAPS_LOCATION/$1" $USER_NAME
@@ -756,7 +839,9 @@ overviewer() {
 }
 
 
-## Begin.
+# ---------------------------------------------------------------------------
+# Begin.
+# ---------------------------------------------------------------------------
 
 
 # Make sure that Java, Perl, Python, Rsync, GNU Screen, and GNU Wget are installed.
