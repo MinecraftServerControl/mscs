@@ -1,4 +1,262 @@
 MinecraftServerControlScript
 =============================
 
-Powerful command-line control for Linux-powered Minecraft servers
+A powerful command-line control script for Linux-powered Minecraft servers.
+
+
+Installation
+To get your server to run the script on startup, and cleanly down the server on shutdown, you need to copy the script to /etc/init.d, set execute permissions on the file, and instruct the system to use the script on startup and shutdown.  The following commands will work in Debian and Ubuntu like environments, ymmv in others.
+
+sudo cp minecraft_server /etc/init.d/minecraft_server
+sudo chmod 755 /etc/init.d/minecraft_server
+sudo update-rc.d minecraft_server defaults
+
+
+For security reasons, the script uses a user account named minecraft rather than root.  As such, you need to create the user before using this script:
+
+sudo adduser minecraft
+
+
+If the Minecraft server software is not located when the server start command is issued, the software will be downloaded to the proper location: /home/minecraft/minecraft_server/minecraft_server.jar
+
+
+Requirements
+I've made an attempt to utilize only features that are normally installed in most Linux and UNIX environments in this script, but there are a few requirements that this script has that may not already be in place:
+
+    Java 6 JDK - The Minecraft server software requires this.
+    Perl 5 - Most, if not all, Unix and Linux like systems have this preinstalled.
+    GNU Screen - Allows the script to run the Java process as a background daemon and send commands to the server.
+    GNU Wget - Allows the script to download software updates via the internet.
+    rdiff-backup - Allows the script to efficiently run backups.
+    Iptables - Although not explicitly required, a good firewall should be installed.
+
+If you are running Debian or Ubuntu, you can make sure that these are installed by running:
+
+sudo apt-get install openjdk-6-jdk perl screen wget rdiff-backup iptables
+
+
+
+Mapping Software
+The script now uses the Minecraft Overviewer mapping software to generate maps of your worlds.  You can download premade binaries for supported systems (Debian/Ubuntu, CentOS/RHEL/Fedora), or build your own binary from source if needed.
+
+
+Multiple Worlds
+The script can handle running multiple Minecraft world servers, just add each server to the /home/minecraft/worlds.conf file that will be generated on the first run.  Do not include the IP address information if it is not needed.
+
+Example worlds.conf file for two worlds named alpha and beta and the ports that they run on.  This file will be generated if missing.
+
+Note: The world name should not contain a space.  Leave the ip address blank if it is not needed.
+
+# Minecraft world configuration file
+# <world> <port> <ip>
+alpha 25565
+beta 25566
+gamma 25567
+delta 25568
+epsilon 25569
+
+
+
+Firewall / NAT
+If you have a firewall installed on your computer, or a router using NAT installed in your network, you will need to route some ports to your server.  Instructions on how to accomplish this are beyond the scope of this post, but here are some things you will need to know:
+
+    The default port for the Minecraft server is: 25565.
+    If you wish to run multiple world servers using this script, you will want to open a range of ports (for example 25565 - 25575).
+
+If you are using iptables, and you should be, here is a very basic ruleset that you can use.
+
+*filter
+:INPUT DROP [0:0]
+:FORWARD DROP [0:0]
+:OUTPUT DROP [0:0]
+
+# Handle loopback addresses
+-A INPUT -i lo -j ACCEPT
+-A OUTPUT -o lo -j ACCEPT
+
+# Allow outbound packets if state related, and inbound if established
+-A OUTPUT -m state --state NEW,ESTABLISHED,RELATED -j ACCEPT
+-A INPUT -m state --state ESTABLISHED,RELATED -j ACCEPT
+
+# Drop stealth scans
+-A INPUT -i eth0 -p tcp -m tcp --tcp-flags FIN,SYN,RST,PSH,ACK,URG NONE
+-A INPUT -i eth0 -p tcp -m tcp --tcp-flags SYN,FIN SYN,FIN
+-A INPUT -i eth0 -p tcp -m tcp --tcp-flags SYN,RST SYN,RST
+-A INPUT -i eth0 -p tcp -m tcp --tcp-flags FIN,RST FIN,RST
+-A INPUT -i eth0 -p tcp -m tcp --tcp-flags ACK,FIN FIN
+-A INPUT -i eth0 -p tcp -m tcp --tcp-flags ACK,URG URG
+
+# Allow ICMP pings
+-A OUTPUT -p icmp -m state --state NEW,ESTABLISHED,RELATED -j ACCEPT
+-A INPUT -p icmp -m state --state ESTABLISHED,RELATED -j ACCEPT
+
+# Allow port 22 for SSH
+-A INPUT -m state --state NEW -m tcp -p tcp --dport 22 -j ACCEPT
+
+# Allow port 80 for HTTP
+-A INPUT -m state --state NEW -m tcp -p tcp --dport 80 -j ACCEPT
+
+# Allow port 443 for HTTPS
+-A INPUT -m state --state NEW -m tcp -p tcp --dport 443 -j ACCEPT
+
+# Allow ports 25565 - 25575 for Minecraft world servers
+-A INPUT -m state --state NEW -m tcp -p tcp --dport 25565:25575 -j ACCEPT
+
+COMMIT
+
+
+
+Usage
+
+All commands below assume that you are running them as either the minecraft user or as root (through sudo).
+
+Note: If the script is run as the root user, all important server processes will be started using the minecraft user for security purposes.
+
+su minecraft
+/etc/init.d/minecraft_server <option>
+
+or
+
+sudo /etc/init.d/minecraft_server <option>
+
+
+Options
+
+    start <world>
+    Start the Minecraft world server.  Starts all world servers by default.
+    stop <world>
+    Stop the Minecraft world server.  Stops all world servers by default.
+    force-stop <world>
+    Forcibly stop the Minecraft world server.  Forcibly stops all world servers by default.
+    restart <world>
+    Restart the Minecraft world server.  Restarts all world servers by default.
+    force-restart <world>
+    Forcibly restart the Minecraft world server.  Forcibly restarts all world servers by default.
+    status <world>
+    Display the status of the Minecraft world server.  Displays the status of all world servers by default.
+    send <world> <command>
+    Send a command to a Minecraft world server.
+    logrotate <world>
+    Rotate the server.log file.  Rotate the server.log file for all worlds by default.
+    backup <world>
+    Backup the Minecraft world.  Backup all worlds by default.
+    screen <world>
+    Connect to the Screen holding the world's console.  See more detailed notes below.
+    watch <world>
+    Watch the log file for the Minecraft world server.
+    map <world>
+    Run the Mincraft Overviewer mapping software on the Minecraft world.  Maps all worlds by default.
+    update
+    Update the client and server software packages.
+
+
+To start all of the world servers, issue the command:
+
+/etc/init.d/minecraft_server start
+
+
+To start just the world named alpha, issue the command:
+
+/etc/init.d/minecraft_server start alpha
+
+
+To send a command to a world server, issue the command:
+
+/etc/init.d/minecraft_server send <world> <command>
+
+ie.
+/etc/inid.d/minecraft_server send alpha say Hello world!
+
+
+
+Screen
+The screen option allows an admin to connect to and interact with the Screen holding the Minecraft world server's console.  To exit out of this Screen requires the admin to hit Ctrl-A, followed by the letter d.
+
+
+Message of the Day (MOTD)
+To whisper the message of the day to users as they log into the world, add a file called motd.txt to the /home/minecraft directory.
+
+nano /home/minecraft/motd.txt
+
+
+Colors
+To add colors to your Help or MOTD files, insert the following color codes into your text:
+
+    §0 - black
+    §1 - blue
+    §2 - deep green
+    §3 - aqua
+    §4 - deep red
+    §5 - purple
+    §6 - gold
+    §7 - gray
+    §8 - dark gray
+    §9 - light blue
+    §a - green
+    §b - teal
+    §c - red
+    §d - magenta
+    §e - yellow
+    §f - white
+
+Example motd.txt:
+
+§fWelcome to Minecraft!
+§fToday's theme is §4red§f.
+§fLook out for those §2creepers§f!
+
+
+
+CraftBukkit
+To use the CraftBukkit server distribution instead of the default Mojang server, modify the following lines of code:
+
+## Minecraft server options.
+
+# Choose only one server distribution, leave the other commented out.
+
+# Default Mojang server distribution.
+SERVER_URL="http://www.minecraft.net/download/minecraft_server.jar"
+SERVER_JAR="minecraft_server.jar"
+SERVER_ARGS="nogui"
+
+# CraftBukkit server distribution.
+# SERVER_URL="http://ci.bukkit.org/job/dev-CraftBukkit/promotion/latest/Recommended/artifact/target/craftbukkit-0.0.1-SNAPSHOT.jar"
+# SERVER_JAR="craftbukkit-0.0.1-SNAPSHOT.jar"
+# SERVER_ARGS=""
+
+
+Bukkit plugins are world specific and are contained within the plugins directory of the world. ie.
+
+/home/minecraft/worlds/alpha/plugins
+
+
+If you would prefer to use the same plugins directory for all of your worlds, you can create symlinks for each world.  ie.
+
+mkdir /home/minecraft/plugins
+ln -s /home/minecraft/plugins /home/minecraft/worlds/alpha/plugins
+ln -s /home/minecraft/plugins /home/minecraft/worlds/beta/plugins
+
+
+
+Lib Notify
+On systems that support lib notify, you can modify the script to print a message on your desktop of important server events.
+
+First, you need to know the name of the display you want to route the messages to.  This is usually ":0.0", but it may be something different on your system.
+
+glxinfo | grep "name of display"
+
+
+If your username is different than the user used for the Minecraft server, replace $USER_NAME in LIBNOTIFY_USER_NAME=$USER_NAME with the correct username.
+
+Modify the following lines of code in the script.
+
+## Lib-notify configuration
+
+# To use lib-notify to print a message on your desktop of important server events, change the following to a 1.
+USE_LIBNOTIFY=0
+
+# The username and display that notifications will be routed to.
+LIBNOTIFY_USER_NAME=$USER_NAME
+LIBNOTIFY_DISPLAY=":0.0"
+
+
