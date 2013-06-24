@@ -200,7 +200,7 @@ To send a command to a world server, issue the command:
 /etc/init.d/minecraft_server send <world> <command>
 
 ie.
-/etc/inid.d/minecraft_server send alpha say Hello world!
+/etc/init.d/minecraft_server send alpha say Hello world!
 
 
 Screen
