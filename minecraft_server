@@ -1054,12 +1054,6 @@ case "$1" in
 		done
 	;;
 	sync|synchronize)
-		# Make sure the Mirror image option is enabled.
-		if [ $ENABLE_MIRROR -ne 1 ]; then
-			printf "Mirror image option not enabled, unable to "
-			printf "synchronize.\n";
-			exit 1
-		fi
 		# Figure out which worlds to synchronize.
 		WORLDS=$(checkOptionalArgument "$ALL_WORLDS" $0 $1 $2)
 		# Synchronize the images for each world.
@@ -1067,9 +1061,13 @@ case "$1" in
 		for WORLD in $WORLDS; do
 			if [ $(serverRunning $WORLD) -eq 1 ]; then
 				printf " $WORLD"
-				sendCommand $WORLD "save-off"
-				syncMirrorImage $WORLD
-				sendCommand $WORLD "save-on"
+				sendCommand $WORLD "save-all"
+				if [ $ENABLE_MIRROR -eq 1 ]; then
+					sendCommand $WORLD "save-off"
+					sleep 20
+					syncMirrorImage $WORLD
+					sendCommand $WORLD "save-on"
+				fi
 			fi
 		done
 		printf ".\n"
