@@ -226,7 +226,7 @@ BACKUP_DURATION=31
 LOG_COUNT=10
 
 
-# Mirror image options
+# Mirror Image Options
 # ---------------------------------------------------------------------------
 
 # Create a mirror image of the world data on system startup, and
@@ -297,7 +297,7 @@ execute() {
 # Get the PIDs of the Screen and Java process for the world server.
 #
 # @param 1 The world server of interest.
-# @return The Screen and Java PIDs
+# @return The Screen and Java PIDs.
 # ---------------------------------------------------------------------------
 getProcessIDs() {
 	local SCREEN_PID JAVA_PID
@@ -727,7 +727,13 @@ start() {
 		printf "Error starting the server.\n"
 		exit 1
 	fi
-	# Grab the Process ID of the server's Java instance.
+	# Grab the Screen Process ID of the server.
+	PID=$(echo $(getProcessIDs $1) | cut -d ' ' -f1)
+	if [ ! -n "$PID" ]; then
+		printf "Error starting the server: SCREEN failed to create a screen for the server.\n"
+		exit 1
+	fi
+	# Grab the Java Process ID of the server.
 	PID=$(echo $(getProcessIDs $1) | cut -d ' ' -f2)
 	if [ ! -n "$PID" ]; then
 		printf "Error starting the server: couldn't retrieve the server's process ID.\n"
@@ -1041,7 +1047,7 @@ case "$1" in
 		for WORLD in $WORLDS; do
 			printf "  $WORLD: "
 			if [ $(serverRunning $WORLD) -eq 1 ]; then
-				printf "running (%d users online).\n" $(cat $WORLDS_LOCATION/$WORLD.users | wc -l)
+				printf "running (%d users online). Screen PID: %d. Java PID: %d.\n" $(cat $WORLDS_LOCATION/$WORLD.users | wc -l) $(getProcessIDs $WORLD)
 			else
 				printf "not running.\n"
 			fi
@@ -1073,7 +1079,7 @@ case "$1" in
 		if [ -n "$2" ] && [ $(listContains $2 "$ALL_WORLDS") -eq 1 ] && [ -n "$3" ]; then
 			WORLD=$2
 			shift 2
-			printf "Sending command to world $WORLD: $*\n"
+			printf "Sending command to world: $WORLD - '$*'.\n"
 			sendCommand $WORLD "$*"
 		else
 			printf "Usage:  $0 $1 <world> <command>\n"
@@ -1084,7 +1090,7 @@ case "$1" in
 	screen)
 		# Check for the world command line argument.
 		if [ -n "$2" ] && [ $(listContains $2 "$ALL_WORLDS") -eq 1 ]; then
-			printf "About to load the screen for world $2.\n"
+			printf "About to load the screen for world: $2.\n"
 			printf "To exit the screen, hit Ctrl+A then type the letter d.\n"
 			sleep 5
 			displayScreen $2
@@ -1101,6 +1107,7 @@ case "$1" in
 	watch)
 		# Check for the world command line argument.
 		if [ -n "$2" ] && [ $(listContains $2 "$ALL_WORLDS") -eq 1 ]; then
+			printf "Monitoring Minecraft Server: $2.\n"
 			watchLog $2
 		else
 			if [ -n "$2" ]; then
@@ -1116,7 +1123,7 @@ case "$1" in
 		# Figure out which worlds to rotate the log.
 		WORLDS=$(checkOptionalArgument "$ALL_WORLDS" $0 $1 $2)
 		# Backup each world requested.
-		printf "Rotating Server Log:"
+		printf "Rotating Minecraft Server Log:"
 		for WORLD in $WORLDS; do
 			printf " $WORLD"
 			rotateLog $WORLD
@@ -1145,8 +1152,7 @@ case "$1" in
 		printf ".\n"
 	;;
 	update)
-		# If the server software is being updated, stop all of
-		# the world servers and backup the worlds.
+		# Stop all of the world servers and backup the worlds.
 		printf "Stopping Minecraft Server:"
 		for WORLD in $ALL_WORLDS; do
 			if [ $(serverRunning $WORLD) -eq 1 ]; then
@@ -1175,7 +1181,7 @@ case "$1" in
 		printf " server"
 		updateServerSoftware
 		printf ".\n"
-		printf "Starting Minecraft Server:"
+		printf "Restarting Minecraft Server:"
 		for WORLD in $ALL_WORLDS; do
 			printf " $WORLD"
 			start $WORLD
