@@ -967,13 +967,6 @@ if [ ! -e "$SERVER_LOCATION/$SERVER_JAR" ]; then
 	updateServerSoftware
 fi
 
-# Update old worlds.conf files.
-if [ -e "$WORLDS_CONF" ] && [ "$(grep '<eport>' $WORLDS_CONF)" != "" ]; then
-	execute "cp $WORLDS_CONF $WORLDS_CONF.old" $USER_NAME
-	execute "$PERL -i -ne 'if (\$_ =~ /#\s*<world>\s+<eport>\s+<iport>\s+<ip>/) { print \"# <world>\t<port>\t<ip>\n\"; } else { print; }' $WORLDS_CONF" $USER_NAME
-	execute "$PERL -i -ne 'if (\$_ =~ /(\w+)\s+(\d+)\s+\d+\s*([\d\.]*)/) { printf \"%s\t%d\t%s\n\",\$1,\$2,\$3; } else { print; }' $WORLDS_CONF" $USER_NAME
-fi
-
 # Grab the list of worlds.
 ALL_WORLDS=$(getWorlds)
 
