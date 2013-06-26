@@ -90,7 +90,6 @@ EOF
 # ---------------------------------------------------------------------------
 # Who we run as and where we run from.
 
-
 # User name used to run all commands. Be sure to create this user if it
 # doesn't already exist (sudo adduser minecraft).
 USER_NAME="minecraft"
