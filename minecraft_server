@@ -116,8 +116,8 @@ RDIFF_BACKUP=$(which rdiff-backup)
 # ---------------------------------------------------------------------------
 
 # Automatically restart the Minecraft server when a SEVERE error is caught.
-#   0 - Do not auto restart.
-#   1 - Auto restart.
+# 0 - Do not automatically restart when a SEVERE error is caught.
+# 1 - Automatically restart the server on a SEVERE error.
 AUTO_RESTART_ON_ERROR=0
 
 
@@ -144,6 +144,7 @@ SERVER_COMMAND="$JAVA -Xms$INITIAL_MEMORY -Xmx$MAXIMUM_MEMORY -jar $SERVER_LOCAT
 
 # Minecraft Client Settings
 # ---------------------------------------------------------------------------
+# Used by Minecraft Overviewer mapping software.
 
 CLIENT_JAR="minecraft.jar"
 CLIENT_URL="https://s3.amazonaws.com/MinecraftDownload/minecraft.jar"
@@ -186,7 +187,7 @@ DEFAULT_IP=""
 MOTD="$LOCATION/motd.txt"
 
 
-## MOTD can contain color codes as follows:
+# NOTE: MOTD can contain color codes as follows:
 #  §0 - black
 #  §1 - blue
 #  §2 - dark green
@@ -241,7 +242,7 @@ ENABLE_MIRROR=0
 
 # The location to store the mirror image.
 #
-# NOTE: This is usually a ramdisk.
+# NOTE: This is usually a ramdisk, e.g. /dev/shm on Debian/Ubuntu.
 MIRROR_PATH="/dev/shm/minecraft"
 
 
@@ -833,7 +834,7 @@ updateClientSoftware() {
 # ---------------------------------------------------------------------------
 updateServerSoftware() {
 	execute "mkdir -p $SERVER_LOCATION" $USER_NAME
-	# Backup the old minecraft.jar file.
+	# Backup the old jar file.
 	if [ -e "$SERVER_LOCATION/$SERVER_JAR" ]; then
 		execute "mv -f \"$SERVER_LOCATION/$SERVER_JAR\" \"$SERVER_LOCATION/$SERVER_JAR.old\"" $USER_NAME
 	fi
@@ -1074,7 +1075,7 @@ case "$1" in
 		if [ -n "$2" ] && [ $(listContains $2 "$ALL_WORLDS") -eq 1 ] && [ -n "$3" ]; then
 			WORLD=$2
 			shift 2
-			printf "Send command to world $WORLD: $*\n"
+			printf "Sending command to world $WORLD: $*\n"
 			sendCommand $WORLD "$*"
 		else
 			printf "Usage:  $0 $1 <world> <command>\n"
