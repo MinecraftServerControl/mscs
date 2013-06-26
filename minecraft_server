@@ -115,6 +115,7 @@ RDIFF_BACKUP=$(which rdiff-backup)
 # ---------------------------------------------------------------------------
 
 # Automatically restart the Minecraft server when a SEVERE error is caught.
+#
 # 0 - Do not automatically restart when a SEVERE error is caught.
 # 1 - Automatically restart the server on a SEVERE error.
 AUTO_RESTART_ON_ERROR=0
@@ -513,7 +514,7 @@ checkOptionalArgument() {
 	local LIST
 	LIST="$1"
 	# Check for the optional command line argument.
-	if [ -n "$4"  ] && [ $(listContains $4 "$1") -eq 1 ]; then
+	if [ -n "$4" ] && [ $(listContains $4 "$1") -eq 1 ]; then
 		LIST="$4"
 	elif [ -n "$4" ]; then
 		printf "Optional argument '$4' not recognized.\n"
@@ -961,7 +962,7 @@ if [ ! -e "$SERVER_LOCATION/$SERVER_JAR" ]; then
 fi
 
 # Update old worlds.conf files.
-if [ -e "$WORLDS_CONF" ] && [ "$(grep '<eport>' $WORLDS_CONF)" != ""  ]; then
+if [ -e "$WORLDS_CONF" ] && [ "$(grep '<eport>' $WORLDS_CONF)" != "" ]; then
 	execute "cp $WORLDS_CONF $WORLDS_CONF.old" $USER_NAME
 	execute "$PERL -i -ne 'if (\$_ =~ /#\s*<world>\s+<eport>\s+<iport>\s+<ip>/) { print \"# <world>\t<port>\t<ip>\n\"; } else { print; }' $WORLDS_CONF" $USER_NAME
 	execute "$PERL -i -ne 'if (\$_ =~ /(\w+)\s+(\d+)\s+\d+\s*([\d\.]*)/) { printf \"%s\t%d\t%s\n\",\$1,\$2,\$3; } else { print; }' $WORLDS_CONF" $USER_NAME
