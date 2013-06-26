@@ -516,8 +516,8 @@ checkOptionalArgument() {
 	if [ -n "$4"  ] && [ $(listContains $4 "$1") -eq 1 ]; then
 		LIST="$4"
 	elif [ -n "$4" ]; then
-			printf "Optional argument '$4' not recognized.\n"
-			printf "  Usage:  $2 $3 <optional argument>\n"
+		printf "Optional argument '$4' not recognized.\n"
+		printf "  Usage:  $2 $3 <optional argument>\n"
 		exit 1
 	fi
 	echo "$LIST"
@@ -983,7 +983,7 @@ case "$1" in
 				start $WORLD
 			fi
 		done
-		printf "\n"
+		printf ".\n"
 	;;
 	stop|force-stop)
 		# Figure out which worlds to stop.
@@ -1007,7 +1007,7 @@ case "$1" in
 				sleep 5
 			fi
 		done
-		printf "\n"
+		printf ".\n"
 	;;
 	restart|reload|force-restart|force-reload)
 		# Figure out which worlds to restart.
@@ -1032,7 +1032,7 @@ case "$1" in
 			fi
 			start $WORLD
 		done
-		printf "\n"
+		printf ".\n"
 	;;
 	status|show)
 		# Figure out which worlds to show the status for.
@@ -1067,7 +1067,7 @@ case "$1" in
 				sendCommand $WORLD "save-on"
 			fi
 		done
-		printf "\n"
+		printf ".\n"
 	;;
 	send)
 		# Check for the world command line argument.
@@ -1119,7 +1119,7 @@ case "$1" in
 			printf " $WORLD"
 			rotateLog $WORLD
 		done
-		printf "\n"
+		printf ".\n"
 	;;
 	backup)
 		# Figure out which worlds to backup.
@@ -1140,10 +1140,9 @@ case "$1" in
 				worldBackup $WORLD
 			fi
 		done
-		printf "\n"
+		printf ".\n"
 	;;
 	update)
-		printf "Updating the Minecraft Server software...\n"
 		# If the server software is being updated, stop all of
 		# the world servers and backup the worlds.
 		printf "Stopping Minecraft Server:"
@@ -1159,13 +1158,13 @@ case "$1" in
 				stop $WORLD
 			fi
 		done
-		printf "\n"
+		printf ".\n"
 		printf "Backing up Minecraft Server:"
 		for WORLD in $ALL_WORLDS; do
 			printf " $WORLD"
 			worldBackup $WORLD
 		done
-		printf "\n"
+		printf ".\n"
 		printf "Updating software package:"
 		# Update the client software.
 		printf " client"
@@ -1173,13 +1172,13 @@ case "$1" in
 		# Update the server software.
 		printf " server"
 		updateServerSoftware
-		printf "\n"
+		printf ".\n"
 		printf "Starting Minecraft Server:"
 		for WORLD in $ALL_WORLDS; do
 			printf " $WORLD"
 			start $WORLD
 		done
-		printf "\n"
+		printf ".\n"
 	;;
 	map|overviewer)
 		# Make sure that the Minecraft Overviewer software exists.
@@ -1208,7 +1207,7 @@ case "$1" in
 				overviewer $WORLD
 			fi
 		done
-		printf "\n"
+		printf ".\n"
 	;;
 	*)
 		printf "Error, in command line usage.\n"
