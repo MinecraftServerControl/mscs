@@ -730,10 +730,10 @@ start() {
 		printf "Error starting the server.\n"
 		exit 1
 	fi
-	# Grab the Process ID of the world server.
+	# Grab the Process ID of the server's Java instance.
 	PID=$(echo $(getProcessIDs $1) | cut -d ' ' -f2)
 	if [ ! -n "$PID" ]; then
-		printf "Error starting the server, the Process ID was not found.\n"
+		printf "Error starting the server: couldn't retrieve the server's process ID.\n"
 		exit 1
 	fi
 	# Start the log processor.
@@ -813,6 +813,7 @@ worldBackup() {
 # update the Minecraft client software.
 # ---------------------------------------------------------------------------
 updateClientSoftware() {
+	# Make sure the client software directory exists.
 	execute "mkdir -p $CLIENT_LOCATION" $USER_NAME
 	# Backup the old client jar.
 	if [ -e "$CLIENT_LOCATION/$CLIENT_JAR" ]; then
