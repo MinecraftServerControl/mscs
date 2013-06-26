@@ -216,7 +216,7 @@ BACKUP_LOCATION="$LOCATION/backups"
 BACKUP_LOG="$BACKUP_LOCATION/backup.log"
 
 # Length in days that backups survive.
-BACKUP_DURATION=31
+BACKUP_DURATION=15
 
 
 # Server Log Configuration
