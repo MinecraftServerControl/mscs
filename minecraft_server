@@ -358,9 +358,6 @@ displayScreen() {
 		printf "\n"
 		printf "Attempting to load the screen anyway.\n"
 	fi
-	printf "About to load the screen for world $1.\n"
-	printf "To exit the screen, hit Ctrl+A then type the letter d.\n"
-	sleep 5
 	# Connect to the screen of the world server.
 	execute "$SCREEN -x $PID.minecraft-$1" $USER_NAME
 	if [ $? -ne 0 ]; then
@@ -1087,6 +1084,9 @@ case "$1" in
 	screen)
 		# Check for the world command line argument.
 		if [ -n "$2" ] && [ $(listContains $2 "$ALL_WORLDS") -eq 1 ]; then
+			printf "About to load the screen for world $2.\n"
+			printf "To exit the screen, hit Ctrl+A then type the letter d.\n"
+			sleep 5
 			displayScreen $2
 		else
 			if [ -n "$2" ]; then
