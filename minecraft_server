@@ -234,7 +234,9 @@ LOG_COUNT=10
 #
 # IMPORTANT: If using this option, the admin should schedule
 # periodic synchronizations of the mirror image using cron
-# to avoid data loss.
+# to avoid data loss. To do this, add a cron task to call
+# the "sync" option on a VERY regular basis (e.g.,
+# every 5-10 minutes).
 #
 # 0 - Do not use a mirror image, default.
 # 1 - Use a mirror image.
