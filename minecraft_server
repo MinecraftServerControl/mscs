@@ -127,7 +127,7 @@ AUTO_RESTART_ON_ERROR=0
 
 # Default Mojang server distribution.
 SERVER_JAR="minecraft_server.jar"
-SERVER_URL="http://www.minecraft.net/download/minecraft_server.jar"
+SERVER_URL="https://s3.amazonaws.com/Minecraft.Download/versions/1.6.2/minecraft_server.1.6.2.jar"
 SERVER_ARGS="nogui"
 
 # CraftBukkit server distribution.
