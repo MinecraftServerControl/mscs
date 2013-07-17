@@ -454,9 +454,9 @@ getPropertiesValue() {
 		if [ -n "$KEY" ] && [ -n "$VALUE" ]; then
 			echo "$VALUE"
 		elif [ -n "$KEY" ]; then
-			echo "--"
-		else
 			echo ""
+		else
+			echo "--"
 		fi
 	fi
 }
