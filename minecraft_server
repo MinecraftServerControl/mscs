@@ -437,6 +437,21 @@ getWorlds() {
 }
 
 # ---------------------------------------------------------------------------
+# Send the contents of the Message Of The Day (MOTD) to the user.
+#
+# @param 1 The world server of interest.
+# @param 2 The key to get.
+# ---------------------------------------------------------------------------
+getWorldPropertiesValue() {
+	local PROPERTY_FILE
+	PROPERTY_FILE=$WORLDS_LOCATION/$1/server.properties
+	# Make sure the properties file exists
+	if [ -e "$PROPERTY_FILE" ]; then
+		echo $(getPropertiesValue $PROPERTY_FILE "$2")
+	fi
+}
+
+# ---------------------------------------------------------------------------
 # Get the value of a key in a properties file.
 #
 # @param 1 The properties file of interest.
