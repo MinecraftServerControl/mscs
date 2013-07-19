@@ -415,12 +415,18 @@ getIP() {
 # ---------------------------------------------------------------------------
 # Grab the first line of the Message of the Day file as a summary, and strip
 # any color codes from it.
+#
+# @param 1 The world server of interest.
+# @return The global message of the day or the specifued world
 # ---------------------------------------------------------------------------
 getMOTD() {
-	local MOTD_SUMMARY
+	local MOTD_SUMMARY WORLD_MOTD
 	MOTD_SUMMARY=""
-	if [ -e "$MOTD" ]; then
-		MOTD_SUMMARY=$(head -n 1 $MOTD | $PERL -ne '$_ =~ s/§[0-9a-fA-F]//g; print;')
+	WORLD_MOTD="$WORLDS_LOCATION/$1.motd"
+	if [ -e $WORLD_MOTD ]; then
+		MOTD_SUMMARY=$(head -n 1 $WORLD_MOTD | $PERL -ne '$_ =~ s/Â§[0-9a-fA-F]//g; print;')
+	elif [ -e $MOTD ]; then
+		MOTD_SUMMARY=$(head -n 1 $MOTD | $PERL -ne '$_ =~ s/Â§[0-9a-fA-F]//g; print;')
 	fi
 	echo $MOTD_SUMMARY
 }
@@ -518,8 +524,13 @@ libNotify() {
 # @param 2 The user being told the contents of the motd file.
 # ---------------------------------------------------------------------------
 tellMOTD() {
-	local LINE
-	if [ -e "$MOTD" ]; then
+	local LINE WORLD_MOTD
+	WORLD_MOTD="$WORLDS_LOCATION/$1.motd"
+	if [ -e $WORLD_MOTD ]; then
+		while read LINE; do
+			sendCommand $1 "tell $2 $LINE"
+		done < $WORLD_MOTD
+	elif [ -e $MOTD ]; then
 		while read LINE; do
 			sendCommand $1 "tell $2 $LINE"
 		done < $MOTD
