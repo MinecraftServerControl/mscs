@@ -671,10 +671,6 @@ parseLog() {
 rotateLog() {
   local WORLD_DIR LOG_LIST LOG_LINES LOG_NUMBER
   WORLD_DIR="$WORLDS_LOCATION/$1"
-  # Use the mirror copy of the world directory if enabled.
-  if [ $ENABLE_MIRROR -eq 1 ] && [ -d $MIRROR_PATH ]; then
-    WORLD_DIR="$MIRROR_PATH/$1"
-  fi
   # Make sure that the server.log file exists.
   execute "touch $WORLD_DIR/server.log" $USER_NAME
   # Scan the log for entires and skip rotate is none are found.
@@ -716,10 +712,6 @@ rotateLog() {
 watchLog() {
   local PID WORLD_DIR
   WORLD_DIR="$WORLDS_LOCATION/$1"
-  # Use the mirror copy of the world directory if enabled.
-  if [ $ENABLE_MIRROR -eq 1 ] && [ -d $MIRROR_PATH ]; then
-    WORLD_DIR="$MIRROR_PATH/$1"
-  fi
   # Make sure that the server.log file exists.
   if [ -e "$WORLD_DIR/server.log" ]; then
     # Watch the log.
@@ -735,7 +727,7 @@ watchLog() {
 # ---------------------------------------------------------------------------
 syncMirrorImage() {
   # Sync the world server.
-  execute "$RSYNC -rt $MIRROR_PATH/$1/* $WORLDS_LOCATION/$1" $USER_NAME
+  execute "cp -Ru $WORLDS_LOCATION/$1/$1/* $WORLDS_LOCATION/$1/$1-original" $USER_NAME
   if [ $? -ne 0 ]; then
     printf "Error synchronizing mirror images for world $1.\n"
     exit 1
@@ -759,13 +751,26 @@ start() {
   setPropertiesValue $WORLDS_LOCATION/$1/server.properties "server-ip"   "$(getIP $1)"
   setPropertiesValue $WORLDS_LOCATION/$1/server.properties "motd"        "$(getMOTD)"
   # Make a mirror image of the world directory if requested.
-  if [ $ENABLE_MIRROR -eq 1 ] && [ -d $MIRROR_PATH ]; then
+  if [ $ENABLE_MIRROR -eq 1 ]; then
     execute "mkdir -p $MIRROR_PATH/$1" $USER_NAME
-    execute "cp -R $WORLDS_LOCATION/$1/* $MIRROR_PATH/$1" $USER_NAME
-    WORLD_DIR="$MIRROR_PATH/$1"
-  elif [ $ENABLE_MIRROR -eq 1 ]; then
-    printf "Error copying the world data to the mirror location, path not found.\n"
-    exit 1
+    if [ $? -ne 0 ]; then
+      printf "Error copying world data, path %s not found.\n" $MIRROR_PATH/$1
+      exit 1
+    fi
+    # Check for a clean dismount from the previous server run.  If we have a
+    # <world>-original directory within <world> we didn't stop cleanly.
+    if [ -d "WORLDS_LOCATION/$1/$1-original" ]; then
+      # Remove the symlink to the world-file mirror image.
+      execute "rm -r $WORLDS_LOCATION/$1/$1" $USER_NAME
+      # Move the world files back to their original path name.
+      execute "mv $WORLDS_LOCATION/$1/$1-original $WORLDS_LOCATION/$1/$1" $USER_NAME
+    fi
+    # Copy the world files over to the mirror.
+    execute "cp -R $WORLDS_LOCATION/$1/$1/* $MIRROR_PATH/$1" $USER_NAME
+    # Rename the original world file directory.
+    execute "mv $WORLDS_LOCATION/$1/$1 $WORLDS_LOCATION/$1/$1-original" $USER_NAME
+    # Create a symlink from the world file directory's original name to the mirrored files.
+    execute "ln -s $MIRROR_PATH/$1 $WORLDS_LOCATION/$1/$1" $USER_NAME
   fi
   # Change to the world's directory.
   cd $WORLD_DIR
@@ -815,6 +820,10 @@ stop() {
   # required.
   if [ $ENABLE_MIRROR -eq 1 ] && [ -d $MIRROR_PATH ]; then
     syncMirrorImage $1
+    # Remove the symlink to the world-file mirror image.
+    execute "rm -r $WORLDS_LOCATION/$1/$1" $USER_NAME
+    # Move the world files back to their original path name.
+    execute "mv $WORLDS_LOCATION/$1/$1-original $WORLDS_LOCATION/$1/$1" $USER_NAME
   fi
   # Remove the lock file on Redhat and derivatives if all world servers
   # are stopped.
