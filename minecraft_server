@@ -155,7 +155,7 @@ SERVER_COMMAND="$JAVA -Xms$INITIAL_MEMORY -Xmx$MAXIMUM_MEMORY -jar $SERVER_LOCAT
 # Used by Minecraft Overviewer mapping software.
 
 CLIENT_JAR="minecraft.jar"
-CLIENT_URL="https://s3.amazonaws.com/MinecraftDownload/minecraft.jar"
+CLIENT_URL="https://s3.amazonaws.com/Minecraft.Download/versions/$MCVERSION/$MCVERSION.jar"
 CLIENT_LOCATION="$LOCATION/.minecraft/bin"
 
 
