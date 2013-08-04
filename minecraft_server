@@ -121,13 +121,21 @@ RDIFF_BACKUP=$(which rdiff-backup)
 AUTO_RESTART_ON_ERROR=0
 
 
+# Mojang Versions information
+# ---------------------------------------------------------------------------
+# Detect the latest version.
+
+MCVERSIONS_URL="https://s3.amazonaws.com/Minecraft.Download/versions/versions.json"
+MCVERSION=$(wget -q -O - $MCVERSIONS_URL | $PERL -ne 'if ($_ =~ /^\s+\"release\": \"([0-9\.]+)\"/) { print $1; }')
+
+
 # Minecraft Server Settings
 # ---------------------------------------------------------------------------
 # Choose only one server distribution, leave the other commented out.
 
 # Default Mojang server distribution.
 SERVER_JAR="minecraft_server.jar"
-SERVER_URL="https://s3.amazonaws.com/Minecraft.Download/versions/1.6.2/minecraft_server.1.6.2.jar"
+SERVER_URL="https://s3.amazonaws.com/Minecraft.Download/versions/$MCVERSION/minecraft_server.$MCVERSION.jar"
 SERVER_ARGS="nogui"
 
 # CraftBukkit server distribution.
