@@ -114,12 +114,6 @@ RDIFF_BACKUP=$(which rdiff-backup)
 # Global Server Configuration
 # ---------------------------------------------------------------------------
 
-# Automatically restart the Minecraft server when a SEVERE error is caught.
-#
-# 0 - Do not automatically restart when a SEVERE error is caught.
-# 1 - Automatically restart the server on a SEVERE error.
-AUTO_RESTART_ON_ERROR=0
-
 
 # Mojang Versions information
 # ---------------------------------------------------------------------------
