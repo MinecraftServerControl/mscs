@@ -432,9 +432,9 @@ getMOTD() {
   MOTD_SUMMARY=""
   WORLD_MOTD="$WORLDS_LOCATION/$1.motd"
   if [ -e $WORLD_MOTD ]; then
-    MOTD_SUMMARY=$(head -n 1 $WORLD_MOTD | $PERL -ne '$_ =~ s/Â§[0-9a-fA-F]//g; print;')
+    MOTD_SUMMARY=$(head -n 1 $WORLD_MOTD | $PERL -ne '$_ =~ s/§[0-9a-fA-F]//g; print;')
   elif [ -e $MOTD ]; then
-    MOTD_SUMMARY=$(head -n 1 $MOTD | $PERL -ne '$_ =~ s/Â§[0-9a-fA-F]//g; print;')
+    MOTD_SUMMARY=$(head -n 1 $MOTD | $PERL -ne '$_ =~ s/§[0-9a-fA-F]//g; print;')
   fi
   echo $MOTD_SUMMARY
 }
