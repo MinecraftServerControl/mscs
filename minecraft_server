@@ -877,7 +877,7 @@ querySendPacket() {
   PACKET=$(printf "FEFD%s%s%s0D0A" "$2" "$3" "$4")
   # Send the packet to the query server and wait for a response.
   RETRY=0
-  while [ -z "$RESPONSE" -a $RETRY -lt 10 ]; do
+  while [ -z "$RESPONSE" -a $RETRY -lt 5 ]; do
     # Increment the retry counter.
     RETRY=$(($RETRY+1))
     # Pack the hex string packet and write it to the query.dat buffer file.
