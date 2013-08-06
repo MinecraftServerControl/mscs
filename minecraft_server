@@ -912,15 +912,15 @@ querySendPacket() {
 # @return <type>\t<id>\t<token>
 # ---------------------------------------------------------------------------
 querySendChallengePacket() {
-  local ID PACKET TOKEN
+  local ID PACKET RESPONSE
   # The packet identifier.
   ID="00000001"
   # Use an empty packet.
   PACKET="00000000"
   # Send the challenge packet to the Minecraft query server.
-  TOKEN=$(querySendPacket "$1" "09" "$ID" "$PACKET" "Cl>Z*")
-  # Return the challenge token.
-  printf "$TOKEN\n"
+  RESPONSE=$(querySendPacket "$1" "09" "$ID" "$PACKET" "Cl>Z*")
+  # Return the response.
+  printf "$RESPONSE\n"
 }
 
 # ---------------------------------------------------------------------------
