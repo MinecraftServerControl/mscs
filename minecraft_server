@@ -1083,11 +1083,14 @@ case "$1" in
       # Try to stop the world cleanly.
       if [ $(serverRunning $WORLD) -eq 1 ]; then
         printf " $WORLD"
-        sendCommand $WORLD "say The server is about to go down."
+        if [ $(queryStatus $WORLD | cut -f6) -gt 0 ]; then
+          sendCommand $WORLD "say The server admin has initiated a server shut down."
+          sendCommand $WORLD "say The server will shut down in 1 minute..."
+          sleep 60
+          sendCommand $WORLD "say The server is now shutting down."
+        fi
         sendCommand $WORLD "save-all"
         sendCommand $WORLD "save-off"
-        sendCommand $WORLD "say The server is going down in 5 seconds..."
-        sleep 5
         if [ "$1" = "force-stop" ]; then
           forceStop $WORLD
         else
@@ -1107,11 +1110,14 @@ case "$1" in
     for WORLD in $WORLDS; do
       printf " $WORLD"
       if [ $(serverRunning $WORLD) -eq 1 ]; then
-        sendCommand $WORLD "say The server is about to restart."
+        if [ $(queryStatus $WORLD | cut -f6) -gt 0 ]; then
+          sendCommand $WORLD "say The server admin has initiated a server reboot."
+          sendCommand $WORLD "say The server will restart in 1 minute..."
+          sleep 60
+          sendCommand $WORLD "say The server is now restarting."
+        fi
         sendCommand $WORLD "save-all"
         sendCommand $WORLD "save-off"
-        sendCommand $WORLD "say Restarting in 5 seconds..."
-        sleep 5
         if [ "$(echo \"$1\" | cut -d '-' -f1)" = "force" ]; then
           forceStop $WORLD
         else
@@ -1235,12 +1241,14 @@ case "$1" in
     for WORLD in $ALL_WORLDS; do
       if [ $(serverRunning $WORLD) -eq 1 ]; then
         printf " $WORLD"
-        sendCommand $WORLD "say The server software is being updated."
-        sendCommand $WORLD "say Server restart is imminent."
+        if [ $(queryStatus $WORLD | cut -f6) -gt 0 ]; then
+          sendCommand $WORLD "say The server admin has initiated a software update."
+          sendCommand $WORLD "say The server will restart and update in 1 minute..."
+          sleep 60
+          sendCommand $WORLD "say The server is now restarting."
+        fi
         sendCommand $WORLD "save-all"
         sendCommand $WORLD "save-off"
-        sendCommand $WORLD "say Restarting in 5 seconds."
-        sleep 5
         stop $WORLD
       fi
     done
