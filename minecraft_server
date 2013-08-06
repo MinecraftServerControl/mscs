@@ -966,7 +966,7 @@ worldStatus() {
   local STATUS
   if [ $(serverRunning $1) -eq 1 ]; then
     STATUS=$(queryStatus $1)
-    printf "running (%s of %s users online).\n" $(echo "$STATUS" | cut -f6) $(echo "$STATUS" | cut -f7)
+    printf "running (%d of %d users online).\n" $(echo "$STATUS" | cut -f6) $(echo "$STATUS" | cut -f7)
     printf "    Process IDs: Screen %d, Java %d.\n" $(getProcessIDs $1)
   else
     printf "not running.\n"
