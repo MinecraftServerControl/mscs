@@ -1111,7 +1111,7 @@ case "$1" in
       printf " $WORLD"
       if [ $(serverRunning $WORLD) -eq 1 ]; then
         if [ $(queryStatus $WORLD | cut -f6) -gt 0 ]; then
-          sendCommand $WORLD "say The server admin has initiated a server reboot."
+          sendCommand $WORLD "say The server admin has initiated a server restart."
           sendCommand $WORLD "say The server will restart in 1 minute..."
           sleep 60
           sendCommand $WORLD "say The server is now restarting."
