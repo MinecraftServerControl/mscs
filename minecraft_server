@@ -867,8 +867,8 @@ querySendPacket() {
   local PACKET RESPONSE WORLD_DIR RETRY
   # The world's directory.
   WORLD_DIR="$WORLDS_LOCATION/$1"
-  # Add the magic bytes and CR+LF to the incoming packet.
-  PACKET=$(printf "FEFD%s%s%s0D0A" "$2" "$3" "$4")
+  # Add the magic bytes to the incoming packet.
+  PACKET=$(printf "FEFD%s%s%s" "$2" "$3" "$4")
   # Send the packet to the query server and wait for a response.
   RETRY=0
   while [ -z "$RESPONSE" -a $RETRY -lt 5 ]; do
