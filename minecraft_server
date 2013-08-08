@@ -937,6 +937,26 @@ querySendInformationPacket() {
 }
 
 # ---------------------------------------------------------------------------
+# Send a detailed information request packet to the Minecraft query server.
+#
+# @param 1 The world server of interest.
+# @param 2 The challenge token.
+# @return <type>\t<id>\t
+# ---------------------------------------------------------------------------
+querySendDetailedInformationPacket() {
+  local ID PACKET RESPONSE
+  # The packet identifier.
+  ID="00000001"
+  # Use the challenge token for the packet, with the ID on the end.
+  PACKET=$(printf "%.8x%s" $2 $ID)
+  # Send the information request packet to the Minecraft query server.
+  RESPONSE=$(querySendPacket "$1" "00" "$ID" "$PACKET" \
+    "Cl>Z*CCZ*Z*Z*Z*Z*Z*Z*Z*Z*Z*Z*Z*Z*Z*Z*Z*Z*Z*Z*Z*CCZ*C(Z*)*")
+  # Return the response.
+  printf "$RESPONSE\n"
+}
+
+# ---------------------------------------------------------------------------
 # Send a status query to the Minecraft query server.
 #
 # @param 1 The world server of interest.
@@ -947,6 +967,21 @@ queryStatus() {
   TOKEN=$(querySendChallengePacket $1 | cut -f 3)
   # Send an information request packet to the Minecraft query server.
   RESPONSE=$(querySendInformationPacket $1 $TOKEN)
+  # Return the response.
+  printf "$RESPONSE\n"
+}
+
+# ---------------------------------------------------------------------------
+# Send a detailed status query to the Minecraft query server.
+#
+# @param 1 The world server of interest.
+# ---------------------------------------------------------------------------
+queryDetailedStatus() {
+  local TOKEN RESPONSE
+  # Send a challenge packet to the Minecraft query server.
+  TOKEN=$(querySendChallengePacket $1 | cut -f 3)
+  # Send an information request packet to the Minecraft query server.
+  RESPONSE=$(querySendDetailedInformationPacket $1 $TOKEN)
   # Return the response.
   printf "$RESPONSE\n"
 }
