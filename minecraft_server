@@ -861,7 +861,7 @@ overviewer() {
 # @param 3 The packet ID.
 # @param 4 The packet payload.
 # @param 5 The response format.
-# @return The response.
+# @return The response from the Query server in the requested format.
 # ---------------------------------------------------------------------------
 querySendPacket() {
   local PACKET RESPONSE WORLD_DIR RETRY
@@ -903,7 +903,10 @@ querySendPacket() {
 # Send a challenge packet to the Minecraft query server.
 #
 # @param 1 The world server of interest.
-# @return <type>\t<id>\t<token>
+# @return Tab separated values:
+#           type       - The packet type.
+#           id         - The packet identifier.
+#           token      - The token.
 # ---------------------------------------------------------------------------
 querySendChallengePacket() {
   local ID PACKET RESPONSE
@@ -922,7 +925,16 @@ querySendChallengePacket() {
 #
 # @param 1 The world server of interest.
 # @param 2 The challenge token.
-# @return <type>\t<id>\t<MOTD>\t<gametype>\t<map>\t<numplayers>\t<maxplayers>\t<hostport>\t<hostip>
+# @return Tab separated values:
+#           type       - The packet type.
+#           id         - The packet identifier.
+#           MOTD       - The world's message of the day.
+#           gametype   - The world's game type, hardcoded to 'SMP'.
+#           map        - The world's name.
+#           numplayers - The world's current number of players.
+#           maxplayers - The world's maximum number of players.
+#           hostport   - The world's host port.
+#           hostip     - The world's host IP address.
 # ---------------------------------------------------------------------------
 querySendInformationPacket() {
   local ID PACKET RESPONSE
@@ -941,7 +953,37 @@ querySendInformationPacket() {
 #
 # @param 1 The world server of interest.
 # @param 2 The challenge token.
-# @return <type>\t<id>\t
+# @return Tab separated values:
+#           type       - The packet type.
+#           id         - The packet identifier.
+#           *          - The string 'splitnum'.
+#           *          - The value 128.
+#           *          - The value 0.
+#           *          - The string 'hostname'.
+#           MOTD       - The world's message of the day.
+#           *          - The string 'gametype'.
+#           gametype   - The world's game type, hardcoded to 'SMP'.
+#           *          - The string 'game_id'.
+#           gameid     - The world's game ID, hardcoded to 'MINECRAFT'.
+#           *          - The string 'version'.
+#           version    - The world's Minecraft version.
+#           *          - The string 'plugins'.
+#           plugins    - The world's plugins.
+#           *          - The string 'map'.
+#           map        - The world's name.
+#           *          - The string 'numplayers'.
+#           numplayers - The world's current number of players.
+#           *          - The string 'maxplayers'.
+#           maxplayers - The world's maximum number of players.
+#           *          - The string 'hostport'.
+#           hostport   - The world's host port.
+#           *          - The string 'hostip'.
+#           hostip     - The world's host IP address.
+#           *          - The value 0.
+#           *          - The value 1.
+#           *          - The string 'player_'.
+#           *          - The value 0.
+#           players    - The players currently logged onto the world.
 # ---------------------------------------------------------------------------
 querySendDetailedInformationPacket() {
   local ID PACKET RESPONSE
@@ -960,6 +1002,16 @@ querySendDetailedInformationPacket() {
 # Send a status query to the Minecraft query server.
 #
 # @param 1 The world server of interest.
+# @return Tab separated values:
+#           type       - The packet type.
+#           id         - The packet identifier.
+#           MOTD       - The world's message of the day.
+#           gametype   - The world's game type.
+#           map        - The name of the world.
+#           numplayers - The current number of players.
+#           maxplayers - The maximum number of players.
+#           hostport   - The host's port
+#           hostip     - The host's IP address.
 # ---------------------------------------------------------------------------
 queryStatus() {
   local TOKEN RESPONSE
@@ -975,6 +1027,37 @@ queryStatus() {
 # Send a detailed status query to the Minecraft query server.
 #
 # @param 1 The world server of interest.
+# @return Tab separated values:
+#           type       - The packet type.
+#           id         - The packet identifier.
+#           *          - The string 'splitnum'.
+#           *          - The value 128.
+#           *          - The value 0.
+#           *          - The string 'hostname'.
+#           MOTD       - The world's message of the day.
+#           *          - The string 'gametype'.
+#           gametype   - The world's game type, hardcoded to 'SMP'.
+#           *          - The string 'game_id'.
+#           gameid     - The world's game ID, hardcoded to 'MINECRAFT'.
+#           *          - The string 'version'.
+#           version    - The world's Minecraft version.
+#           *          - The string 'plugins'.
+#           plugins    - The world's plugins.
+#           *          - The string 'map'.
+#           map        - The world's name.
+#           *          - The string 'numplayers'.
+#           numplayers - The world's current number of players.
+#           *          - The string 'maxplayers'.
+#           maxplayers - The world's maximum number of players.
+#           *          - The string 'hostport'.
+#           hostport   - The world's host port.
+#           *          - The string 'hostip'.
+#           hostip     - The world's host IP address.
+#           *          - The value 0.
+#           *          - The value 1.
+#           *          - The string 'player_'.
+#           *          - The value 0.
+#           players    - The players currently logged onto the world.
 # ---------------------------------------------------------------------------
 queryDetailedStatus() {
   local TOKEN RESPONSE
