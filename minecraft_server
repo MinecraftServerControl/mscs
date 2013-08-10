@@ -1095,7 +1095,7 @@ worldStatus() {
 if [ ! -e "$JAVA" ]; then
   printf "ERROR: Java not found!\n"
   printf "Try installing this with:\n"
-  printf "sudo apt-get install openjdk-6-jdk"
+  printf "sudo apt-get install default-jre"
   exit 1
 fi
 if [ ! -e "$PERL" ]; then
