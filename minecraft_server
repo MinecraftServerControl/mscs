@@ -114,12 +114,6 @@ RDIFF_BACKUP=$(which rdiff-backup)
 # Global Server Configuration
 # ---------------------------------------------------------------------------
 
-# Automatically restart the Minecraft server when a SEVERE error is caught.
-#
-# 0 - Do not automatically restart when a SEVERE error is caught.
-# 1 - Automatically restart the server on a SEVERE error.
-AUTO_RESTART_ON_ERROR=0
-
 
 # Mojang Versions information
 # ---------------------------------------------------------------------------
@@ -583,95 +577,6 @@ checkOptionalArgument() {
 }
 
 # ---------------------------------------------------------------------------
-# Check for users logging into a world.  If a user logs in, perform
-# login functions.
-#
-# @param 1 The world server of interest.
-# @param 2 The message to check for users logging in.
-# ---------------------------------------------------------------------------
-checkForLogin() {
-  local LOGIN PLAYER_NAME
-  LOGIN=$(echo "$2" | $PERL -ne 'if ($_ =~ /(\w+)\s*\[\/([0-9\.]+)\:(\d+)\] logged in with entity id (\d+)/) { print "$1\t$2\t$3\t$4"; }')
-  if [ -n "$LOGIN" ]; then
-    PLAYER_NAME=$(printf "$LOGIN" | cut -f1)
-    # Add the user to the world.users file.
-    execute "printf \"$LOGIN\n\" >> \"$WORLDS_LOCATION/$1.users\"" $USER_NAME
-    # Announce the user logging in via lib-notify.
-    if [ $USE_LIBNOTIFY ]; then
-      libNotify "Minecraft - $1" "$PLAYER_NAME has logged into world."
-    fi
-    # Whisper the MOTD to the user logging in.
-    tellMOTD $1 $PLAYER_NAME
-  fi
-}
-
-# ---------------------------------------------------------------------------
-# Check for users logging out of a world.  If a user logs out, perform the
-# logout functions.
-#
-# @param 1 The world server of interest.
-# @param 2 The message to check for users logging out.
-# ---------------------------------------------------------------------------
-checkForLogout() {
-  local LOGOUT BAN PLAYER_NAME
-  LOGOUT=$(echo "$2" | $PERL -ne 'if ($_ =~ /(\w+) lost connection\: (.+)/) { print "$1\t$2"; }')
-  BAN=$(echo "$2" | $PERL -ne 'if ($_ =~ /Disconnecting (\w+)\s*\[\/([0-9\.\:]+)\]\: You are banned/) { print "$1\t$2"; }')
-  if [ -n "$LOGOUT" ]; then
-    PLAYER_NAME=$(printf "$LOGOUT" | cut -f1)
-    # Remove the user from the world.users file.
-    execute "$PERL -i -ne 'print unless /^$PLAYER_NAME\t[0-9\.]+\t\d+\d+/;' $WORLDS_LOCATION/$1.users" $USER_NAME
-    # Announce the user logging out via lib-notify.
-    if [ $USE_LIBNOTIFY ]; then
-      libNotify "Minecraft - $1" "$PLAYER_NAME has logged out of world."
-    fi
-  elif [ -n "$BAN" ]; then
-    PLAYER_NAME=$(printf "$BAN" | cut -f1)
-    # Remove the user from the world.users file.
-    execute "$PERL -i -ne 'print unless /^$PLAYER_NAME\t[0-9\.]+\t\d+\d+/;' $WORLDS_LOCATION/$1.users" $USER_NAME
-    # Announce the user ban via lib-notify.
-    if [ $USE_LIBNOTIFY ]; then
-      libNotify "Minecraft - $1" "$PLAYER_NAME has been banned from the world."
-    fi
-  fi
-}
-
-# ---------------------------------------------------------------------------
-# Parse through the log file for the given world.  Uses checkFor methods to
-# find events such as users logging in or out.
-#
-# @param 1 The world server generating the log to parse.
-# ---------------------------------------------------------------------------
-parseLog() {
-  local LINE DATE TIME TYPE MESSAGE
-  while read LINE; do
-    LINE=$(echo "$LINE" | $PERL -ne 'if ($_ =~ /(.+) (.+) \[(\w+)\] (.+)/) { print "$1\t$2\t$3\t$4"; }')
-    DATE=$(echo "$LINE" | cut -f1)
-    TIME=$(echo "$LINE" | cut -f2)
-    TYPE=$(echo "$LINE" | cut -f3)
-    MESSAGE=$(echo "$LINE" | cut -f4)
-    case "$TYPE" in
-      INFO)
-        checkForLogin $1 "$MESSAGE"
-        checkForLogout $1 "$MESSAGE"
-      ;;
-      SEVERE)
-        if [ $AUTO_RESTART_ON_ERROR -eq 1 ]; then
-          sendCommand $1 "say The server is experiencing issues, restarting in 5 seconds..."
-          sleep 5
-          stop $1
-          sleep 5
-          start $1
-        fi
-      ;;
-      WARNING)
-      ;;
-      *)
-      ;;
-    esac
-  done
-}
-
-# ---------------------------------------------------------------------------
 # Rotates the world server log file.
 #
 # @param 1 The world server generating the log to rotate.
@@ -743,8 +648,8 @@ syncMirrorImage() {
 }
 
 # ---------------------------------------------------------------------------
-# Start the world server and the log processor.  Generate the appropriate
-# environment for the server if it doesn't already exist.
+# Start the world server.  Generate the appropriate environment for the
+# server if it doesn't already exist.
 #
 # @param 1 The world server to start.
 # ---------------------------------------------------------------------------
@@ -782,11 +687,6 @@ start() {
   fi
   # Change to the world's directory.
   cd $WORLD_DIR
-  # Make sure that the server.log file exists.
-  execute "touch server.log" $USER_NAME
-  # Erase the world's users file before starting up the world, in
-  # case it is not already empty for some reason.
-  execute "printf \"\" > \"$WORLDS_LOCATION/$1.users\"" $USER_NAME
   # Start the server.
   execute "$SCREEN -dmS minecraft-$1 $SERVER_COMMAND" $USER_NAME
   if [ $? -ne 0 ]; then
@@ -805,8 +705,12 @@ start() {
     printf "Error starting the server: couldn't retrieve the server's process ID.\n"
     exit 1
   fi
-  # Start the log processor.
-  tail -n0 -f --pid=$PID $WORLD_DIR/server.log | parseLog $1 &
+  # Start a tail process to watch for changes to the query.dat file to pipe to
+  # the Minecraft query server via netcat.  The response from the query
+  # server is piped into the response.dat file.
+  execute "printf '' > $WORLD_DIR/query.dat" $USER_NAME
+  execute "printf '' > $WORLD_DIR/response.dat" $USER_NAME
+  execute "tail -f --pid=$PID $WORLD_DIR/query.dat | nc -q 1 -u 127.0.0.1 $(getPort $1) > $WORLD_DIR/response.dat &" $USER_NAME
   # Create a lock file on RedHat and derivatives.
   if [ -d "/var/lock/subsys" ]; then
     touch /var/lock/subsys/minecraft_server
@@ -821,9 +725,6 @@ start() {
 stop() {
   local WORLD NUM
   sendCommand $1 "stop"
-  # Erase the world's users file since we won't be able to catch
-  # anyone logging off.
-  execute "printf \"\" > \"$WORLDS_LOCATION/$1.users\"" $USER_NAME
   # Synchronize the mirror image of the world prior to closing, if
   # required.
   if [ $ENABLE_MIRROR -eq 1 ] && [ -d $MIRROR_PATH ]; then
@@ -951,6 +852,238 @@ overviewer() {
   fi
 }
 
+# ---------------------------------------------------------------------------
+# Pack a hex string into a buffer file that is piped to the Minecraft query
+# server.
+#
+# @param 1 The world server of interest.
+# @param 2 The packet type.
+# @param 3 The packet ID.
+# @param 4 The packet payload.
+# @param 5 The response format.
+# @return The response from the Query server in the requested format.
+# ---------------------------------------------------------------------------
+querySendPacket() {
+  local PACKET RESPONSE WORLD_DIR RETRY
+  # The world's directory.
+  WORLD_DIR="$WORLDS_LOCATION/$1"
+  # Add the magic bytes to the incoming packet.
+  PACKET=$(printf "FEFD%s%s%s" "$2" "$3" "$4")
+  # Send the packet to the query server and wait for a response.
+  RETRY=0
+  while [ -z "$RESPONSE" -a $RETRY -lt 5 ]; do
+    # Increment the retry counter.
+    RETRY=$(($RETRY+1))
+    # Pack the hex string packet and write it to the query.dat buffer file.
+    execute "$PERL -e '
+      print map { pack (\"C\", hex($_)) } (\"'$PACKET'\" =~ /(..)/g);
+    ' >> $WORLD_DIR/query.dat" $USER_NAME
+    # Give the query server a moment to respond. Sleep longer if the retry
+    # count is high.
+    sleep $RETRY
+    # Unpack the token from the response.dat buffer file.  There are a
+    # variable amount of null bytes at the start of the response string, so
+    # find the start of the packet by searching for the packet type and ID.
+    RESPONSE=$($PERL -ne '
+      $hex .= sprintf "%.2x", $_ foreach (unpack "C*", $_);
+      $hex =~ s/^0*'$2$3'/'$2$3'/;
+      print $hex;
+    ' $WORLD_DIR/response.dat)
+  done
+  # Remove the response from the response.dat buffer file.
+  execute "printf '' > $WORLD_DIR/response.dat" $USER_NAME
+  # Return the response in the format requested.
+  $PERL -e '
+    $packed = join "", map { pack ("C", hex($_)) } ("'$RESPONSE'" =~ /(..)/g);
+    printf "%s\n", join "\t", unpack ("'$5'", $packed);
+  '
+}
+
+# ---------------------------------------------------------------------------
+# Send a challenge packet to the Minecraft query server.
+#
+# @param 1 The world server of interest.
+# @return Tab separated values:
+#           type       - The packet type.
+#           id         - The packet identifier.
+#           token      - The token.
+# ---------------------------------------------------------------------------
+querySendChallengePacket() {
+  local ID PACKET RESPONSE
+  # The packet identifier.
+  ID="00000001"
+  # Use an empty packet.
+  PACKET="00000000"
+  # Send the challenge packet to the Minecraft query server.
+  RESPONSE=$(querySendPacket "$1" "09" "$ID" "$PACKET" "Cl>Z*")
+  # Return the response.
+  printf "$RESPONSE\n"
+}
+
+# ---------------------------------------------------------------------------
+# Send an information request packet to the Minecraft query server.
+#
+# @param 1 The world server of interest.
+# @param 2 The challenge token.
+# @return Tab separated values:
+#           type       - The packet type.
+#           id         - The packet identifier.
+#           MOTD       - The world's message of the day.
+#           gametype   - The world's game type, hardcoded to 'SMP'.
+#           map        - The world's name.
+#           numplayers - The world's current number of players.
+#           maxplayers - The world's maximum number of players.
+#           hostport   - The world's host port.
+#           hostip     - The world's host IP address.
+# ---------------------------------------------------------------------------
+querySendInformationPacket() {
+  local ID PACKET RESPONSE
+  # The packet identifier.
+  ID="00000001"
+  # Use the challenge token for the packet.
+  PACKET=$(printf "%.8x" $2)
+  # Send the information request packet to the Minecraft query server.
+  RESPONSE=$(querySendPacket "$1" "00" "$ID" "$PACKET" "Cl>Z*Z*Z*Z*Z*s<Z*")
+  # Return the response.
+  printf "$RESPONSE\n"
+}
+
+# ---------------------------------------------------------------------------
+# Send a detailed information request packet to the Minecraft query server.
+#
+# @param 1 The world server of interest.
+# @param 2 The challenge token.
+# @return Tab separated values:
+#           type       - The packet type.
+#           id         - The packet identifier.
+#           *          - The string 'splitnum'.
+#           *          - The value 128.
+#           *          - The value 0.
+#           *          - The string 'hostname'.
+#           MOTD       - The world's message of the day.
+#           *          - The string 'gametype'.
+#           gametype   - The world's game type, hardcoded to 'SMP'.
+#           *          - The string 'game_id'.
+#           gameid     - The world's game ID, hardcoded to 'MINECRAFT'.
+#           *          - The string 'version'.
+#           version    - The world's Minecraft version.
+#           *          - The string 'plugins'.
+#           plugins    - The world's plugins.
+#           *          - The string 'map'.
+#           map        - The world's name.
+#           *          - The string 'numplayers'.
+#           numplayers - The world's current number of players.
+#           *          - The string 'maxplayers'.
+#           maxplayers - The world's maximum number of players.
+#           *          - The string 'hostport'.
+#           hostport   - The world's host port.
+#           *          - The string 'hostip'.
+#           hostip     - The world's host IP address.
+#           *          - The value 0.
+#           *          - The value 1.
+#           *          - The string 'player_'.
+#           *          - The value 0.
+#           players    - The players currently logged onto the world.
+# ---------------------------------------------------------------------------
+querySendDetailedInformationPacket() {
+  local ID PACKET RESPONSE
+  # The packet identifier.
+  ID="00000001"
+  # Use the challenge token for the packet, with the ID on the end.
+  PACKET=$(printf "%.8x%s" $2 $ID)
+  # Send the information request packet to the Minecraft query server.
+  RESPONSE=$(querySendPacket "$1" "00" "$ID" "$PACKET" \
+    "Cl>Z*CCZ*Z*Z*Z*Z*Z*Z*Z*Z*Z*Z*Z*Z*Z*Z*Z*Z*Z*Z*Z*CCZ*C(Z*)*")
+  # Return the response.
+  printf "$RESPONSE\n"
+}
+
+# ---------------------------------------------------------------------------
+# Send a status query to the Minecraft query server.
+#
+# @param 1 The world server of interest.
+# @return Tab separated values:
+#           type       - The packet type.
+#           id         - The packet identifier.
+#           MOTD       - The world's message of the day.
+#           gametype   - The world's game type.
+#           map        - The name of the world.
+#           numplayers - The current number of players.
+#           maxplayers - The maximum number of players.
+#           hostport   - The host's port
+#           hostip     - The host's IP address.
+# ---------------------------------------------------------------------------
+queryStatus() {
+  local TOKEN RESPONSE
+  # Send a challenge packet to the Minecraft query server.
+  TOKEN=$(querySendChallengePacket $1 | cut -f 3)
+  # Send an information request packet to the Minecraft query server.
+  RESPONSE=$(querySendInformationPacket $1 $TOKEN)
+  # Return the response.
+  printf "$RESPONSE\n"
+}
+
+# ---------------------------------------------------------------------------
+# Send a detailed status query to the Minecraft query server.
+#
+# @param 1 The world server of interest.
+# @return Tab separated values:
+#           type       - The packet type.
+#           id         - The packet identifier.
+#           *          - The string 'splitnum'.
+#           *          - The value 128.
+#           *          - The value 0.
+#           *          - The string 'hostname'.
+#           MOTD       - The world's message of the day.
+#           *          - The string 'gametype'.
+#           gametype   - The world's game type, hardcoded to 'SMP'.
+#           *          - The string 'game_id'.
+#           gameid     - The world's game ID, hardcoded to 'MINECRAFT'.
+#           *          - The string 'version'.
+#           version    - The world's Minecraft version.
+#           *          - The string 'plugins'.
+#           plugins    - The world's plugins.
+#           *          - The string 'map'.
+#           map        - The world's name.
+#           *          - The string 'numplayers'.
+#           numplayers - The world's current number of players.
+#           *          - The string 'maxplayers'.
+#           maxplayers - The world's maximum number of players.
+#           *          - The string 'hostport'.
+#           hostport   - The world's host port.
+#           *          - The string 'hostip'.
+#           hostip     - The world's host IP address.
+#           *          - The value 0.
+#           *          - The value 1.
+#           *          - The string 'player_'.
+#           *          - The value 0.
+#           players    - The players currently logged onto the world.
+# ---------------------------------------------------------------------------
+queryDetailedStatus() {
+  local TOKEN RESPONSE
+  # Send a challenge packet to the Minecraft query server.
+  TOKEN=$(querySendChallengePacket $1 | cut -f 3)
+  # Send an information request packet to the Minecraft query server.
+  RESPONSE=$(querySendDetailedInformationPacket $1 $TOKEN)
+  # Return the response.
+  printf "$RESPONSE\n"
+}
+
+# ---------------------------------------------------------------------------
+# Display the status of a Minecraft world server.
+#
+# @param 1 The world server of interest.
+# ---------------------------------------------------------------------------
+worldStatus() {
+  local STATUS
+  if [ $(serverRunning $1) -eq 1 ]; then
+    STATUS=$(queryStatus $1)
+    printf "running (%d of %d users online).\n" $(echo "$STATUS" | cut -f6) $(echo "$STATUS" | cut -f7)
+    printf "    Process IDs: Screen %d, Java %d.\n" $(getProcessIDs $1)
+  else
+    printf "not running.\n"
+  fi
+}
 
 # ---------------------------------------------------------------------------
 # Begin.
@@ -1062,11 +1195,14 @@ case "$1" in
       # Try to stop the world cleanly.
       if [ $(serverRunning $WORLD) -eq 1 ]; then
         printf " $WORLD"
-        sendCommand $WORLD "say The server is about to go down."
+        if [ $(queryStatus $WORLD | cut -f6) -gt 0 ]; then
+          sendCommand $WORLD "say The server admin has initiated a server shut down."
+          sendCommand $WORLD "say The server will shut down in 1 minute..."
+          sleep 60
+          sendCommand $WORLD "say The server is now shutting down."
+        fi
         sendCommand $WORLD "save-all"
         sendCommand $WORLD "save-off"
-        sendCommand $WORLD "say The server is going down in 5 seconds..."
-        sleep 5
         if [ "$1" = "force-stop" ]; then
           forceStop $WORLD
         else
@@ -1086,11 +1222,14 @@ case "$1" in
     for WORLD in $WORLDS; do
       printf " $WORLD"
       if [ $(serverRunning $WORLD) -eq 1 ]; then
-        sendCommand $WORLD "say The server is about to restart."
+        if [ $(queryStatus $WORLD | cut -f6) -gt 0 ]; then
+          sendCommand $WORLD "say The server admin has initiated a server restart."
+          sendCommand $WORLD "say The server will restart in 1 minute..."
+          sleep 60
+          sendCommand $WORLD "say The server is now restarting."
+        fi
         sendCommand $WORLD "save-all"
         sendCommand $WORLD "save-off"
-        sendCommand $WORLD "say Restarting in 5 seconds..."
-        sleep 5
         if [ "$(echo \"$1\" | cut -d '-' -f1)" = "force" ]; then
           forceStop $WORLD
         else
@@ -1109,11 +1248,7 @@ case "$1" in
     printf "Minecraft Server Status:\n"
     for WORLD in $WORLDS; do
       printf "  $WORLD: "
-      if [ $(serverRunning $WORLD) -eq 1 ]; then
-        printf "running (%d users online). Screen PID: %d. Java PID: %d.\n" $(cat $WORLDS_LOCATION/$WORLD.users | wc -l) $(getProcessIDs $WORLD)
-      else
-        printf "not running.\n"
-      fi
+      worldStatus $WORLD
     done
   ;;
   sync|synchronize)
@@ -1218,12 +1353,14 @@ case "$1" in
     for WORLD in $ALL_WORLDS; do
       if [ $(serverRunning $WORLD) -eq 1 ]; then
         printf " $WORLD"
-        sendCommand $WORLD "say The server software is being updated."
-        sendCommand $WORLD "say Server restart is imminent."
+        if [ $(queryStatus $WORLD | cut -f6) -gt 0 ]; then
+          sendCommand $WORLD "say The server admin has initiated a software update."
+          sendCommand $WORLD "say The server will restart and update in 1 minute..."
+          sleep 60
+          sendCommand $WORLD "say The server is now restarting."
+        fi
         sendCommand $WORLD "save-all"
         sendCommand $WORLD "save-off"
-        sendCommand $WORLD "say Restarting in 5 seconds."
-        sleep 5
         stop $WORLD
       fi
     done
