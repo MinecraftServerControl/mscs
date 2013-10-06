@@ -159,21 +159,6 @@ CLIENT_LOCATION="$LOCATION/.minecraft/bin"
 # The location to store files for each world server.
 WORLDS_LOCATION="$LOCATION/worlds"
 
-# List of worlds and the ports they are running on.  This file will
-# be generated if missing.
-#
-# Note: The world name should not contain a space.  Leave the ip
-# address blank if not needed.
-#
-#  # Minecraft world configuration file
-#  # <world>  <port>  <ip>
-#  alpha      25565
-#  beta       25566
-#  gamma      25567
-#  delta      25568
-#  epsilon    25569
-WORLDS_CONF="$LOCATION/worlds.conf"
-
 # Default world name, port, and IP address if the worlds.conf file is
 # missing.
 DEFAULT_WORLD="world"
@@ -388,30 +373,6 @@ listContains() {
     fi
   done
   echo $MATCH
-}
-
-# ---------------------------------------------------------------------------
-# Grab the port for the given world.
-#
-# @param 1 The world server of interest.
-# @return The port that the world is configured to use.
-# ---------------------------------------------------------------------------
-getPort() {
-  local PORT
-  PORT=$(execute "cat $WORLDS_CONF" $USER_NAME | $PERL -ne 'if ($_ =~ /^'$1'\s+(\d+)/) { print "$1"; }')
-  echo $PORT
-}
-
-# ---------------------------------------------------------------------------
-# Grab the IP address for the given world.
-#
-# @param 1 The world server of interest.
-# @return The IP address that the world is configured to run on.
-# ---------------------------------------------------------------------------
-getIP() {
-  local IP
-  IP=$(execute "cat $WORLDS_CONF" $USER_NAME | $PERL -ne 'if ($_ =~ /^'$1'\s+\d+\s+([\d\.]+)/) { print "$1"; }')
-  echo $IP
 }
 
 # ---------------------------------------------------------------------------
@@ -1153,13 +1114,6 @@ if [ $(id -u) -ne 0 ] && [ "$(whoami)" != "$USER_NAME" ]; then
   printf "on to this user:\n"
   printf "su $USER_NAME\n"
   exit 1
-fi
-
-# Generate a default worlds.conf file if it does not already exist.
-if [ ! -e "$WORLDS_CONF" ]; then
-  execute "printf \"# Minecraft world configuration file\n\" > $WORLDS_CONF" $USER_NAME
-  execute "printf \"# <world>\t<port>\t<ip>\n\" >> $WORLDS_CONF" $USER_NAME
-  execute "printf \"$DEFAULT_WORLD\t$DEFAULT_PORT\t$DEFAULT_IP\n\" >> $WORLDS_CONF" $USER_NAME
 fi
 
 # Make sure that the server software exists.
