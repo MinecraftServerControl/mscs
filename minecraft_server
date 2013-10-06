@@ -710,7 +710,7 @@ start() {
   # server is piped into the response.dat file.
   execute "printf '' > $WORLD_DIR/query.dat" $USER_NAME
   execute "printf '' > $WORLD_DIR/response.dat" $USER_NAME
-  execute "tail -f --pid=$PID $WORLD_DIR/query.dat | nc -q 1 -u 127.0.0.1 $(getPort $1) > $WORLD_DIR/response.dat &" $USER_NAME
+  execute "tail -f --pid=$PID $WORLD_DIR/query.dat | nc -q 1 -u 127.0.0.1 $(getWorldPropertiesValue $1 'server-port') > $WORLD_DIR/response.dat &" $USER_NAME
   # Create a lock file on RedHat and derivatives.
   if [ -d "/var/lock/subsys" ]; then
     touch /var/lock/subsys/minecraft_server
