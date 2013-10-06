@@ -663,11 +663,6 @@ start() {
   # Make sure that the world's directory exists.
   WORLD_DIR="$WORLDS_LOCATION/$1"
   execute "mkdir -p $WORLD_DIR" $USER_NAME
-  # Make sure that the server.properties file holds the correct values.
-  setPropertiesValue $WORLDS_LOCATION/$1/server.properties "level-name"  "$1"
-  setPropertiesValue $WORLDS_LOCATION/$1/server.properties "server-port" "$(getPort $1)"
-  setPropertiesValue $WORLDS_LOCATION/$1/server.properties "server-ip"   "$(getIP $1)"
-  setPropertiesValue $WORLDS_LOCATION/$1/server.properties "motd"        "$(getMOTD)"
   # Make a mirror image of the world directory if requested.
   if [ $ENABLE_MIRROR -eq 1 ]; then
     execute "mkdir -p $MIRROR_PATH/$1" $USER_NAME
