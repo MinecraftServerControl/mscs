@@ -439,8 +439,13 @@ getMOTD() {
 # @return The list of worlds.
 # ---------------------------------------------------------------------------
 getWorlds() {
-  local WORLDS
-  WORLDS=$(execute "cat $WORLDS_CONF" $USER_NAME | $PERL -ne 'if ($_ =~ /^(\w+)\s+(\d+)/) { print "$1 "; }')
+  local WORLD WORLDS
+  WORLDS=""
+  for WORLD in $(ls $WORLDS_LOCATION); do
+    if [ -f $WORLDS_LOCATION/$WORLD/server.properties ]; then
+      WORLDS="$WORLDS $WORLD"
+    fi
+  done
   echo $WORLDS
 }
 
