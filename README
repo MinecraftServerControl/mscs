@@ -61,23 +61,10 @@ needed.
 
 Multiple Worlds
 -----------------------------
-The script can handle running multiple Minecraft world servers, just add each
-server to the /home/minecraft/worlds.conf file that will be generated on the
-first run.  Do not include the IP address information if it is not needed.
-
-Example worlds.conf file for two worlds named alpha and beta and the ports
-that they run on.  This file will be generated if missing.
-
-Note: The world name should not contain a space.  Leave the ip address blank
-if it is not needed.
-
-# Minecraft world configuration file
-# <world> <port> <ip>
-alpha 25565
-beta 25566
-gamma 25567
-delta 25568
-epsilon 25569
+The script can handle running multiple Minecraft world servers, just add a
+directory for the world to the /home/minecraft/worlds/ directory.  A
+server.properties file must exist in the world directory in order for the
+server to start.
 
 
 Firewall / NAT
