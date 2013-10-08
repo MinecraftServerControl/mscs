@@ -411,7 +411,7 @@ getWorlds() {
 }
 
 # ---------------------------------------------------------------------------
-# Send the contents of the Message Of The Day (MOTD) to the user.
+# Get the value of a key in a world properties file.
 #
 # @param 1 The world server of interest.
 # @param 2 The key to get.
