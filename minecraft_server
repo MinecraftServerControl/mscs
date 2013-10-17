@@ -417,35 +417,17 @@ getWorlds() {
 # @param 2 The key to get.
 # ---------------------------------------------------------------------------
 getWorldPropertiesValue() {
-  local PROPERTY_FILE
+  local PROPERTY_FILE KEY VALUE
   PROPERTY_FILE=$WORLDS_LOCATION/$1/server.properties
   # Make sure the properties file exists
   if [ -e "$PROPERTY_FILE" ]; then
-    echo $(getPropertiesValue $PROPERTY_FILE "$2")
-  fi
-}
-
-# ---------------------------------------------------------------------------
-# Get the value of a key in a properties file.
-#
-# @param 1 The properties file of interest.
-# @param 2 The key to get.
-# @todo: Need a good return value that means key was not found,
-#        because no value when the key exists may be valid
-# ---------------------------------------------------------------------------
-getPropertiesValue() {
-  local KEY VALUE
-  # Make sure that the properties file exists.
-  if [ -e "$1" ]; then
-    # Find the key/value combo if it exists, otherwise ...
+    # Find the key/value combo.
     KEY=$($PERL -ne 'if ($_ =~ /^('$2')=.*$/) { print "$1"; }' $1)
     VALUE=$($PERL -ne 'if ($_ =~ /^'$2'=(.*)$/) { print "$1"; }' $1)
     if [ -n "$KEY" ] && [ -n "$VALUE" ]; then
       echo "$VALUE"
-    elif [ -n "$KEY" ]; then
-      echo ""
     else
-      echo "--"
+      echo ""
     fi
   fi
 }
