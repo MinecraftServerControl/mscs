@@ -421,6 +421,16 @@ disableWorld() {
 }
 
 # ---------------------------------------------------------------------------
+# Enable a world.
+#
+# @param 1 The world server to enable.
+# ---------------------------------------------------------------------------
+enableWorld() {
+  # Enable the world.
+  execute "mv $DISABLED_WORLDS_LOCATION/$1 $WORLDS_LOCATION/$1" $USER_NAME 
+}
+
+# ---------------------------------------------------------------------------
 # Grab the first line of the Message of the Day file as a summary, and strip
 # any color codes from it.
 #
@@ -1278,6 +1288,14 @@ case "$1" in
     fi
     # Disable the world.
     disableWorld "$2"
+  ;;
+  enable)
+    if [ ! -n "$2" ] || [ ! -f "$DISABLED_WORLDS_LOCATION/$2/server.properties" ]; then
+      printf "World not found, unable to enable world '$2'.\n"
+      exit 1
+    fi
+    # Enable the world.
+    enableWorld "$2"
   ;;
   status|show)
     # Figure out which worlds to show the status for.
