@@ -163,6 +163,9 @@ CLIENT_LOCATION="$LOCATION/.minecraft/bin"
 # The location to store files for each world server.
 WORLDS_LOCATION="$LOCATION/worlds"
 
+# The location to store disabled world server files.
+DISABLED_WORLDS_LOCATION="$LOCATION/worlds-disabled"
+
 # Default world name, port, and IP address if the worlds.conf file is
 # missing.
 DEFAULT_WORLD="world"
@@ -405,6 +408,16 @@ createWorld() {
 deleteWorld() {
   # Delete the world directory.
   execute "rm -Rf $WORLDS_LOCATION/$1" $USER_NAME
+}
+
+# ---------------------------------------------------------------------------
+# Disable a world.
+#
+# @param 1 The world server to disable.
+# ---------------------------------------------------------------------------
+disableWorld() {
+  # Disable the world.
+  execute "mv $WORLDS_LOCATION/$1 $DISABLED_WORLDS_LOCATION/$1" $USER_NAME 
 }
 
 # ---------------------------------------------------------------------------
@@ -1243,6 +1256,28 @@ case "$1" in
     fi
     # Delete the world.
     deleteWorld "$2"
+  ;;
+  disable)
+    if [ ! -n "$2" ] && [ $(listContains "$2" "$ALL_WORLDS") -eq 1 ]; then
+      printf "World not found, unable to disable world '$2'.\n"
+      exit 1
+    fi
+    printf "Disabling Minecraft world $2\n"
+    if [ $(serverRunning "$2") -eq 1 ]; then
+      # If the world server has users logged in, announce that the world is
+      # being disabled.
+      if [ $(queryStatus "$2" | cut -f6) -gt 0 ]; then
+        sendCommand "$2" "say The server admin is disabling this world."
+        sendCommand "$2" "say The server will be disabled in 1 minute..."
+        sleep 60
+        sendCommand "$2" "say The server is now shutting down."
+      fi
+      # Stop the world server.
+      stop "$2"
+      sleep 5
+    fi
+    # Disable the world.
+    disableWorld "$2"
   ;;
   status|show)
     # Figure out which worlds to show the status for.
