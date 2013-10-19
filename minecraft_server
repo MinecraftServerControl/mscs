@@ -1189,7 +1189,7 @@ case "$1" in
       # Try to stop the world cleanly.
       if [ $(serverRunning $WORLD) -eq 1 ]; then
         printf " $WORLD"
-        if [ $(queryStatus $WORLD | cut -f6) -gt 0 ]; then
+        if [ $(printf "%d" $(queryStatus $WORLD | cut -f6)) -gt 0 ]; then
           sendCommand $WORLD "say The server admin has initiated a server shut down."
           sendCommand $WORLD "say The server will shut down in 1 minute..."
           sleep 60
@@ -1216,7 +1216,7 @@ case "$1" in
     for WORLD in $WORLDS; do
       printf " $WORLD"
       if [ $(serverRunning $WORLD) -eq 1 ]; then
-        if [ $(queryStatus $WORLD | cut -f6) -gt 0 ]; then
+        if [ $(printf "%d" $(queryStatus $WORLD | cut -f6)) -gt 0 ]; then
           sendCommand $WORLD "say The server admin has initiated a server restart."
           sendCommand $WORLD "say The server will restart in 1 minute..."
           sleep 60
@@ -1413,7 +1413,7 @@ case "$1" in
     for WORLD in $ALL_WORLDS; do
       if [ $(serverRunning $WORLD) -eq 1 ]; then
         printf " $WORLD"
-        if [ $(queryStatus $WORLD | cut -f6) -gt 0 ]; then
+        if [ $(printf "%d" $(queryStatus $WORLD | cut -f6)) -gt 0 ]; then
           sendCommand $WORLD "say The server admin has initiated a software update."
           sendCommand $WORLD "say The server will restart and update in 1 minute..."
           sleep 60
