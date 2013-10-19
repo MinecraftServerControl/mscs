@@ -1165,6 +1165,12 @@ fi
 # Grab the list of worlds.
 ALL_WORLDS=$(getWorlds)
 
+# If there are no worlds in the list, then use the default world.
+if [ ! -n "$ALL_WORLDS" ]; then
+  ALL_WORLDS="$DEFAULT_WORLD"
+  createWorld "$DEFAULT_WORLD" "$DEFAULT_PORT" "$DEFAULT_IP"
+fi
+
 # Respond to the command line arguments.
 case "$1" in
   start)
