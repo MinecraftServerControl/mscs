@@ -386,13 +386,11 @@ createWorld() {
   # Create a basic server.properties file.  Values not supplied here
   # will use default values when the world server is first started.
   execute "mkdir -p $WORLDS_LOCATION/$1" $USER_NAME
-  execute "touch $WORLDS_LOCATION/$1/server.properties" $USER_NAME
-  printf "#Minecraft server properties\n" >> $WORLDS_LOCATION/$1/server.properties
-  printf "level-name=$1\n" >> $WORLDS_LOCATION/$1/server.properties
-  printf "server-port=$2\n" >> $WORLDS_LOCATION/$1/server.properties
-  printf "server-ip=$3\n" >> $WORLDS_LOCATION/$1/server.properties
-  printf "enable-query=true\n" >> $WORLDS_LOCATION/$1/server.properties
-  printf "query.port=$2\n" >> $WORLDS_LOCATION/$1/server.properties
+  setWorldPropertiesValue "$1" "level-name" "$1"
+  setWorldPropertiesValue "$1" "server-port" "$2"
+  setWorldPropertiesValue "$1" "server-ip" "$3"
+  setWorldPropertiesValue "$1" "enable-query" "true"
+  setWorldPropertiesValue "$1" "query.port" "$2"
 }
 
 # ---------------------------------------------------------------------------
