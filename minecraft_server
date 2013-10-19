@@ -394,6 +394,16 @@ createWorld() {
 }
 
 # ---------------------------------------------------------------------------
+# Delete a world.
+#
+# @param 1 The world server to delete.
+# ---------------------------------------------------------------------------
+deleteWorld() {
+  # Delete the world directory.
+  execute "rm -Rf $WORLDS_LOCATION/$1" $USER_NAME
+}
+
+# ---------------------------------------------------------------------------
 # Grab the first line of the Message of the Day file as a summary, and strip
 # any color codes from it.
 #
@@ -1207,6 +1217,18 @@ case "$1" in
     fi
     printf "Creating Minecraft world: $2\n"
     createWorld "$2" "$3" "$4"
+  ;;
+  delete|remove)
+    if [ ! -n "$2" ] && [ $(listContains "$2" "$ALL_WORLDS") -eq 1 ]; then
+      printf "World not found, unable to delete world '$2'.\n"
+      exit 1
+    fi
+    printf "Deleting Minecraft world $2\n"
+    # Make sure the world server is stopped.
+    stop "$2"
+    sleep 5
+    # Delete the world.
+    deleteWorld "$2"
   ;;
   status|show)
     # Figure out which worlds to show the status for.
