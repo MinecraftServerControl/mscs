@@ -1228,9 +1228,19 @@ case "$1" in
       exit 1
     fi
     printf "Deleting Minecraft world $2\n"
-    # Make sure the world server is stopped.
-    stop "$2"
-    sleep 5
+    if [ $(serverRunning "$2") -eq 1 ]; then
+      # If the world server has users logged in, announce that the world is
+      # being deleted.
+      if [ $(queryStatus "$2" | cut -f6) -gt 0 ]; then
+        sendCommand "$2" "say The server admin is deleting this world."
+        sendCommand "$2" "say The server will be deleted in 1 minute..."
+        sleep 60
+        sendCommand "$2" "say The server is now shutting down."
+      fi
+      # Stop the world server.
+      stop "$2"
+      sleep 5
+    fi
     # Delete the world.
     deleteWorld "$2"
   ;;
