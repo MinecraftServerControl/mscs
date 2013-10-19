@@ -1298,6 +1298,8 @@ case "$1" in
     fi
     # Enable the world.
     enableWorld "$2"
+    # Start the world.
+    start "$2"
   ;;
   status|show)
     # Figure out which worlds to show the status for.
