@@ -376,6 +376,26 @@ listContains() {
 }
 
 # ---------------------------------------------------------------------------
+# Create a world.
+#
+# @param 1 The world server to create.
+# @param 2 The port of the world server.
+# @param 3 The IP address of the world server.
+# ---------------------------------------------------------------------------
+createWorld() {
+  # Create a basic server.properties file.  Values not supplied here
+  # will use default values when the world server is first started.
+  execute "mkdir -p $WORLDS_LOCATION/$1" $USER_NAME
+  execute "touch $WORLDS_LOCATION/$1/server.properties" $USER_NAME
+  printf "#Minecraft server properties\n" >> $WORLDS_LOCATION/$1/server.properties
+  printf "level-name=$1\n" >> $WORLDS_LOCATION/$1/server.properties
+  printf "server-port=$2\n" >> $WORLDS_LOCATION/$1/server.properties
+  printf "server-ip=$3\n" >> $WORLDS_LOCATION/$1/server.properties
+  printf "enable-query=true\n" >> $WORLDS_LOCATION/$1/server.properties
+  printf "query.port=$2\n" >> $WORLDS_LOCATION/$1/server.properties
+}
+
+# ---------------------------------------------------------------------------
 # Grab the first line of the Message of the Day file as a summary, and strip
 # any color codes from it.
 #
@@ -1177,6 +1197,18 @@ case "$1" in
       start $WORLD
     done
     printf ".\n"
+  ;;
+  create|new)
+    if [ ! -n "$2" ]; then
+      printf "A name for the new world must be supplied.\n"
+      exit 1
+    fi
+    if [ ! -n "$3" ]; then
+      printf "A port for the new world must be supplied.\n"
+      exit 1
+    fi
+    printf "Creating Minecraft world: $2\n"
+    createWorld "$2" "$3" "$4"
   ;;
   status|show)
     # Figure out which worlds to show the status for.
