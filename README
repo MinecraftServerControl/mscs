@@ -61,10 +61,8 @@ needed.
 
 Multiple Worlds
 -----------------------------
-The script can handle running multiple Minecraft world servers, just add a
-directory for the world to the /home/minecraft/worlds/ directory.  A
-server.properties file must exist in the world directory in order for the
-server to start.
+The script can handle running multiple Minecraft world servers.  See the
+description for the 'create' world option below.
 
 
 Firewall / NAT
@@ -150,6 +148,15 @@ Options
     force-restart <world>
       Forcibly restart the Minecraft world server.  Forcibly restarts all
       world servers by default.
+    create <world> <port> <ip>
+      Create a Minecraft world server.  The world name and port must be
+      provided, the IP address is usually blank.
+    delete <world>
+      Delete a Minecraft world server.
+    disable <world>
+      Temporarily disable a world server.
+    enable <world>
+      Enable a disabled world server.
     status <world>
       Display the status of the Minecraft world server.  Displays the status
       of all world servers by default.
@@ -175,6 +182,11 @@ Options
 To start all of the world servers, issue the command:
 
 /etc/init.d/minecraft_server start
+
+
+To create a world named alpha, issue the command:
+
+/etc/init.d/minecraft_server create alpha 25565
 
 
 To start just the world named alpha, issue the command:
