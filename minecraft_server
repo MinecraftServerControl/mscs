@@ -62,7 +62,9 @@ Options:
                                all world servers by default.
   force-restart <world>      - Forcibly restart the Minecraft world server.
                                Forcibly restart all world servers by default.
-  create <world> <port> <ip> - Create a Minecraft world server.
+  create <world> <port> <ip> - Create a Minecraft world server.  The world
+                               name and port must be provided, the IP address
+                               is usually blank. 
   delete <world>             - Delete a Minecraft world server.
   disable <world>            - Temporarily disable a world server.
   enable <world>             - Enable a disabled world server.
