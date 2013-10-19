@@ -1246,7 +1246,7 @@ case "$1" in
     createWorld "$2" "$3" "$4"
   ;;
   delete|remove)
-    if [ ! -n "$2" ] && [ $(listContains "$2" "$ALL_WORLDS") -eq 1 ]; then
+    if [ ! -n "$2" ] || [ $(listContains "$2" "$ALL_WORLDS") -eq 0 ]; then
       printf "World not found, unable to delete world '$2'.\n"
       exit 1
     fi
@@ -1268,7 +1268,7 @@ case "$1" in
     deleteWorld "$2"
   ;;
   disable)
-    if [ ! -n "$2" ] && [ $(listContains "$2" "$ALL_WORLDS") -eq 1 ]; then
+    if [ ! -n "$2" ] || [ $(listContains "$2" "$ALL_WORLDS") -eq 0 ]; then
       printf "World not found, unable to disable world '$2'.\n"
       exit 1
     fi
