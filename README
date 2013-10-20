@@ -260,8 +260,8 @@ SERVER_JAR="minecraft_server.jar"
 SERVER_ARGS="nogui"
 
 # CraftBukkit server distribution.
-# SERVER_URL="http://ci.bukkit.org/job/dev-CraftBukkit/promotion/latest/Recommended/artifact/target/craftbukkit-0.0.1-SNAPSHOT.jar"
-# SERVER_JAR="craftbukkit-0.0.1-SNAPSHOT.jar"
+# SERVER_URL="http://dl.bukkit.org/latest-rb/craftbukkit.jar"
+# SERVER_JAR="craftbukkit.jar"
 # SERVER_ARGS=""
 
 
