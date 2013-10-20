@@ -501,31 +501,6 @@ checkUserIsAdmin() {
 }
 
 # ---------------------------------------------------------------------------
-# Check for the optional argument.  If the argument is not supplied, return
-# the original list.  If the argument is supplied, verify that it is a member
-# of the list, then modify the list to just contain that member.
-#
-# @param 1 The original list.
-# @param 2 The name of the script.
-# @param 3 The command line argument used.
-# @param 4 The optional command line argument.
-# @return Either the original list, or the optional command line argument.
-# ---------------------------------------------------------------------------
-checkOptionalArgument() {
-  local LIST
-  LIST="$1"
-  # Check for the optional command line argument.
-  if [ -n "$4" ] && [ $(listContains $4 "$1") -eq 1 ]; then
-    LIST="$4"
-  elif [ -n "$4" ]; then
-    printf "Optional argument '$4' not recognized.\n"
-    printf "  Usage:  $2 $3 <optional argument>\n"
-    exit 1
-  fi
-  echo "$LIST"
-}
-
-# ---------------------------------------------------------------------------
 # Rotates the world server log file.
 #
 # @param 1 The world server generating the log to rotate.
@@ -1112,7 +1087,14 @@ ALL_WORLDS=$(getWorlds)
 case "$1" in
   start)
     # Figure out which worlds to start.
-    WORLDS=$(checkOptionalArgument "$ALL_WORLDS" $0 $1 $2)
+    WORLDS="$ALL_WORLDS"
+    if [ -n "$2" ] && [ $(listContains "$2" "$ALL_WORLDS") -eq 1 ]; then
+      WORLDS="$2"
+    elif [ -n "$2" ]; then
+      printf "World '$2' not recognized.\n"
+      printf "  Usage:  $0 $1 <world>\n"
+      exit 1
+    fi
     # Start each world requested, if not already running.
     printf "Starting Minecraft Server:"
     for WORLD in $WORLDS; do
@@ -1125,7 +1107,14 @@ case "$1" in
   ;;
   stop|force-stop)
     # Figure out which worlds to stop.
-    WORLDS=$(checkOptionalArgument "$ALL_WORLDS" $0 $1 $2)
+    WORLDS="$ALL_WORLDS"
+    if [ -n "$2" ] && [ $(listContains "$2" "$ALL_WORLDS") -eq 1 ]; then
+      WORLDS="$2"
+    elif [ -n "$2" ]; then
+      printf "World '$2' not recognized.\n"
+      printf "  Usage:  $0 $1 <world>\n"
+      exit 1
+    fi
     # Stop each world requested, if running.
     printf "Stopping Minecraft Server:"
     for WORLD in $WORLDS; do
@@ -1152,7 +1141,14 @@ case "$1" in
   ;;
   restart|reload|force-restart|force-reload)
     # Figure out which worlds to restart.
-    WORLDS=$(checkOptionalArgument "$ALL_WORLDS" $0 $1 $2)
+    WORLDS="$ALL_WORLDS"
+    if [ -n "$2" ] && [ $(listContains "$2" "$ALL_WORLDS") -eq 1 ]; then
+      WORLDS="$2"
+    elif [ -n "$2" ]; then
+      printf "World '$2' not recognized.\n"
+      printf "  Usage:  $0 $1 <world>\n"
+      exit 1
+    fi
     # Restart each world requested, start those not already
     # running.
     printf "Restarting Minecraft Server:"
@@ -1180,7 +1176,14 @@ case "$1" in
   ;;
   status|show)
     # Figure out which worlds to show the status for.
-    WORLDS=$(checkOptionalArgument "$ALL_WORLDS" $0 $1 $2)
+    WORLDS="$ALL_WORLDS"
+    if [ -n "$2" ] && [ $(listContains "$2" "$ALL_WORLDS") -eq 1 ]; then
+      WORLDS="$2"
+    elif [ -n "$2" ]; then
+      printf "World '$2' not recognized.\n"
+      printf "  Usage:  $0 $1 <world>\n"
+      exit 1
+    fi
     # Show the status of each world requested.
     printf "Minecraft Server Status:\n"
     for WORLD in $WORLDS; do
@@ -1190,7 +1193,14 @@ case "$1" in
   ;;
   sync|synchronize)
     # Figure out which worlds to synchronize.
-    WORLDS=$(checkOptionalArgument "$ALL_WORLDS" $0 $1 $2)
+    WORLDS="$ALL_WORLDS"
+    if [ -n "$2" ] && [ $(listContains "$2" "$ALL_WORLDS") -eq 1 ]; then
+      WORLDS="$2"
+    elif [ -n "$2" ]; then
+      printf "World '$2' not recognized.\n"
+      printf "  Usage:  $0 $1 <world>\n"
+      exit 1
+    fi
     # Synchronize the images for each world.
     printf "Synchronizing Minecraft Server:"
     for WORLD in $WORLDS; do
@@ -1254,7 +1264,14 @@ case "$1" in
   ;;
   logrotate)
     # Figure out which worlds to rotate the log.
-    WORLDS=$(checkOptionalArgument "$ALL_WORLDS" $0 $1 $2)
+    WORLDS="$ALL_WORLDS"
+    if [ -n "$2" ] && [ $(listContains "$2" "$ALL_WORLDS") -eq 1 ]; then
+      WORLDS="$2"
+    elif [ -n "$2" ]; then
+      printf "World '$2' not recognized.\n"
+      printf "  Usage:  $0 $1 <world>\n"
+      exit 1
+    fi
     # Backup each world requested.
     printf "Rotating Minecraft Server Log:"
     for WORLD in $WORLDS; do
@@ -1265,7 +1282,14 @@ case "$1" in
   ;;
   backup)
     # Figure out which worlds to backup.
-    WORLDS=$(checkOptionalArgument "$ALL_WORLDS" $0 $1 $2)
+    WORLDS="$ALL_WORLDS"
+    if [ -n "$2" ] && [ $(listContains "$2" "$ALL_WORLDS") -eq 1 ]; then
+      WORLDS="$2"
+    elif [ -n "$2" ]; then
+      printf "World '$2' not recognized.\n"
+      printf "  Usage:  $0 $1 <world>\n"
+      exit 1
+    fi
     # Backup each world requested.
     printf "Backing up Minecraft Server:"
     for WORLD in $WORLDS; do
@@ -1330,7 +1354,14 @@ case "$1" in
       exit 1
     fi
     # Figure out which worlds to map.
-    WORLDS=$(checkOptionalArgument "$ALL_WORLDS" $0 $1 $2)
+    WORLDS="$ALL_WORLDS"
+    if [ -n "$2" ] && [ $(listContains "$2" "$ALL_WORLDS") -eq 1 ]; then
+      WORLDS="$2"
+    elif [ -n "$2" ]; then
+      printf "World '$2' not recognized.\n"
+      printf "  Usage:  $0 $1 <world>\n"
+      exit 1
+    fi
     # Run Minecraft Overviewer on each world requested.
     printf "Running Minecraft Overviewer mapping:"
     for WORLD in $WORLDS; do
