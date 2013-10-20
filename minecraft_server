@@ -133,7 +133,7 @@ SERVER_URL="https://s3.amazonaws.com/Minecraft.Download/versions/$MCVERSION/mine
 SERVER_ARGS="nogui"
 
 # CraftBukkit server distribution.
-# SERVER_URL="http://repo.bukkit.org/service/local/artifact/maven/redirect?g=org.bukkit&a=craftbukkit&v=RELEASE&r=releases"
+# SERVER_URL="http://dl.bukkit.org/latest-rb/craftbukkit.jar"
 # SERVER_JAR="craftbukkit.jar"
 # SERVER_ARGS=""
 
