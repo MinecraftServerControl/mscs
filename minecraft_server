@@ -1167,17 +1167,17 @@ fi
 # Grab the list of worlds.
 ALL_WORLDS=$(getWorlds)
 
-# If there are no worlds in the list, then use the default world.
-if [ ! -n "$ALL_WORLDS" ]; then
-  ALL_WORLDS="$DEFAULT_WORLD"
-  createWorld "$DEFAULT_WORLD" "$DEFAULT_PORT" "$DEFAULT_IP"
-fi
-
 # Respond to the command line arguments.
 case "$1" in
   start)
     # Figure out which worlds to start.
     WORLDS="$ALL_WORLDS"
+    # If there are no worlds in the list, then use the default world.
+    if [ ! -n "$WORLDS" ]; then
+      WORLDS="$DEFAULT_WORLD"
+      createWorld "$DEFAULT_WORLD" "$DEFAULT_PORT" "$DEFAULT_IP"
+    fi
+    # If an optional argument was supplied, verify it is a valid world.
     if [ -n "$2" ] && [ $(listContains "$2" "$ALL_WORLDS") -eq 1 ]; then
       WORLDS="$2"
     elif [ -n "$2" ]; then
