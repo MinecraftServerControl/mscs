@@ -70,6 +70,19 @@ Options:
     Forcibly restart the Minecraft world server.  Forcibly restart all world
     servers by default.
 
+  create <world> <port> <ip>
+    Create a Minecraft world server.  The world name and port must be
+    provided, the IP addressis usually blank.
+
+  delete <world>
+    Delete a Minecraft world server.
+
+  disable <world>
+    Temporarily disable a world server.
+
+  enable <world>
+    Enable a disabled world server.
+
   status <world>
     Display the status of the Minecraft world server.  Display the status of
     all world servers by default.
@@ -178,6 +191,9 @@ CLIENT_LOCATION="$LOCATION/.minecraft/bin"
 
 # The location to store files for each world server.
 WORLDS_LOCATION="$LOCATION/worlds"
+
+# The location to store disabled world server files.
+DISABLED_WORLDS_LOCATION="$LOCATION/worlds-disabled"
 
 # Default world name, port, and IP address if the worlds.conf file is
 # missing.
@@ -393,6 +409,54 @@ listContains() {
     fi
   done
   echo $MATCH
+}
+
+# ---------------------------------------------------------------------------
+# Create a world.
+#
+# @param 1 The world server to create.
+# @param 2 The port of the world server.
+# @param 3 The IP address of the world server.
+# ---------------------------------------------------------------------------
+createWorld() {
+  # Create a basic server.properties file.  Values not supplied here
+  # will use default values when the world server is first started.
+  execute "mkdir -p $WORLDS_LOCATION/$1" $USER_NAME
+  setWorldPropertiesValue "$1" "level-name" "$1"
+  setWorldPropertiesValue "$1" "server-port" "$2"
+  setWorldPropertiesValue "$1" "server-ip" "$3"
+  setWorldPropertiesValue "$1" "enable-query" "true"
+  setWorldPropertiesValue "$1" "query.port" "$2"
+}
+
+# ---------------------------------------------------------------------------
+# Delete a world.
+#
+# @param 1 The world server to delete.
+# ---------------------------------------------------------------------------
+deleteWorld() {
+  # Delete the world directory.
+  execute "rm -Rf $WORLDS_LOCATION/$1" $USER_NAME
+}
+
+# ---------------------------------------------------------------------------
+# Disable a world.
+#
+# @param 1 The world server to disable.
+# ---------------------------------------------------------------------------
+disableWorld() {
+  # Disable the world.
+  execute "mv $WORLDS_LOCATION/$1 $DISABLED_WORLDS_LOCATION/$1" $USER_NAME 
+}
+
+# ---------------------------------------------------------------------------
+# Enable a world.
+#
+# @param 1 The world server to enable.
+# ---------------------------------------------------------------------------
+enableWorld() {
+  # Enable the world.
+  execute "mv $DISABLED_WORLDS_LOCATION/$1 $WORLDS_LOCATION/$1" $USER_NAME 
 }
 
 # ---------------------------------------------------------------------------
@@ -1108,6 +1172,12 @@ case "$1" in
   start)
     # Figure out which worlds to start.
     WORLDS="$ALL_WORLDS"
+    # If there are no worlds in the list, then use the default world.
+    if [ ! -n "$WORLDS" ]; then
+      WORLDS="$DEFAULT_WORLD"
+      createWorld "$DEFAULT_WORLD" "$DEFAULT_PORT" "$DEFAULT_IP"
+    fi
+    # If an optional argument was supplied, verify it is a valid world.
     if [ -n "$2" ] && [ $(listContains "$2" "$ALL_WORLDS") -eq 1 ]; then
       WORLDS="$2"
     elif [ -n "$2" ]; then
@@ -1192,6 +1262,77 @@ case "$1" in
       fi
       start $WORLD
     done
+    printf ".\n"
+  ;;
+  create|new)
+    if [ ! -n "$2" ]; then
+      printf "A name for the new world must be supplied.\n"
+      exit 1
+    fi
+    if [ ! -n "$3" ]; then
+      printf "A port for the new world must be supplied.\n"
+      exit 1
+    fi
+    printf "Creating Minecraft world: $2"
+    createWorld "$2" "$3" "$4"
+    printf ".\n"
+  ;;
+  delete|remove)
+    if [ ! -n "$2" ] || [ $(listContains "$2" "$ALL_WORLDS") -eq 0 ]; then
+      printf "World not found, unable to delete world '$2'.\n"
+      exit 1
+    fi
+    printf "Deleting Minecraft world: $2"
+    if [ $(serverRunning "$2") -eq 1 ]; then
+      # If the world server has users logged in, announce that the world is
+      # being deleted.
+      if [ $(printf "%d" $(queryStatus $2 | cut -f6)) -gt 0 ]; then
+        sendCommand "$2" "say The server admin is deleting this world."
+        sendCommand "$2" "say The server will be deleted in 1 minute..."
+        sleep 60
+        sendCommand "$2" "say The server is now shutting down."
+      fi
+      # Stop the world server.
+      stop "$2"
+      sleep 5
+    fi
+    # Delete the world.
+    deleteWorld "$2"
+    printf ".\n"
+  ;;
+  disable)
+    if [ ! -n "$2" ] || [ $(listContains "$2" "$ALL_WORLDS") -eq 0 ]; then
+      printf "World not found, unable to disable world '$2'.\n"
+      exit 1
+    fi
+    printf "Disabling Minecraft world: $2"
+    if [ $(serverRunning "$2") -eq 1 ]; then
+      # If the world server has users logged in, announce that the world is
+      # being disabled.
+      if [ $(printf "%d" $(queryStatus $2 | cut -f6)) -gt 0 ]; then
+        sendCommand "$2" "say The server admin is disabling this world."
+        sendCommand "$2" "say The server will be disabled in 1 minute..."
+        sleep 60
+        sendCommand "$2" "say The server is now shutting down."
+      fi
+      # Stop the world server.
+      stop "$2"
+      sleep 5
+    fi
+    # Disable the world.
+    disableWorld "$2"
+    printf ".\n"
+  ;;
+  enable)
+    if [ ! -n "$2" ] || [ ! -f "$DISABLED_WORLDS_LOCATION/$2/server.properties" ]; then
+      printf "World not found, unable to enable world '$2'.\n"
+      exit 1
+    fi
+    printf "Enabling Minecraft world: $2"
+    # Enable the world.
+    enableWorld "$2"
+    # Start the world.
+    start "$2"
     printf ".\n"
   ;;
   status|show)
