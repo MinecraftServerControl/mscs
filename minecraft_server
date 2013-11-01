@@ -92,7 +92,7 @@ Options:
     server.  Synchronizes all of the world servers by default.  This option
     is only available when the mirror image option is enabled.
 
-  send <world> <cmd>
+  send <world> <command>
     Send a command to a Minecraft world server.
 
   screen <world>
