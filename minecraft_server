@@ -1229,7 +1229,9 @@ case "$1" in
         else
           stop $WORLD
         fi
-        sleep 5
+      elif [ "$1" = "force-stop" ]; then
+        printf " $WORLD"
+        forceStop $WORLD
       fi
     done
     printf ".\n"
