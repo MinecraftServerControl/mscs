@@ -770,6 +770,8 @@ forceStop() {
   sleep 5
   # Kill the process ids of the world server.
   kill -9 $PIDS > /dev/null 2>&1
+  # Cleanup the dead screen.
+  execute "$SCREEN -wipe" $USER_NAME  > /dev/null 2>&1
   # Remove the lock file on Redhat and derivatives if it is still
   # around.
   rm -f /var/lock/subsys/minecraft_server
