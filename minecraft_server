@@ -112,8 +112,9 @@ Options:
     Run the Minecraft Overviewer mapping software on the Minecraft world.
     Map all worlds by default.
 
-  update
-    Update the client and server software.
+  update <world>
+    Update the server software for the Minecraft world server.  Update
+    server software for all worlds by default.
 
 EOF
 )
@@ -1458,9 +1459,18 @@ case "$1" in
     printf ".\n"
   ;;
   update)
+    # Figure out which worlds to update.
+    WORLDS="$ALL_WORLDS"
+    if [ -n "$2" ] && [ $(listContains "$2" "$ALL_WORLDS") -eq 1 ]; then
+      WORLDS="$2"
+    elif [ -n "$2" ]; then
+      printf "World '$2' not recognized.\n"
+      printf "  Usage:  $0 $1 <world>\n"
+      exit 1
+    fi
     # Stop all of the world servers and backup the worlds.
     printf "Stopping Minecraft Server:"
-    for WORLD in $ALL_WORLDS; do
+    for WORLD in $WORLDS; do
       if [ $(serverRunning $WORLD) -eq 1 ]; then
         printf " $WORLD"
         if [ $(printf "%d" $(queryStatus $WORLD | cut -f6)) -gt 0 ]; then
@@ -1476,21 +1486,20 @@ case "$1" in
     done
     printf ".\n"
     printf "Backing up Minecraft Server:"
-    for WORLD in $ALL_WORLDS; do
+    for WORLD in $WORLDS; do
       printf " $WORLD"
       worldBackup $WORLD
     done
     printf ".\n"
-    printf "Updating software package:"
-    # Update the client software.
-    printf " client"
-    updateClientSoftware
     # Update the server software.
-    printf " server"
-    updateServerSoftware
+    printf "Updating Server Software:"
+    for WORLD in $WORLDS; do
+      printf " $WORLD"
+      updateServerSoftware "$WORLD"
+    done
     printf ".\n"
     printf "Restarting Minecraft Server:"
-    for WORLD in $ALL_WORLDS; do
+    for WORLD in $WORLDS; do
       printf " $WORLD"
       start $WORLD
     done
