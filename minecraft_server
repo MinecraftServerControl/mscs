@@ -160,19 +160,11 @@ CURRENT_VERSION=$(
 
 # Minecraft Server Settings
 # ---------------------------------------------------------------------------
-# Choose only one server distribution, leave the other commented out.
+# Default settings if not provided in the world's server.properties file.
 
-# Default Mojang server distribution.
-SERVER_JAR="minecraft_server.jar"
+SERVER_JAR="minecraft_server.$CURRENT_VERSION.jar"
 SERVER_URL="https://s3.amazonaws.com/Minecraft.Download/versions/$CURRENT_VERSION/minecraft_server.$CURRENT_VERSION.jar"
 SERVER_ARGS="nogui"
-
-# CraftBukkit server distribution.
-# SERVER_URL="http://dl.bukkit.org/latest-rb/craftbukkit.jar"
-# SERVER_JAR="craftbukkit.jar"
-# SERVER_ARGS=""
-
-# Generic server options.
 INITIAL_MEMORY="128M"
 MAXIMUM_MEMORY="2048M"
 SERVER_LOCATION="$LOCATION/minecraft_server"
