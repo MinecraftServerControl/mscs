@@ -152,8 +152,10 @@ RDIFF_BACKUP=$(which rdiff-backup)
 # ---------------------------------------------------------------------------
 # Detect the latest version.
 
-MCVERSIONS_URL="https://s3.amazonaws.com/Minecraft.Download/versions/versions.json"
-MCVERSION=$(wget -q -O - $MCVERSIONS_URL | $PERL -ne 'if ($_ =~ /^\s+\"release\": \"([0-9\.]+)\"/) { print $1; }')
+CURRENT_VERSION=$(
+  wget -q -O - https://s3.amazonaws.com/Minecraft.Download/versions/versions.json | 
+  $PERL -ne 'if ($_ =~ /^\s+\"release\": \"([0-9\.]+)\"/) { print $1; }'
+)
 
 
 # Minecraft Server Settings
@@ -162,7 +164,7 @@ MCVERSION=$(wget -q -O - $MCVERSIONS_URL | $PERL -ne 'if ($_ =~ /^\s+\"release\"
 
 # Default Mojang server distribution.
 SERVER_JAR="minecraft_server.jar"
-SERVER_URL="https://s3.amazonaws.com/Minecraft.Download/versions/$MCVERSION/minecraft_server.$MCVERSION.jar"
+SERVER_URL="https://s3.amazonaws.com/Minecraft.Download/versions/$CURRENT_VERSION/minecraft_server.$CURRENT_VERSION.jar"
 SERVER_ARGS="nogui"
 
 # CraftBukkit server distribution.
@@ -182,7 +184,7 @@ SERVER_COMMAND="$JAVA -Xms$INITIAL_MEMORY -Xmx$MAXIMUM_MEMORY -jar $SERVER_LOCAT
 # Used by Minecraft Overviewer mapping software.
 
 CLIENT_JAR="minecraft.jar"
-CLIENT_URL="https://s3.amazonaws.com/Minecraft.Download/versions/$MCVERSION/$MCVERSION.jar"
+CLIENT_URL="https://s3.amazonaws.com/Minecraft.Download/versions/$CURRENT_VERSION/$CURRENT_VERSION.jar"
 CLIENT_LOCATION="$LOCATION/.minecraft/bin"
 
 
