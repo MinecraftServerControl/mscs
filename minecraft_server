@@ -659,10 +659,7 @@ syncMirrorImage() {
 start() {
   local PID WORLD_DIR
   # Make sure that the server software exists.
-  if [ ! -e "$SERVER_LOCATION/$SERVER_JAR" ]; then
-    printf "Server software not found, downloading it...\n"
-    updateServerSoftware "$1"
-  fi
+  updateServerSoftware "$1"
   # Make sure that the world's directory exists.
   WORLD_DIR="$WORLDS_LOCATION/$1"
   execute "mkdir -p $WORLD_DIR" $USER_NAME
