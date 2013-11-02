@@ -580,7 +580,7 @@ getWorldProperties() {
   local SERVER_VERSION SERVER_JAR SERVER_LOCATION SERVER_URL SERVER_ARGS INITIAL_MEMORY MAXIMUM_MEMORY SERVER_COMMAND
   # Get the server version, use the current version if not provided.
   SERVER_VERSION=$(
-    getPropertiesValue "$1" "mscs-server-version" $CURRENT_VERSION |
+    getPropertiesValue "$1" "mscs-server-version" "$CURRENT_VERSION" |
     $PERL -ne '
       $current_version="'$CURRENT_VERSION'";
       $_ =~ s/\$CURRENT_VERSION/$current_version/g;
@@ -589,7 +589,7 @@ getWorldProperties() {
   )
   # Get the server jar, use the default value if not provided.
   SERVER_JAR=$(
-    getPropertiesValue "$1" "mscs-server-jar" $DEFAULT_SERVER_JAR |
+    getPropertiesValue "$1" "mscs-server-jar" "$DEFAULT_SERVER_JAR" |
     $PERL -ne '
       $current_version="'$CURRENT_VERSION'";
       $server_version="'$SERVER_VERSION'";
@@ -600,7 +600,7 @@ getWorldProperties() {
   )
   # Get the server location, use the default value if not provided.
   SERVER_LOCATION=$(
-    getPropertiesValue "$1" "mscs-server-location" $DEFAULT_SERVER_LOCATION |
+    getPropertiesValue "$1" "mscs-server-location" "$DEFAULT_SERVER_LOCATION" |
     $PERL -ne '
       $current_version="'$CURRENT_VERSION'";
       $server_version="'$SERVER_VERSION'";
@@ -611,7 +611,7 @@ getWorldProperties() {
   )
   # Get the server download URL, use the default value if not provided.
   SERVER_URL=$(
-    getPropertiesValue "$1" "mscs-server-url" $DEFAULT_SERVER_URL |
+    getPropertiesValue "$1" "mscs-server-url" "$DEFAULT_SERVER_URL" |
     $PERL -ne '
       $current_version="'$CURRENT_VERSION'";
       $server_version="'$SERVER_VERSION'";
@@ -623,19 +623,19 @@ getWorldProperties() {
   )
   # Get the server agruments, use the default value if not provided.
   SERVER_ARGS=$(
-    getPropertiesValue "$1" "mscs-server-args" $DEFAULT_SERVER_ARGS
+    getPropertiesValue "$1" "mscs-server-args" "$DEFAULT_SERVER_ARGS"
   )
   # Get the initial memory, use the default value if not provided.
   INITIAL_MEMORY=$(
-    getPropertiesValue "$1" "mscs-initial-memory" $DEFAULT_INITIAL_MEMORY
+    getPropertiesValue "$1" "mscs-initial-memory" "$DEFAULT_INITIAL_MEMORY"
   )
   # Get the maximum memory, use the default value if not provided.
   MAXIMUM_MEMORY=$(
-    getPropertiesValue "$1" "mscs-maximum-memory" $DEFAULT_MAXIMUM_MEMORY
+    getPropertiesValue "$1" "mscs-maximum-memory" "$DEFAULT_MAXIMUM_MEMORY"
   )
   # Get the server command, use the default value if not provided.
   SERVER_COMMAND=$(
-    getPropertiesValue "$1" "mscs-server-command" $DEFAULT_SERVER_COMMAND |
+    getPropertiesValue "$1" "mscs-server-command" "$DEFAULT_SERVER_COMMAND" |
     $PERL -ne '
       $java = "'$JAVA'";
       $current_version = "'$CURRENT_VERSION'";
