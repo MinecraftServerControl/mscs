@@ -504,6 +504,7 @@ getWorlds() {
 #
 # @param 1 The world server of interest.
 # @param 2 The key to get.
+# @param 3 The default value.
 # ---------------------------------------------------------------------------
 getPropertiesValue() {
   local PROPERTY_FILE KEY VALUE
@@ -516,7 +517,7 @@ getPropertiesValue() {
     if [ -n "$KEY" ] && [ -n "$VALUE" ]; then
       echo "$VALUE"
     else
-      echo ""
+      echo "$3"
     fi
   fi
 }
