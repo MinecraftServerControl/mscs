@@ -333,10 +333,13 @@ getProcessIDs() {
 # @return A 1 if the server is thought to be running, a 0 otherwise.
 # ---------------------------------------------------------------------------
 serverRunning() {
-  local PIDS
+  local PIDS SCREEN_PID JAVA_PID
   PIDS=$(getProcessIDs $1)
+  SCREEN_PID=$(echo "$PIDS" | cut -d ' ' -f1)
+  JAVA_PID=$(echo "$PIDS" | cut -d ' ' -f2)
   # Try to determine if the world is running.
-  if [ -n "$(echo $PIDS | cut -d ' ' -f1)" ] && [ -n "$(echo $PIDS | cut -d ' ' -f2)" ]; then
+  if [ -n "$SCREEN_PID" ] && [ $SCREEN_PID -gt 0 ] &&
+    [ -n "$JAVA_PID" ] && [ $JAVA_PID -gt 0 ]; then
     echo 1
   else
     echo 0
@@ -762,6 +765,8 @@ forceStop() {
   sleep 5
   # Kill the process ids of the world server.
   kill -9 $PIDS > /dev/null 2>&1
+  # Cleanup the dead screen.
+  execute "$SCREEN -wipe" $USER_NAME  > /dev/null 2>&1
   # Remove the lock file on Redhat and derivatives if it is still
   # around.
   rm -f /var/lock/subsys/minecraft_server
@@ -1210,7 +1215,9 @@ case "$1" in
         else
           stop $WORLD
         fi
-        sleep 5
+      elif [ "$1" = "force-stop" ]; then
+        printf " $WORLD"
+        forceStop $WORLD
       fi
     done
     printf ".\n"
