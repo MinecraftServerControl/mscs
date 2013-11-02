@@ -584,6 +584,7 @@ getWorldProperties() {
       $server_version="'$SERVER_VERSION'";
       $_ =~ s/\$CURRENT_VERSION/$current_version/g;
       $_ =~ s/\$SERVER_VERSION/$server_version/g;
+      $_ =~ s/\\\:/\:/g;
       print;
     '
   )
