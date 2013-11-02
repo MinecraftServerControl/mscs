@@ -427,11 +427,11 @@ createWorld() {
   # Create a basic server.properties file.  Values not supplied here
   # will use default values when the world server is first started.
   execute "mkdir -p $WORLDS_LOCATION/$1" $USER_NAME
-  setWorldPropertiesValue "$1" "level-name" "$1"
-  setWorldPropertiesValue "$1" "server-port" "$2"
-  setWorldPropertiesValue "$1" "server-ip" "$3"
-  setWorldPropertiesValue "$1" "enable-query" "true"
-  setWorldPropertiesValue "$1" "query.port" "$2"
+  setPropertiesValue "$1" "level-name" "$1"
+  setPropertiesValue "$1" "server-port" "$2"
+  setPropertiesValue "$1" "server-ip" "$3"
+  setPropertiesValue "$1" "enable-query" "true"
+  setPropertiesValue "$1" "query.port" "$2"
 }
 
 # ---------------------------------------------------------------------------
@@ -505,7 +505,7 @@ getWorlds() {
 # @param 1 The world server of interest.
 # @param 2 The key to get.
 # ---------------------------------------------------------------------------
-getWorldPropertiesValue() {
+getPropertiesValue() {
   local PROPERTY_FILE KEY VALUE
   PROPERTY_FILE=$WORLDS_LOCATION/$1/server.properties
   # Make sure the properties file exists
@@ -528,7 +528,7 @@ getWorldPropertiesValue() {
 # @param 2 The key to modify.
 # @param 3 The value to assign to the key.
 # ---------------------------------------------------------------------------
-setWorldPropertiesValue() {
+setPropertiesValue() {
   local PROPERTY_FILE KEY_VALUE
   PROPERTY_FILE=$WORLDS_LOCATION/$1/server.properties
   # Make sure that the properties file exists.
@@ -718,7 +718,7 @@ start() {
   # server is piped into the response.dat file.
   execute "printf '' > $WORLD_DIR/query.dat" $USER_NAME
   execute "printf '' > $WORLD_DIR/response.dat" $USER_NAME
-  execute "tail -f --pid=$PID $WORLD_DIR/query.dat | nc -q 1 -u 127.0.0.1 $(getWorldPropertiesValue $1 'server-port') > $WORLD_DIR/response.dat &" $USER_NAME
+  execute "tail -f --pid=$PID $WORLD_DIR/query.dat | nc -q 1 -u 127.0.0.1 $(getPropertiesValue $1 'server-port') > $WORLD_DIR/response.dat &" $USER_NAME
   # Create a lock file on RedHat and derivatives.
   if [ -d "/var/lock/subsys" ]; then
     touch /var/lock/subsys/minecraft_server
