@@ -163,8 +163,9 @@ CURRENT_VERSION=$(
 # ---------------------------------------------------------------------------
 # Default settings if not provided in the world's server.properties file.
 
-DEFAULT_SERVER_JAR='minecraft_server.$CURRENT_VERSION.jar'
-DEFAULT_SERVER_URL='https://s3.amazonaws.com/Minecraft.Download/versions/$CURRENT_VERSION/minecraft_server.$CURRENT_VERSION.jar'
+DEFAULT_SERVER_VERSION=$CURRENT_VERSION
+DEFAULT_SERVER_JAR='minecraft_server.$SERVER_VERSION.jar'
+DEFAULT_SERVER_URL='https://s3.amazonaws.com/Minecraft.Download/versions/$SERVER_VERSION/minecraft_server.$SERVER_VERSION.jar'
 DEFAULT_SERVER_ARGS='nogui'
 DEFAULT_INITIAL_MEMORY='128M'
 DEFAULT_MAXIMUM_MEMORY='2048M'
@@ -197,7 +198,7 @@ DEFAULT_SERVER_COMMAND='$JAVA -Xms$INITIAL_MEMORY -Xmx$MAXIMUM_MEMORY -jar $SERV
 #
 # The following example key/value pairs are equivalent to the default values:
 #   mscs-server-version=$CURRENT_VERSION
-#   mscs-server-jar=minecraft_server.$CURRENT_VERSION.jar
+#   mscs-server-jar=minecraft_server.$SERVER_VERSION.jar
 #   mscs-server-args=nogui
 #   mscs-initial-memory=128M
 #   mscs-maximum-memory=2048M
@@ -580,7 +581,7 @@ getWorldProperties() {
   local SERVER_VERSION SERVER_JAR SERVER_LOCATION SERVER_URL SERVER_ARGS INITIAL_MEMORY MAXIMUM_MEMORY SERVER_COMMAND
   # Get the server version, use the current version if not provided.
   SERVER_VERSION=$(
-    getPropertiesValue "$1" "mscs-server-version" "$CURRENT_VERSION" |
+    getPropertiesValue "$1" "mscs-server-version" "$DEFAULT_SERVER_VERSION" |
     $PERL -ne '
       $current_version="'$CURRENT_VERSION'";
       $_ =~ s/\$CURRENT_VERSION/$current_version/g;
