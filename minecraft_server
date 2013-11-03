@@ -163,6 +163,9 @@ CURRENT_VERSION=$(
 # ---------------------------------------------------------------------------
 # Default settings if not provided in the world's server.properties file.
 
+DEFAULT_WORLD="world"
+DEFAULT_PORT="25565"
+DEFAULT_IP=""
 DEFAULT_SERVER_VERSION=$CURRENT_VERSION
 DEFAULT_SERVER_JAR='minecraft_server.$SERVER_VERSION.jar'
 DEFAULT_SERVER_URL='https://s3.amazonaws.com/Minecraft.Download/versions/$SERVER_VERSION/minecraft_server.$SERVER_VERSION.jar'
@@ -223,12 +226,6 @@ WORLDS_LOCATION="$LOCATION/worlds"
 
 # The location to store disabled world server files.
 DISABLED_WORLDS_LOCATION="$LOCATION/worlds-disabled"
-
-# Default world name, port, and IP address if the worlds.conf file is
-# missing.
-DEFAULT_WORLD="world"
-DEFAULT_PORT="25565"
-DEFAULT_IP=""
 
 
 # Global Message Of The Day file (MOTD)
