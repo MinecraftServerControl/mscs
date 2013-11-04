@@ -619,7 +619,7 @@ getWorldProperties() {
       print;
     '
   )
-  # Get the server agruments, use the default value if not provided.
+  # Get the server arguments, use the default value if not provided.
   SERVER_ARGS=$(
     getPropertiesValue "$1" "mscs-server-args" "$DEFAULT_SERVER_ARGS"
   )
