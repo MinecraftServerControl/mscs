@@ -213,9 +213,9 @@ DEFAULT_SERVER_COMMAND='$JAVA -Xms$INITIAL_MEMORY -Xmx$MAXIMUM_MEMORY -jar $SERV
 # ---------------------------------------------------------------------------
 # Used by Minecraft Overviewer mapping software.
 
-CLIENT_JAR="minecraft.jar"
+CLIENT_JAR="$CURRENT_VERSION.jar"
 CLIENT_URL="https://s3.amazonaws.com/Minecraft.Download/versions/$CURRENT_VERSION/$CURRENT_VERSION.jar"
-CLIENT_LOCATION="$LOCATION/.minecraft/bin"
+CLIENT_LOCATION="$LOCATION/.minecraft/versions/$CURRENT_VERSION"
 
 
 # World (Server Instance) Configuration
@@ -911,22 +911,18 @@ worldBackup() {
 }
 
 # ---------------------------------------------------------------------------
-# update the Minecraft client software.
+# Update the Minecraft client software.
 # ---------------------------------------------------------------------------
 updateClientSoftware() {
   # Make sure the client software directory exists.
   execute "mkdir -p $CLIENT_LOCATION" $USER_NAME
-  # Backup the old client jar.
-  if [ -e "$CLIENT_LOCATION/$CLIENT_JAR" ]; then
-    execute "mv -f \"$CLIENT_LOCATION/$CLIENT_JAR\" \"$CLIENT_LOCATION/$CLIENT_JAR.old\"" $USER_NAME
-  fi
-  # Download the new Minecraft client software
-  execute "$WGET -qO \"$CLIENT_LOCATION/$CLIENT_JAR\" \"$CLIENT_URL\"" $USER_NAME
-  # Check for error and restore backup if found.
-  if [ $? -ne 0 ]; then
-    printf "\nError updating the Minecraft client software.\n"
-    if [ -e "$CLIENT_LOCATION/$CLIENT_JAR.old" ]; then
-      execute "mv -f \"$CLIENT_LOCATION/$CLIENT_JAR.old\" \"$CLIENT_LOCATION/$CLIENT_JAR\"" $USER_NAME
+  # Download the Minecraft client software.
+  if [ ! -e "$CLIENT_LOCATION/$CLIENT_JAR" ]; then
+    execute "$WGET -qO \"$CLIENT_LOCATION/$CLIENT_JAR\" \"$CLIENT_URL\"" $USER_NAME
+    # Report any errors.
+    if [ $? -ne 0 ]; then
+      printf "\nError updating the Minecraft client software.\n"
+      exit 1
     fi
   fi
 }
@@ -964,9 +960,7 @@ overviewer() {
   # Make sure the maps directory exists.
   execute "mkdir -p $MAPS_LOCATION/$1" $USER_NAME
   # Make sure the Minecraft client is available.
-  if [ ! -e "$CLIENT_LOCATION/$CLIENT_JAR" ]; then
-    updateClientSoftware
-  fi
+  updateClientSoftware
   # Make sure that the world files are actually there before mapping.
   if [ -e "$WORLDS_LOCATION/$1/server.properties" ]; then
     # Check for Overviewer settings file.
