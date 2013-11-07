@@ -569,14 +569,14 @@ setPropertiesValue() {
 }
 
 # ---------------------------------------------------------------------------
-# Retrieve the properties for the world.
+# Retrieve the version of the server running the world.
 #
-# @param 1 The world server to parse a string for.
-# @return SERVER_VERSION SERVER_JAR SERVER_LOCATION SERVER_URL SERVER_COMMAND
+# @param 1 The world server.
+# @return SERVER_VERSION
 # ---------------------------------------------------------------------------
-getWorldProperties() {
-  local SERVER_VERSION SERVER_JAR SERVER_LOCATION SERVER_URL SERVER_ARGS INITIAL_MEMORY MAXIMUM_MEMORY SERVER_COMMAND
-  # Get the server version, use the current version if not provided.
+getServerVersion() {
+  local SERVER_VERSION
+  # Get the server version, use the default version if not provided.
   SERVER_VERSION=$(
     getPropertiesValue "$1" "mscs-server-version" "$DEFAULT_SERVER_VERSION" |
     $PERL -ne '
@@ -585,40 +585,84 @@ getWorldProperties() {
       print;
     '
   )
+  echo "$SERVER_VERSION"
+}
+  
+# ---------------------------------------------------------------------------
+# Retrieve the .jar file name for the server running the world.
+#
+# @param 1 The world server.
+# @return SERVER_JAR
+# ---------------------------------------------------------------------------
+getServerJar() {
+  local SERVER_JAR
   # Get the server jar, use the default value if not provided.
   SERVER_JAR=$(
     getPropertiesValue "$1" "mscs-server-jar" "$DEFAULT_SERVER_JAR" |
     $PERL -ne '
       $current_version="'$CURRENT_VERSION'";
-      $server_version="'$SERVER_VERSION'";
+      $server_version="'$(getServerVersion "$1")'";
       $_ =~ s/\$CURRENT_VERSION/$current_version/g;
       $_ =~ s/\$SERVER_VERSION/$server_version/g;
       print;
     '
   )
+  echo "$SERVER_JAR"
+}
+
+# ---------------------------------------------------------------------------
+# Retrieve the location of the server files for the server running the world.
+#
+# @param 1 The world server.
+# @return SERVER_LOCATION
+# ---------------------------------------------------------------------------
+getServerLocation() {
+  local SERVER_LOCATION
   # Get the server location, use the default value if not provided.
   SERVER_LOCATION=$(
     getPropertiesValue "$1" "mscs-server-location" "$DEFAULT_SERVER_LOCATION" |
     $PERL -ne '
       $current_version="'$CURRENT_VERSION'";
-      $server_version="'$SERVER_VERSION'";
+      $server_version="'$(getServerVersion "$1")'";
       $_ =~ s/\$CURRENT_VERSION/$current_version/g;
       $_ =~ s/\$SERVER_VERSION/$server_version/g;
       print;
     '
   )
+  echo "$SERVER_LOCATION"
+}
+
+# ---------------------------------------------------------------------------
+# Retrieve the URL to download the server running the world.
+#
+# @param 1 The world server.
+# @return SERVER_URL
+# ---------------------------------------------------------------------------
+getServerURL() {
+  local SERVER_URL
   # Get the server download URL, use the default value if not provided.
   SERVER_URL=$(
     getPropertiesValue "$1" "mscs-server-url" "$DEFAULT_SERVER_URL" |
     $PERL -ne '
       $current_version="'$CURRENT_VERSION'";
-      $server_version="'$SERVER_VERSION'";
+      $server_version="'$(getServerVersion "$1")'";
       $_ =~ s/\$CURRENT_VERSION/$current_version/g;
       $_ =~ s/\$SERVER_VERSION/$server_version/g;
       $_ =~ s/\\\:/\:/g;
       print;
     '
   )
+  echo "$SERVER_URL"
+}
+
+# ---------------------------------------------------------------------------
+# Retrieve the command to start the server running the world.
+#
+# @param 1 The world server.
+# @return SERVER_COMMAND
+# ---------------------------------------------------------------------------
+getServerCommand() {
+  local SERVER_ARGS INITIAL_MEMORY MAXIMUM_MEMORY SERVER_COMMAND
   # Get the server arguments, use the default value if not provided.
   SERVER_ARGS=$(
     getPropertiesValue "$1" "mscs-server-args" "$DEFAULT_SERVER_ARGS"
@@ -637,9 +681,9 @@ getWorldProperties() {
     $PERL -ne '
       $java = "'$JAVA'";
       $current_version = "'$CURRENT_VERSION'";
-      $server_version = "'$SERVER_VERSION'";
-      $server_jar = "'$SERVER_JAR'";
-      $server_location = "'$SERVER_LOCATION'";
+      $server_version = "'$(getServerVersion "$1")'";
+      $server_jar = "'$(getServerJar "$1")'";
+      $server_location = "'$(getServerLocation "$1")'";
       $server_args = "'$SERVER_ARGS'";
       $initial_memory = "'$INITIAL_MEMORY'";
       $maximum_memory = "'$MAXIMUM_MEMORY'";
@@ -654,7 +698,7 @@ getWorldProperties() {
       print;
     '
   )
-  echo "$SERVER_VERSION\t$SERVER_JAR\t$SERVER_LOCATION\t$SERVER_URL\t$SERVER_COMMAND"
+  echo "$SERVER_COMMAND"
 }
 
 # ---------------------------------------------------------------------------
@@ -812,7 +856,7 @@ start() {
   # Change to the world's directory.
   cd $WORLD_DIR
   # Start the server.
-  SERVER_COMMAND=$(getWorldProperties "$1" | cut -f5)
+  SERVER_COMMAND=$(getServerCommand "$1")
   execute "$SCREEN -dmS minecraft-$1 $SERVER_COMMAND" $USER_NAME
   if [ $? -ne 0 ]; then
     printf "Error starting the server.\n"
@@ -933,11 +977,10 @@ updateClientSoftware() {
 # @param 1 The world server to update.
 # ---------------------------------------------------------------------------
 updateServerSoftware() {
-  local WORLD_PROPERTIES SERVER_JAR SERVER_LOCATION SERVER_URL
-  WORLD_PROPERTIES=$(getWorldProperties "$1")
-  SERVER_JAR=$(echo "$WORLD_PROPERTIES" | cut -f2)
-  SERVER_LOCATION=$(echo "$WORLD_PROPERTIES" | cut -f3)
-  SERVER_URL=$(echo "$WORLD_PROPERTIES" | cut -f4)
+  local SERVER_JAR SERVER_LOCATION SERVER_URL
+  SERVER_JAR=$(getServerJar "$1")
+  SERVER_LOCATION=$(getServerLocation "$1")
+  SERVER_URL=$(getServerURL "$1")
   execute "mkdir -p $SERVER_LOCATION" $USER_NAME
   if [ ! -e "$SERVER_LOCATION/$SERVER_JAR" ]; then
     # Download the new minecraft server software.
