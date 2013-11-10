@@ -102,7 +102,7 @@ Options:
     Watch the log file for the Minecraft world server.
 
   logrotate <world>
-    Rotate the server.log file.  Rotate the server.log file for all worlds by
+    Rotate the latest.log file.  Rotate the latest.log file for all worlds by
     default.
 
   backup <world>
@@ -271,7 +271,7 @@ BACKUP_DURATION=15
 # Server Log Configuration
 # ---------------------------------------------------------------------------
 
-# How many rotations of server.log to keep
+# How many rotations of latest.log to keep
 LOG_COUNT=10
 
 
@@ -748,32 +748,32 @@ checkUserIsAdmin() {
 }
 
 # ---------------------------------------------------------------------------
-# Rotates the world server log file.
+# Rotates the world latest.log file.
 #
 # @param 1 The world server generating the log to rotate.
 # ---------------------------------------------------------------------------
 rotateLog() {
   local WORLD_DIR LOG_LIST LOG_LINES LOG_NUMBER
   WORLD_DIR="$WORLDS_LOCATION/$1"
-  # Make sure that the server.log file exists.
-  execute "touch $WORLD_DIR/server.log" $USER_NAME
+  # Make sure that the latest.log file exists.
+  execute "touch $WORLD_DIR/logs/latest.log" $USER_NAME
   # Scan the log for entires and skip rotate is none are found.
-  LOG_LINES="$(cat "$WORLD_DIR/server.log" | wc -l )"
+  LOG_LINES="$(cat "$WORLD_DIR/logs/latest.log" | wc -l )"
   if [ $LOG_LINES -le 1 ]; then
     printf "\nNo new log entries to rotate. No changes made.\n"
     return 0
   fi
   # Server logfiles in chronological order.
-  LOGLIST=$(ls -r $WORLD_DIR/server.log* | grep -v lck)
+  LOGLIST=$(ls -r $WORLD_DIR/logs/latest.log* | grep -v lck)
   # Look at all the logfiles
   for i in $LOGLIST; do
     LOG_NUMBER=$(ls $i | cut -d "." -f 3)
-    # If we're working with server.log, append .1 then compress
+    # If we're working with latest.log, append .1 then compress
     # it.
     if [ -z $LOG_NUMBER ]; then
       LOG_NUMBER="1"
-      execute "cp $WORLD_DIR/server.log $WORLD_DIR/server.log.$LOG_NUMBER" $USER_NAME
-      execute "gzip $WORLD_DIR/server.log.$LOG_NUMBER" $USER_NAME
+      execute "cp $WORLD_DIR/logs/latest.log $WORLD_DIR/logs/latest.log.$LOG_NUMBER" $USER_NAME
+      execute "gzip $WORLD_DIR/logs/latest.log.$LOG_NUMBER" $USER_NAME
     # Otherwise, check if the file number is under $LOG_COUNT.
     elif [ $LOG_NUMBER -ge $LOG_COUNT ]; then
       # If so, delete it.
@@ -781,26 +781,26 @@ rotateLog() {
     else
       # Otherwise, add one to the number.
       LOG_NUMBER=$(($LOG_NUMBER+1))
-      execute "mv -f $i $WORLD_DIR/server.log.$LOG_NUMBER.gz" $USER_NAME
+      execute "mv -f $i $WORLD_DIR/logs/latest.log.$LOG_NUMBER.gz" $USER_NAME
     fi
   done
   # Blank the existing logfile to renew it.
-  execute "cp /dev/null $WORLD_DIR/server.log" $USER_NAME
+  execute "cp /dev/null $WORLD_DIR/logs/latest.log" $USER_NAME
 }
 
 # ---------------------------------------------------------------------------
-# Watch the world server log file.
+# Watch the world latest.log file.
 #
 # @param 1 The world server generating the log to watch.
 # ---------------------------------------------------------------------------
 watchLog() {
   local PID WORLD_DIR
   WORLD_DIR="$WORLDS_LOCATION/$1"
-  # Make sure that the server.log file exists.
-  if [ -e "$WORLD_DIR/server.log" ]; then
+  # Make sure that the latest.log file exists.
+  if [ -e "$WORLD_DIR/logs/latest.log" ]; then
     # Watch the log.
     PID=$(echo $(getProcessIDs $1) | cut -d ' ' -f2)
-    tail -n0 -f --pid=$PID $WORLD_DIR/server.log
+    tail -n0 -f --pid=$PID $WORLD_DIR/logs/latest.log
   fi
 }
 
