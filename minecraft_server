@@ -877,6 +877,7 @@ start() {
   # Start a tail process to watch for changes to the query.dat file to pipe to
   # the Minecraft query server via netcat.  The response from the query
   # server is piped into the response.dat file.
+  execute "rm -Rf $WORLD_DIR/query.dat $WORLD_DIR/response.dat" $USER_NAME
   execute "printf '' > $WORLD_DIR/query.dat" $USER_NAME
   execute "printf '' > $WORLD_DIR/response.dat" $USER_NAME
   execute "tail -f --pid=$PID $WORLD_DIR/query.dat | nc -q 1 -u 127.0.0.1 $(getPropertiesValue $1 'server-port') > $WORLD_DIR/response.dat &" $USER_NAME
@@ -1030,34 +1031,27 @@ overviewer() {
 # @return The response from the Query server in the requested format.
 # ---------------------------------------------------------------------------
 querySendPacket() {
-  local PACKET RESPONSE WORLD_DIR RETRY
+  local PACKET RESPONSE WORLD_DIR
   # The world's directory.
   WORLD_DIR="$WORLDS_LOCATION/$1"
   # Add the magic bytes to the incoming packet.
   PACKET=$(printf "FEFD%s%s%s" "$2" "$3" "$4")
-  # Send the packet to the query server and wait for a response.
-  RETRY=0
-  while [ -z "$RESPONSE" -a $RETRY -lt 5 ]; do
-    # Increment the retry counter.
-    RETRY=$(($RETRY+1))
-    # Pack the hex string packet and write it to the query.dat buffer file.
-    execute "$PERL -e '
-      print map { pack (\"C\", hex(\$_)) } (\"'$PACKET'\" =~ /(..)/g);
-    ' >> $WORLD_DIR/query.dat" $USER_NAME
-    # Give the query server a moment to respond. Sleep longer if the retry
-    # count is high.
-    sleep $RETRY
-    # Unpack the token from the response.dat buffer file.  There are a
-    # variable amount of null bytes at the start of the response string, so
-    # find the start of the packet by searching for the packet type and ID.
-    RESPONSE=$($PERL -ne '
-      $hex .= sprintf "%.2x", $_ foreach (unpack "C*", $_);
-      $hex =~ s/^0*'$2$3'/'$2$3'/;
-      print $hex;
-    ' $WORLD_DIR/response.dat)
-  done
-  # Remove the response from the response.dat buffer file.
+  # Remove any old responses from the response.dat buffer file.
   execute "printf '' > $WORLD_DIR/response.dat" $USER_NAME
+  # Pack the hex string packet and write it to the query.dat buffer file.
+  execute "$PERL -e '
+    print map { pack (\"C\", hex(\$_)) } (\"'$PACKET'\" =~ /(..)/g);
+  ' >> $WORLD_DIR/query.dat" $USER_NAME
+  # Give the query server a moment to respond.
+  sleep 1
+  # Unpack the token from the response.dat buffer file.  There are a
+  # variable amount of null bytes at the start of the response string, so
+  # find the start of the packet by searching for the packet type and ID.
+  RESPONSE=$($PERL -ne '
+    $hex .= sprintf "%.2x", $_ foreach (unpack "C*", $_);
+    $hex =~ s/^0*'$2$3'/'$2$3'/;
+    print $hex;
+  ' $WORLD_DIR/response.dat)
   # Return the response in the format requested.
   $PERL -e '
     $packed = join "", map { pack ("C", hex($_)) } ("'$RESPONSE'" =~ /(..)/g);
