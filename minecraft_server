@@ -881,9 +881,8 @@ querySendPacket() {
   execute "$PERL -e '
     print map { pack (\"C\", hex(\$_)) } (\"'$PACKET'\" =~ /(..)/g);
   ' >> $WORLD_DIR/query.dat" $USER_NAME
-  # Give the query server a moment to respond. Sleep longer if the retry
-  # count is high.
-  sleep $RETRY
+  # Give the query server a moment to respond.
+  sleep 1
   # Unpack the token from the response.dat buffer file.  There are a
   # variable amount of null bytes at the start of the response string, so
   # find the start of the packet by searching for the packet type and ID.
