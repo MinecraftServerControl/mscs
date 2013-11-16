@@ -1,26 +1,25 @@
-_minecraft_server()
-{
-    local cur prev opts base
+_minecraft_server() {
+    local CUR PREV OPTS
     COMPREPLY=()
-    cur="${COMP_WORDS[COMP_CWORD]}"
-    prev="${COMP_WORDS[COMP_CWORD-1]}"
+    CUR="${COMP_WORDS[COMP_CWORD]}"
+    PREV="${COMP_WORDS[COMP_CWORD-1]}"
 
-    opts="start stop force-stop restart force-restart create new delete remove
+    OPTS="start stop force-stop restart force-restart create new delete remove
     disable enable status show sync send screen watch logrotate backup
     map overviewer update"
 
-    case "${prev}" in
+    case "$PREV" in
         start|stop|force-stop|restart|force-restart|delete|remove|disable|\
         sync|send|screen|watch|logrotate|backup|map|overviewer)
-            local worlds="world"
-            COMPREPLY=( $(compgen -W "${worlds}" -- ${cur}) )
+            local WORLDS="world"
+            COMPREPLY=( $(compgen -W "$WORLDS" -- $CUR) )
             return 0
             ;;
         *)
         ;;
     esac
 
-    COMPREPLY=($(compgen -W "${opts}" -- ${cur}))
+    COMPREPLY=($(compgen -W "$OPTS" -- $CUR))
     return 0
 }
 complete -F _minecraft_server minecraft_server
