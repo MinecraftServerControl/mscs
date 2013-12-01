@@ -42,13 +42,14 @@ GNU Screen     Allows the script to run the Java process as a background
 GNU Wget       Allows the script to download software updates via the
                  internet.
 rdiff-backup   Allows the script to efficiently run backups.
+Socat          Allows the script to communicate with the Minecraft server.
 Iptables       Although not explicitly required, a good firewall should be
                  installed.
 
 If you are running Debian or Ubuntu, you can make sure that these are
 installed by running:
 
-sudo apt-get install default-jre perl screen wget rdiff-backup iptables
+sudo apt-get install default-jre perl screen wget rdiff-backup socat iptables
 
 
 Mapping Software
