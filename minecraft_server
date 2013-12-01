@@ -1087,15 +1087,11 @@ queryDetailedStatus() {
 worldStatus() {
   local STATUS
   if [ $(serverRunning $1) -eq 1 ]; then
-    if [ "$(getPropertiesValue $1 'enable-query')" = "true" ]; then
-      STATUS=$(queryStatus $1)
-      if [ -n "$STATUS" ]; then
-        printf "running (%d of %d users online).\n" $(echo "$STATUS" | cut -f6) $(echo "$STATUS" | cut -f7)
-      else
-        printf "running (query server offline).\n"
-      fi
+    STATUS=$(queryStatus $1)
+    if [ -n "$STATUS" ]; then
+      printf "running (%d of %d users online).\n" $(echo "$STATUS" | cut -f6) $(echo "$STATUS" | cut -f7)
     else
-      printf "running.\n"
+      printf "running (query server offline).\n"
     fi
     printf "    Process IDs: Screen %d, Java %d.\n" $(getProcessIDs $1)
   else
