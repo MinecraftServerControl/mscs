@@ -513,8 +513,8 @@ getPropertiesValue() {
   # Make sure the properties file exists
   if [ -e "$PROPERTY_FILE" ]; then
     # Find the key/value combo.
-    KEY=$($PERL -ne 'if ($_ =~ /^('$2')=.*$/) { print "$1"; }' $PROPERTY_FILE)
-    VALUE=$($PERL -ne 'if ($_ =~ /^'$2'=(.*)$/) { print "$1"; }' $PROPERTY_FILE)
+    KEY=$($PERL -ne 'if ($_ =~ /^('$2')=.*$/i) { print lc $1; }' $PROPERTY_FILE)
+    VALUE=$($PERL -ne 'if ($_ =~ /^'$2'=(.*)$/i) { print lc $1; }' $PROPERTY_FILE)
     if [ -n "$KEY" ] && [ -n "$VALUE" ]; then
       echo "$VALUE"
     else
