@@ -142,6 +142,7 @@ RSYNC=$(which rsync)
 SCREEN=$(which screen)
 WGET=$(which wget)
 RDIFF_BACKUP=$(which rdiff-backup)
+SOCAT=$(which socat)
 
 
 # Global Server Configuration
@@ -714,13 +715,19 @@ start() {
     printf "Error starting the server: couldn't retrieve the server's process ID.\n"
     exit 1
   fi
-  # Start a tail process to watch for changes to the query.dat file to pipe to
-  # the Minecraft query server via netcat.  The response from the query
-  # server is piped into the response.dat file.
-  execute "rm -Rf $WORLD_DIR/query.dat $WORLD_DIR/response.dat" $USER_NAME
-  execute "printf '' > $WORLD_DIR/query.dat" $USER_NAME
-  execute "printf '' > $WORLD_DIR/response.dat" $USER_NAME
-  execute "tail -f --pid=$PID $WORLD_DIR/query.dat | nc -q 1 -u 127.0.0.1 $(getPropertiesValue $1 'server-port') > $WORLD_DIR/response.dat &" $USER_NAME
+  if [ "$(getPropertiesValue $1 'enable-query')" = "true" ]; then
+    # Start a tail process to watch for changes to the query.dat file to pipe to
+    # the Minecraft query server via socat.  The response from the query
+    # server is piped into the response.dat file.
+    execute "rm -Rf $WORLD_DIR/query.dat $WORLD_DIR/response.dat" $USER_NAME
+    execute "printf '' > $WORLD_DIR/query.dat" $USER_NAME
+    execute "printf '' > $WORLD_DIR/response.dat" $USER_NAME
+    execute "
+      tail -f --pid=$PID $WORLD_DIR/query.dat | \
+      $SOCAT - UDP:127.0.0.1:$(getPropertiesValue $1 'server-port') > \
+      $WORLD_DIR/response.dat &
+    " $USER_NAME
+  fi
   # Create a lock file on RedHat and derivatives.
   if [ -d "/var/lock/subsys" ]; then
     touch /var/lock/subsys/minecraft_server
@@ -1014,10 +1021,12 @@ querySendDetailedInformationPacket() {
 # ---------------------------------------------------------------------------
 queryStatus() {
   local TOKEN RESPONSE
-  # Send a challenge packet to the Minecraft query server.
-  TOKEN=$(querySendChallengePacket $1 | cut -f 3)
-  # Send an information request packet to the Minecraft query server.
-  RESPONSE=$(querySendInformationPacket $1 $TOKEN)
+  if [ "$(getPropertiesValue $1 'enable-query')" = "true" ]; then
+    # Send a challenge packet to the Minecraft query server.
+    TOKEN=$(querySendChallengePacket $1 | cut -f 3)
+    # Send an information request packet to the Minecraft query server.
+    RESPONSE=$(querySendInformationPacket $1 $TOKEN)
+  fi
   # Return the response.
   printf "$RESPONSE\n"
 }
@@ -1060,10 +1069,12 @@ queryStatus() {
 # ---------------------------------------------------------------------------
 queryDetailedStatus() {
   local TOKEN RESPONSE
-  # Send a challenge packet to the Minecraft query server.
-  TOKEN=$(querySendChallengePacket $1 | cut -f 3)
-  # Send an information request packet to the Minecraft query server.
-  RESPONSE=$(querySendDetailedInformationPacket $1 $TOKEN)
+  if [ "$(getPropertiesValue $1 'enable-query')" = "true" ]; then
+    # Send a challenge packet to the Minecraft query server.
+    TOKEN=$(querySendChallengePacket $1 | cut -f 3)
+    # Send an information request packet to the Minecraft query server.
+    RESPONSE=$(querySendDetailedInformationPacket $1 $TOKEN)
+  fi
   # Return the response.
   printf "$RESPONSE\n"
 }
@@ -1076,8 +1087,16 @@ queryDetailedStatus() {
 worldStatus() {
   local STATUS
   if [ $(serverRunning $1) -eq 1 ]; then
-    STATUS=$(queryStatus $1)
-    printf "running (%d of %d users online).\n" $(echo "$STATUS" | cut -f6) $(echo "$STATUS" | cut -f7)
+    if [ "$(getPropertiesValue $1 'enable-query')" = "true" ]; then
+      STATUS=$(queryStatus $1)
+      if [ -n "$STATUS" ]; then
+        printf "running (%d of %d users online).\n" $(echo "$STATUS" | cut -f6) $(echo "$STATUS" | cut -f7)
+      else
+        printf "running (query server offline).\n"
+      fi
+    else
+      printf "running.\n"
+    fi
     printf "    Process IDs: Screen %d, Java %d.\n" $(getProcessIDs $1)
   else
     printf "not running.\n"
@@ -1131,6 +1150,12 @@ if [ ! -e "$RDIFF_BACKUP" ]; then
   printf "ERROR: rdiff-backup not found!\n"
   printf "Try installing this with:\n"
   printf "sudo apt-get install rdiff-backup\n"
+  exit 1
+fi
+if [ ! -e "$SOCAT" ]; then
+  printf "ERROR: socat not found!\n"
+  printf "Try installing this with:\n"
+  printf "sudo apt-get install socat\n"
   exit 1
 fi
 
