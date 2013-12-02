@@ -7,10 +7,12 @@ A powerful command-line control script for Linux-powered Minecraft servers.
 Installation
 -----------------------------
 To get your server to run the script on startup, and cleanly down the server
-on shutdown, you need to copy the minecraft_server script to /etc/init.d, set
-execute permissions on the file, and instruct the system to use the script on
-startup and shutdown.  The following commands will work in Debian and Ubuntu
-like environments, ymmv in others.
+on shutdown, you need to copy the minecraft_server script to `/etc/init.d`,
+set execute permissions on the file, and instruct the system to use the script
+on startup and shutdown.
+
+The following commands will work in Debian and Ubuntu like environments, ymmv
+in others.
 
 sudo cp minecraft_server /etc/init.d/minecraft_server
 sudo chmod 755 /etc/init.d/minecraft_server
@@ -18,7 +20,7 @@ sudo update-rc.d minecraft_server defaults
 
 
 For Bash programmable completion support, you need to copy the mscs_completion
-script to /etc/back_completion.d.
+script to `/etc/bash_completion.d`.
 
 sudo cp mscs_completion /etc/bash_completion.d/mscs_completion
 
