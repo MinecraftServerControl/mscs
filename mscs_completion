@@ -16,7 +16,7 @@ _minecraft_server() {
         disable|enable|status|show|sync|send|screen|watch|logrotate|backup| \
         map|overviewer)
             WORLDS="world"
-            COMPREPLY=( $(compgen -W "$WORLDS" -- $CUR) )
+            COMPREPLY=($(compgen -W "$WORLDS" -- $CUR))
             return 0
         ;;
         *)
