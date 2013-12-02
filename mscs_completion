@@ -22,4 +22,4 @@ _minecraft_server() {
     COMPREPLY=($(compgen -W "$OPTS" -- $CUR))
     return 0
 }
-complete -F _minecraft_server minecraft_server
+complete -F _minecraft_server /etc/init.d/minecraft_server
