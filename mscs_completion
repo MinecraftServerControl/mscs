@@ -1,0 +1,28 @@
+_minecraft_server() {
+    local CUR PREV OPTS
+    COMPREPLY=()
+    CUR="${COMP_WORDS[COMP_CWORD]}"
+    PREV="${COMP_WORDS[COMP_CWORD-1]}"
+
+    OPTS="start stop force-stop restart force-restart create new delete remove
+    disable enable status show sync send screen watch logrotate backup update
+    map overviewer"
+
+    if [ $COMP_CWORD -eq 1 ]; then
+      COMPREPLY=($(compgen -W "$OPTS" -- $CUR))
+    else
+      case "$PREV" in
+        start|stop|force-stop|restart|force-restart|create|new|delete|remove| \
+        disable|enable|status|show|sync|send|screen|watch|logrotate|backup| \
+        map|overviewer)
+            local WORLDS="world"
+            COMPREPLY=( $(compgen -W "$WORLDS" -- $CUR) )
+            return 0
+        ;;
+        *)
+        ;;
+      esac
+    fi
+    return 0
+}
+complete -F _minecraft_server /etc/init.d/minecraft_server
