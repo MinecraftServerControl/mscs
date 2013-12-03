@@ -115,8 +115,8 @@ Options:
     Run the Minecraft Overviewer mapping software on the Minecraft world.
     Map all worlds by default.
 
-  update
-    Update the client and server software.
+  update <world>
+    Update the client and server software for the Minecraft world.
 
 EOF
 )
@@ -1545,7 +1545,7 @@ case "$1" in
     done
     printf ".\n"
     printf "Backing up Minecraft Server:"
-    for WORLD in $ALL_WORLDS; do
+    for WORLD in $WORLDS; do
       printf " $WORLD"
       worldBackup $WORLD
     done
@@ -1559,7 +1559,7 @@ case "$1" in
     updateServerSoftware
     printf ".\n"
     printf "Restarting Minecraft Server:"
-    for WORLD in $ALL_WORLDS; do
+    for WORLD in $WORLDS; do
       printf " $WORLD"
       start $WORLD
     done
