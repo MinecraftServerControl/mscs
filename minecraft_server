@@ -491,11 +491,11 @@ getMOTD() {
 }
 
 # ---------------------------------------------------------------------------
-# Grab the list of worlds.
+# Grab the list of enabled worlds.
 #
-# @return The list of worlds.
+# @return The list of enabled worlds.
 # ---------------------------------------------------------------------------
-getWorlds() {
+getEnabledWorlds() {
   local WORLD WORLDS
   WORLDS=""
   for WORLD in $(ls $WORLDS_LOCATION); do
@@ -1213,8 +1213,8 @@ if [ ! -e "$SOCAT" ]; then
   exit 1
 fi
 
-# Grab the list of worlds.
-ALL_WORLDS=$(getWorlds)
+# Grab the list of enabled worlds.
+ALL_WORLDS=$(getEnabledWorlds)
 
 # Respond to the command line arguments.
 case "$1" in
