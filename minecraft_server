@@ -854,6 +854,8 @@ updateClientSoftware() {
 
 # ---------------------------------------------------------------------------
 # Update the Minecraft server software.
+#
+# @param 1 The world server to update.
 # ---------------------------------------------------------------------------
 updateServerSoftware() {
   execute "mkdir -p $SERVER_LOCATION" $USER_NAME
