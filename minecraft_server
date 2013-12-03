@@ -905,18 +905,9 @@ start() {
     printf "Error starting the server: couldn't retrieve the server's process ID.\n"
     exit 1
   fi
+  # Start the Query handler if enabled.
   if [ "$(getPropertiesValue $1 'enable-query')" = "true" ]; then
-    # Start a tail process to watch for changes to the query.dat file to pipe to
-    # the Minecraft query server via socat.  The response from the query
-    # server is piped into the response.dat file.
-    execute "rm -Rf $WORLD_DIR/query.dat $WORLD_DIR/response.dat" $USER_NAME
-    execute "printf '' > $WORLD_DIR/query.dat" $USER_NAME
-    execute "printf '' > $WORLD_DIR/response.dat" $USER_NAME
-    execute "
-      tail -f --pid=$PID $WORLD_DIR/query.dat | \
-      $SOCAT - UDP:127.0.0.1:$(getPropertiesValue $1 'server-port') > \
-      $WORLD_DIR/response.dat &
-    " $USER_NAME
+    queryStart "$1" &
   fi
   # Create a lock file on RedHat and derivatives.
   if [ -d "/var/lock/subsys" ]; then
@@ -1057,6 +1048,35 @@ overviewer() {
 }
 
 # ---------------------------------------------------------------------------
+# Start a Query handler for a world server.
+#
+# @param 1 The world server to start Query handler for.
+# ---------------------------------------------------------------------------
+queryStart() {
+  local PID WORLD_DIR
+  # Make sure that the world's directory exists.
+  WORLD_DIR="$WORLDS_LOCATION/$1"
+  # Grab the Java Process ID of the server.
+  PID=$(echo $(getProcessIDs $1) | cut -d ' ' -f2)
+  # Delete any old query.dat or response.dat files.
+  execute "rm -Rf $WORLD_DIR/query.dat $WORLD_DIR/response.dat" $USER_NAME
+  # Give the server a moment to start before initializing the
+  # Query handler.
+  sleep 10
+  # Initialize the query.dat and response.dat files.
+  execute "printf '' > $WORLD_DIR/query.dat" $USER_NAME
+  execute "printf '' > $WORLD_DIR/response.dat" $USER_NAME
+  # Start a tail process to watch for changes to the query.dat file to pipe
+  # to the Minecraft query server via socat.  The response from the query
+  # server is piped into the response.dat file.
+  execute "
+    tail -f --pid=$PID $WORLD_DIR/query.dat | \
+    $SOCAT - UDP:127.0.0.1:$(getPropertiesValue $1 'server-port') > \
+    $WORLD_DIR/response.dat
+  " $USER_NAME
+}
+
+# ---------------------------------------------------------------------------
 # Pack a hex string into a buffer file that is piped to the Minecraft query
 # server.
 #
@@ -1071,24 +1091,28 @@ querySendPacket() {
   local PACKET RESPONSE WORLD_DIR
   # The world's directory.
   WORLD_DIR="$WORLDS_LOCATION/$1"
-  # Add the magic bytes to the incoming packet.
-  PACKET=$(printf "FEFD%s%s%s" "$2" "$3" "$4")
-  # Remove any old responses from the response.dat buffer file.
-  execute "printf '' > $WORLD_DIR/response.dat" $USER_NAME
-  # Pack the hex string packet and write it to the query.dat buffer file.
-  execute "$PERL -e '
-    print map { pack (\"C\", hex(\$_)) } (\"'$PACKET'\" =~ /(..)/g);
-  ' >> $WORLD_DIR/query.dat" $USER_NAME
-  # Give the query server a moment to respond.
-  sleep 1
-  # Unpack the token from the response.dat buffer file.  There are a
-  # variable amount of null bytes at the start of the response string, so
-  # find the start of the packet by searching for the packet type and ID.
-  RESPONSE=$($PERL -ne '
-    $hex .= sprintf "%.2x", $_ foreach (unpack "C*", $_);
-    $hex =~ s/^0*'$2$3'/'$2$3'/;
-    print $hex;
-  ' $WORLD_DIR/response.dat)
+  # Make sure the query.dat and response.dat buffer files exist before
+  # preparing and sending the packet to the Query server.
+  if [ -e $WORLD_DIR/query.dat ] && [ -e $WORLD_DIR/response.dat ]; then
+    # Add the magic bytes to the incoming packet.
+    PACKET=$(printf "FEFD%s%s%s" "$2" "$3" "$4")
+    # Remove any old responses from the response.dat buffer file.
+    execute "printf '' > $WORLD_DIR/response.dat" $USER_NAME
+    # Pack the hex string packet and write it to the query.dat buffer file.
+    execute "$PERL -e '
+      print map { pack (\"C\", hex(\$_)) } (\"'$PACKET'\" =~ /(..)/g);
+    ' >> $WORLD_DIR/query.dat" $USER_NAME
+    # Give the Query server a moment to respond.
+    sleep 1
+    # Unpack the token from the response.dat buffer file.  There are a
+    # variable amount of null bytes at the start of the response string, so
+    # find the start of the packet by searching for the packet type and ID.
+    RESPONSE=$($PERL -ne '
+      $hex .= sprintf "%.2x", $_ foreach (unpack "C*", $_);
+      $hex =~ s/^0*'$2$3'/'$2$3'/;
+      print $hex;
+    ' $WORLD_DIR/response.dat)
+  fi
   # Return the response in the format requested.
   $PERL -e '
     $packed = join "", map { pack ("C", hex($_)) } ("'$RESPONSE'" =~ /(..)/g);
@@ -1215,8 +1239,10 @@ queryStatus() {
   if [ "$(getPropertiesValue $1 'enable-query')" = "true" ]; then
     # Send a challenge packet to the Minecraft query server.
     TOKEN=$(querySendChallengePacket $1 | cut -f 3)
-    # Send an information request packet to the Minecraft query server.
-    RESPONSE=$(querySendInformationPacket $1 $TOKEN)
+    if [ -n "$TOKEN" ]; then
+      # Send an information request packet to the Minecraft query server.
+      RESPONSE=$(querySendInformationPacket $1 $TOKEN)
+    fi
   fi
   # Return the response.
   printf "$RESPONSE\n"
