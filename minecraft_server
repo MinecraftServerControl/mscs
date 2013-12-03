@@ -748,18 +748,9 @@ start() {
     printf "Error starting the server: couldn't retrieve the server's process ID.\n"
     exit 1
   fi
+  # Start the Query handler if enabled.
   if [ "$(getPropertiesValue $1 'enable-query')" = "true" ]; then
-    # Start a tail process to watch for changes to the query.dat file to pipe to
-    # the Minecraft query server via socat.  The response from the query
-    # server is piped into the response.dat file.
-    execute "rm -Rf $WORLD_DIR/query.dat $WORLD_DIR/response.dat" $USER_NAME
-    execute "printf '' > $WORLD_DIR/query.dat" $USER_NAME
-    execute "printf '' > $WORLD_DIR/response.dat" $USER_NAME
-    execute "
-      tail -f --pid=$PID $WORLD_DIR/query.dat | \
-      $SOCAT - UDP:127.0.0.1:$(getPropertiesValue $1 'server-port') > \
-      $WORLD_DIR/response.dat &
-    " $USER_NAME
+    queryStart "$1" &
   fi
   # Create a lock file on RedHat and derivatives.
   if [ -d "/var/lock/subsys" ]; then
@@ -893,6 +884,35 @@ overviewer() {
       execute "$OVERVIEWER_BIN --rendermodes=normal,lighting,cave --processes 1 $WORLDS_LOCATION/$1/$1 $MAPS_LOCATION/$1" $USER_NAME > /dev/null 2>&1
     fi
   fi
+}
+
+# ---------------------------------------------------------------------------
+# Start a Query handler for a world server.
+#
+# @param 1 The world server to start Query handler for.
+# ---------------------------------------------------------------------------
+queryStart() {
+  local PID WORLD_DIR
+  # Make sure that the world's directory exists.
+  WORLD_DIR="$WORLDS_LOCATION/$1"
+  # Grab the Java Process ID of the server.
+  PID=$(echo $(getProcessIDs $1) | cut -d ' ' -f2)
+  # Delete any old query.dat or response.dat files.
+  execute "rm -Rf $WORLD_DIR/query.dat $WORLD_DIR/response.dat" $USER_NAME
+  # Give the server a moment to start before initializing the
+  # Query handler.
+  sleep 10
+  # Initialize the query.dat and response.dat files.
+  execute "printf '' > $WORLD_DIR/query.dat" $USER_NAME
+  execute "printf '' > $WORLD_DIR/response.dat" $USER_NAME
+  # Start a tail process to watch for changes to the query.dat file to pipe
+  # to the Minecraft query server via socat.  The response from the query
+  # server is piped into the response.dat file.
+  execute "
+    tail -f --pid=$PID $WORLD_DIR/query.dat | \
+    $SOCAT - UDP:127.0.0.1:$(getPropertiesValue $1 'server-port') > \
+    $WORLD_DIR/response.dat
+  " $USER_NAME
 }
 
 # ---------------------------------------------------------------------------
