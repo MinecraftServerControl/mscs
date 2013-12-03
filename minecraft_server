@@ -1128,8 +1128,10 @@ queryDetailedStatus() {
   if [ "$(getPropertiesValue $1 'enable-query')" = "true" ]; then
     # Send a challenge packet to the Minecraft query server.
     TOKEN=$(querySendChallengePacket $1 | cut -f 3)
-    # Send an information request packet to the Minecraft query server.
-    RESPONSE=$(querySendDetailedInformationPacket $1 $TOKEN)
+    if [ -n "$TOKEN" ]; then
+      # Send an information request packet to the Minecraft query server.
+      RESPONSE=$(querySendDetailedInformationPacket $1 $TOKEN)
+    fi
   fi
   # Return the response.
   printf "$RESPONSE\n"
