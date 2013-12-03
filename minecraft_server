@@ -737,6 +737,31 @@ tellMOTD() {
 }
 
 # ---------------------------------------------------------------------------
+# Check to see if the user running this script has the correct permissions.
+# ---------------------------------------------------------------------------
+checkPermission() {
+  # Make sure that the minecraft user exists.
+  if [ ! -n "$(grep $USER_NAME /etc/passwd)" ]; then
+    printf "ERROR: This script requires that a user account named "
+    printf "$USER_NAME exist on this system.\nEither modify the "
+    printf "USER_NAME variable in this script, or try adding this "
+    printf "user:\n"
+    printf "sudo adduser $USER_NAME\n"
+    exit 1
+  fi
+  # Check to see if the user is root or is the minecraft user.
+  if [ $(id -u) -gt 0 ] && [ "$(whoami)" != "$USER_NAME" ]; then
+    # Script is running with the wrong user.
+    printf "WARNING: This script appears to have been started by the "
+    printf "wrong user.\n"
+    printf "Expected to find the user: $USER_NAME.  You can try to log "
+    printf "on to this user:\n"
+    printf "su $USER_NAME\n"
+    exit 1
+  fi
+}
+
+# ---------------------------------------------------------------------------
 # Check to see if the user is in the ops.txt file of the specified world.
 #
 # @param 1 The world server of interest.
@@ -1316,32 +1341,13 @@ if [ ! -e "$SOCAT" ]; then
   exit 1
 fi
 
-# Make sure that the minecraft user exists.
-if [ ! -n "$(grep $USER_NAME /etc/passwd)" ]; then
-  printf "ERROR: This script requires that a user account named "
-  printf "$USER_NAME exist on this system.\nEither modify the "
-  printf "USER_NAME variable in this script, or try adding this "
-  printf "user:\n"
-  printf "sudo adduser $USER_NAME\n"
-  exit 1
-fi
-
-# Warn if the script is running with the wrong user.
-if [ $(id -u) -ne 0 ] && [ "$(whoami)" != "$USER_NAME" ]; then
-  printf "WARNING: This script appears to have been started by the "
-  printf "wrong user.\n"
-  printf "Expected to find the user: $USER_NAME.  You can try to log "
-  printf "on to this user:\n"
-  printf "su $USER_NAME\n"
-  exit 1
-fi
-
 # Grab the list of worlds.
 ALL_WORLDS=$(getWorlds)
 
 # Respond to the command line arguments.
 case "$1" in
   start)
+    checkPermission
     # Figure out which worlds to start.
     WORLDS="$ALL_WORLDS"
     # If there are no worlds in the list, then use the default world.
@@ -1368,6 +1374,7 @@ case "$1" in
     printf ".\n"
   ;;
   stop|force-stop)
+    checkPermission
     # Figure out which worlds to stop.
     WORLDS="$ALL_WORLDS"
     if [ -n "$2" ] && [ $(listContains "$2" "$ALL_WORLDS") -eq 1 ]; then
@@ -1404,6 +1411,7 @@ case "$1" in
     printf ".\n"
   ;;
   restart|reload|force-restart|force-reload)
+    checkPermission
     # Figure out which worlds to restart.
     WORLDS="$ALL_WORLDS"
     if [ -n "$2" ] && [ $(listContains "$2" "$ALL_WORLDS") -eq 1 ]; then
@@ -1439,6 +1447,7 @@ case "$1" in
     printf ".\n"
   ;;
   create|new)
+    checkPermission
     if [ ! -n "$2" ]; then
       printf "A name for the new world must be supplied.\n"
       exit 1
@@ -1452,6 +1461,7 @@ case "$1" in
     printf ".\n"
   ;;
   delete|remove)
+    checkPermission
     if [ ! -n "$2" ] || [ $(listContains "$2" "$ALL_WORLDS") -eq 0 ]; then
       printf "World not found, unable to delete world '$2'.\n"
       exit 1
@@ -1475,6 +1485,7 @@ case "$1" in
     printf ".\n"
   ;;
   disable)
+    checkPermission
     if [ ! -n "$2" ] || [ $(listContains "$2" "$ALL_WORLDS") -eq 0 ]; then
       printf "World not found, unable to disable world '$2'.\n"
       exit 1
@@ -1498,6 +1509,7 @@ case "$1" in
     printf ".\n"
   ;;
   enable)
+    checkPermission
     if [ ! -n "$2" ] || [ ! -f "$DISABLED_WORLDS_LOCATION/$2/server.properties" ]; then
       printf "World not found, unable to enable world '$2'.\n"
       exit 1
@@ -1510,6 +1522,7 @@ case "$1" in
     printf ".\n"
   ;;
   status|show)
+    checkPermission
     # Figure out which worlds to show the status for.
     WORLDS="$ALL_WORLDS"
     if [ -n "$2" ] && [ $(listContains "$2" "$ALL_WORLDS") -eq 1 ]; then
@@ -1527,6 +1540,7 @@ case "$1" in
     done
   ;;
   sync|synchronize)
+    checkPermission
     # Figure out which worlds to synchronize.
     WORLDS="$ALL_WORLDS"
     if [ -n "$2" ] && [ $(listContains "$2" "$ALL_WORLDS") -eq 1 ]; then
@@ -1553,6 +1567,7 @@ case "$1" in
     printf ".\n"
   ;;
   send)
+    checkPermission
     # Check for the world command line argument.
     if [ -n "$2" ] && [ $(listContains $2 "$ALL_WORLDS") -eq 1 ] && [ -n "$3" ]; then
       WORLD=$2
@@ -1566,6 +1581,7 @@ case "$1" in
     fi
   ;;
   screen)
+    checkPermission
     # Check for the world command line argument.
     if [ -n "$2" ] && [ $(listContains $2 "$ALL_WORLDS") -eq 1 ]; then
       printf "About to load the screen for world: $2.\n"
@@ -1583,6 +1599,7 @@ case "$1" in
     fi
   ;;
   watch)
+    checkPermission
     # Check for the world command line argument.
     if [ -n "$2" ] && [ $(listContains $2 "$ALL_WORLDS") -eq 1 ]; then
       printf "Monitoring Minecraft Server: $2.\n"
@@ -1598,6 +1615,7 @@ case "$1" in
     fi
   ;;
   logrotate)
+    checkPermission
     # Figure out which worlds to rotate the log.
     WORLDS="$ALL_WORLDS"
     if [ -n "$2" ] && [ $(listContains "$2" "$ALL_WORLDS") -eq 1 ]; then
@@ -1616,6 +1634,7 @@ case "$1" in
     printf ".\n"
   ;;
   backup)
+    checkPermission
     # Figure out which worlds to backup.
     WORLDS="$ALL_WORLDS"
     if [ -n "$2" ] && [ $(listContains "$2" "$ALL_WORLDS") -eq 1 ]; then
@@ -1644,6 +1663,7 @@ case "$1" in
     printf ".\n"
   ;;
   update)
+    checkPermission
     # Figure out which worlds to update.
     WORLDS="$ALL_WORLDS"
     if [ -n "$2" ] && [ $(listContains "$2" "$ALL_WORLDS") -eq 1 ]; then
@@ -1691,6 +1711,7 @@ case "$1" in
     printf ".\n"
   ;;
   map|overviewer)
+    checkPermission
     # Make sure that the Minecraft Overviewer software exists.
     if [ ! -e "$OVERVIEWER_BIN" ]; then
       printf "Mincraft Overviewer software not found.\n"
