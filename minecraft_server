@@ -857,19 +857,14 @@ updateClientSoftware() {
 # ---------------------------------------------------------------------------
 updateServerSoftware() {
   execute "mkdir -p $SERVER_LOCATION" $USER_NAME
-  # Backup the old jar file.
-  if [ -e "$SERVER_LOCATION/$SERVER_JAR" ]; then
-    execute "mv -f \"$SERVER_LOCATION/$SERVER_JAR\" \"$SERVER_LOCATION/$SERVER_JAR.old\"" $USER_NAME
-  fi
-  # Download the new minecraft server software.
-  execute "$WGET -qO \"$SERVER_LOCATION/$SERVER_JAR\" \"$SERVER_URL\"" $USER_NAME
-  # Check for error and restore backup if found.
-  if [ $? -ne 0 ]; then
-    printf "\nError updating the Minecraft server software.\n"
-    if [ -e "$SERVER_LOCATION/$SERVER_JAR.old" ]; then
-      execute "mv -f $SERVER_LOCATION/$SERVER_JAR.old $SERVER_LOCATION/$SERVER_JAR" $USER_NAME
+  if [ ! -e "$SERVER_LOCATION/$SERVER_JAR" ]; then
+    # Download the new minecraft server software.
+    execute "$WGET -qO \"$SERVER_LOCATION/$SERVER_JAR\" \"$SERVER_URL\"" $USER_NAME
+    # Report any errors.
+    if [ $? -ne 0 ]; then
+      printf "\nError updating the Minecraft server software.\n"
+      exit 1
     fi
-    exit 1
   fi
 }
 
@@ -1547,13 +1542,11 @@ case "$1" in
       worldBackup $WORLD
     done
     printf ".\n"
-    printf "Updating software package:"
-    # Update the client software.
-    printf " client"
-    updateClientSoftware
-    # Update the server software.
-    printf " server"
-    updateServerSoftware
+    printf "Updating Server Software:"
+    for WORLD in $WORLDS; do
+      printf " $WORLD"
+      updateServerSoftware "$WORLD"
+    done
     printf ".\n"
     printf "Restarting Minecraft Server:"
     for WORLD in $WORLDS; do
