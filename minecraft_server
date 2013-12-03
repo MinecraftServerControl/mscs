@@ -454,6 +454,8 @@ deleteWorld() {
 # @param 1 The world server to disable.
 # ---------------------------------------------------------------------------
 disableWorld() {
+  # Make sure the disabled world location exists.
+  execute "mkdir -p $DISABLED_WORLDS_LOCATION" $USER_NAME
   # Disable the world.
   execute "mv $WORLDS_LOCATION/$1 $DISABLED_WORLDS_LOCATION/$1" $USER_NAME 
 }
