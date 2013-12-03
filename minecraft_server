@@ -1050,20 +1050,20 @@ overviewer() {
 # ---------------------------------------------------------------------------
 # Start a Query handler for a world server.
 #
-# @param 1 The world server to start Query handler for.
+# @param 1 The world server to start a Query handler for.
 # ---------------------------------------------------------------------------
 queryStart() {
   local PID WORLD_DIR
-  # Make sure that the world's directory exists.
+  # Grab the location of the world's directory.
   WORLD_DIR="$WORLDS_LOCATION/$1"
-  # Grab the Java Process ID of the server.
+  # Grab the Java Process ID of the world server.
   PID=$(echo $(getProcessIDs $1) | cut -d ' ' -f2)
-  # Delete any old query.dat or response.dat files.
+  # Delete any old query.dat or response.dat buffer files.
   execute "rm -Rf $WORLD_DIR/query.dat $WORLD_DIR/response.dat" $USER_NAME
   # Give the server a moment to start before initializing the
   # Query handler.
   sleep 10
-  # Initialize the query.dat and response.dat files.
+  # Initialize the query.dat and response.dat buffer files.
   execute "printf '' > $WORLD_DIR/query.dat" $USER_NAME
   execute "printf '' > $WORLD_DIR/response.dat" $USER_NAME
   # Start a tail process to watch for changes to the query.dat file to pipe
@@ -1289,8 +1289,10 @@ queryDetailedStatus() {
   if [ "$(getPropertiesValue $1 'enable-query')" = "true" ]; then
     # Send a challenge packet to the Minecraft query server.
     TOKEN=$(querySendChallengePacket $1 | cut -f 3)
-    # Send an information request packet to the Minecraft query server.
-    RESPONSE=$(querySendDetailedInformationPacket $1 $TOKEN)
+    if [ -n "$TOKEN" ]; then
+      # Send an information request packet to the Minecraft query server.
+      RESPONSE=$(querySendDetailedInformationPacket $1 $TOKEN)
+    fi
   fi
   # Return the response.
   printf "$RESPONSE\n"
