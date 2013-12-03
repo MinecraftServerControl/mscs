@@ -1544,6 +1544,7 @@ case "$1" in
       worldBackup $WORLD
     done
     printf ".\n"
+    # Update the server software.
     printf "Updating Server Software:"
     for WORLD in $WORLDS; do
       printf " $WORLD"
