@@ -507,6 +507,22 @@ getEnabledWorlds() {
 }
 
 # ---------------------------------------------------------------------------
+# Grab the list of disabled worlds.
+#
+# @return The list of disabled worlds.
+# ---------------------------------------------------------------------------
+getDisabledWorlds() {
+  local WORLD WORLDS
+  WORLDS=""
+  for WORLD in $(ls $DISABLED_WORLDS_LOCATION); do
+    if [ -f $DISABLED_WORLDS_LOCATION/$WORLD/server.properties ]; then
+      WORLDS="$WORLDS $WORLD"
+    fi
+  done
+  echo $WORLDS
+}
+
+# ---------------------------------------------------------------------------
 # Get the value of a key in a world properties file.
 #
 # @param 1 The world server of interest.
