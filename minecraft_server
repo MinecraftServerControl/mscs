@@ -116,7 +116,8 @@ Options:
     Map all worlds by default.
 
   update <world>
-    Update the client and server software for the Minecraft world.
+    Update the server software for the Minecraft world server.  Update
+    server software for all worlds by default.
 
 EOF
 )
