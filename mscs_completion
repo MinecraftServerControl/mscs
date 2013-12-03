@@ -1,27 +1,29 @@
+MINECRAFT_SERVER=/etc/init.d/minecraft_server
+
 _minecraft_server() {
-    local CUR PREV OPTS WORLDS
-    COMPREPLY=()
-    CUR=${COMP_WORDS[COMP_CWORD]}
-    PREV=${COMP_WORDS[COMP_CWORD-1]}
+  local CUR PREV OPTS WORLDS
+  COMPREPLY=()
+  CUR=${COMP_WORDS[COMP_CWORD]}
+  PREV=${COMP_WORDS[COMP_CWORD-1]}
 
-    OPTS="start stop force-stop restart force-restart create new delete remove
-    disable enable status show sync send screen watch logrotate backup update
-    map overviewer"
+  OPTS="start stop force-stop restart force-restart create new delete remove
+  disable enable status show sync send screen watch logrotate backup update
+  map overviewer"
 
-    if [ $COMP_CWORD -eq 1 ]; then
-      COMPREPLY=($(compgen -W "$OPTS" -- $CUR))
-    else
-      case $PREV in
-        start|stop|force-stop|restart|force-restart|create|new|delete|remove| \
-        disable|enable|status|show|sync|send|screen|watch|logrotate|backup| \
-        map|overviewer)
-            WORLDS="world"
-            COMPREPLY=($(compgen -W "$WORLDS" -- $CUR))
-        ;;
-        *)
-        ;;
-      esac
-    fi
-    return 0
+  if [ $COMP_CWORD -eq 1 ]; then
+    COMPREPLY=($(compgen -W "$OPTS" -- $CUR))
+  else
+    case $PREV in
+      start|stop|force-stop|restart|force-restart|delete|remove| \
+      disable|status|show|sync|send|screen|watch|logrotate|backup| \
+      map|overviewer)
+        WORLDS=$($MINECRAFT_SERVER list)
+        COMPREPLY=($(compgen -W "$WORLDS" -- $CUR))
+      ;;
+      *)
+      ;;
+    esac
+  fi
+  return 0
 }
-complete -F _minecraft_server /etc/init.d/minecraft_server
+complete -F _minecraft_server $MINECRAFT_SERVER
