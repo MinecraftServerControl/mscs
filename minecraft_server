@@ -1518,9 +1518,18 @@ case "$1" in
   ;;
   update)
     checkPermission
+    # Figure out which worlds to update.
+    WORLDS="$ALL_WORLDS"
+    if [ -n "$2" ] && [ $(listContains "$2" "$ALL_WORLDS") -eq 1 ]; then
+      WORLDS="$2"
+    elif [ -n "$2" ]; then
+      printf "World '$2' not recognized.\n"
+      printf " Usage: $0 $1 <world>\n"
+      exit 1
+    fi
     # Stop all of the world servers and backup the worlds.
     printf "Stopping Minecraft Server:"
-    for WORLD in $ALL_WORLDS; do
+    for WORLD in $WORLDS; do
       if [ $(serverRunning $WORLD) -eq 1 ]; then
         printf " $WORLD"
         if [ $(printf "%d" $(queryStatus $WORLD | cut -f6)) -gt 0 ]; then
