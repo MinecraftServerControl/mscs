@@ -354,8 +354,8 @@ getScreenPID() {
 getJavaPID() {
   local PID
   PID=$(
-    ps -a -u $USER_NAME -o pid,ppid,comm |
-    $PERL -ne 'if ($_ =~ /^\s*(\d+)\s+'$(getScreenPID "$1")'\s+java/) { print $1; }'
+    ps -a -u $USER_NAME -o pid,comm,args |
+    $PERL -ne 'if ($_ =~ /^\s*(\d+)\s+java.+mscs-world='$1'$/) { print $1; }'
   )
   echo $PID
 }
@@ -768,7 +768,7 @@ start() {
   # Change to the world's directory.
   cd $WORLD_DIR
   # Start the server.
-  execute "$SCREEN -dmS minecraft-$1 $SERVER_COMMAND" $USER_NAME
+  execute "$SCREEN -dmS minecraft-$1 $SERVER_COMMAND mscs-world=$1" $USER_NAME
   # Verify the server is running.
   if [ $? -ne 0 ]; then
     printf "Error starting the server.\n"
