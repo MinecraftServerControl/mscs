@@ -331,6 +331,36 @@ execute() {
 }
 
 # ---------------------------------------------------------------------------
+# Get the PID of the Screen process for the world server.
+#
+# @param 1 The world server of interest.
+# @return The Screen PID.
+# ---------------------------------------------------------------------------
+getScreenPID() {
+  local PID
+  PID=$(
+    execute "$SCREEN -ls" $USER_NAME |
+    $PERL -ne 'if ($_ =~ /^\t(\d+)\.minecraft-'$1'\s+/) { print $1; }'
+  )
+  echo $PID
+}
+
+# ---------------------------------------------------------------------------
+# Get the PID of the Java process for the world server.
+#
+# @param 1 The world server of interest.
+# @return The Java PID.
+# ---------------------------------------------------------------------------
+getJavaPID() {
+  local PID
+  PID=$(
+    ps -a -u $USER_NAME -o pid,ppid,comm |
+    $PERL -ne 'if ($_ =~ /^\s*(\d+)\s+'$(getScreenPID $1)'\s+java/) { print $1; }'
+  )
+  echo $PID
+}
+
+# ---------------------------------------------------------------------------
 # Get the PIDs of the Screen and Java process for the world server.
 #
 # @param 1 The world server of interest.
@@ -338,8 +368,8 @@ execute() {
 # ---------------------------------------------------------------------------
 getProcessIDs() {
   local SCREEN_PID JAVA_PID
-  SCREEN_PID=$(execute "$SCREEN -ls" $USER_NAME | $PERL -ne 'if ($_ =~ /^\t(\d+)\.minecraft-'$1'\s+/) { print $1; }')
-  JAVA_PID=$(ps -a -u $USER_NAME -o pid,ppid,comm | $PERL -ne 'if ($_ =~ /^\s*(\d+)\s+'$SCREEN_PID'\s+java/) { print $1; }')
+  SCREEN_PID=$(getScreenPID $1)
+  JAVA_PID=$(getJavaPID $1)
   echo "$SCREEN_PID $JAVA_PID"
 }
 
