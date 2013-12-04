@@ -367,12 +367,10 @@ getJavaPID() {
 # @return A 1 if the server is thought to be running, a 0 otherwise.
 # ---------------------------------------------------------------------------
 serverRunning() {
-  local PIDS SCREEN_PID JAVA_PID
-  SCREEN_PID=$(getScreenPID "$1")
-  JAVA_PID=$(getJavaPID "$1")
+  local PID
+  PID=$(getJavaPID "$1")
   # Try to determine if the world is running.
-  if [ -n "$SCREEN_PID" ] && [ $SCREEN_PID -gt 0 ] &&
-    [ -n "$JAVA_PID" ] && [ $JAVA_PID -gt 0 ]; then
+  if [ -n "$PID" ] && [ $PID -gt 0 ]; then
     echo 1
   else
     echo 0
