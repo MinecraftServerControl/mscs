@@ -918,21 +918,21 @@ queryStart() {
   WORLD_DIR="$WORLDS_LOCATION/$1"
   # Grab the Java Process ID of the world server.
   PID=$(echo $(getProcessIDs $1) | cut -d ' ' -f2)
-  # Delete any old query.dat or response.dat buffer files.
-  execute "rm -Rf $WORLD_DIR/query.dat $WORLD_DIR/response.dat" $USER_NAME
+  # Delete any old query.in or query.out buffer files.
+  execute "rm -Rf $WORLD_DIR/query.in $WORLD_DIR/query.out" $USER_NAME
   # Give the server a moment to start before initializing the
   # Query handler.
   sleep 10
-  # Initialize the query.dat and response.dat buffer files.
-  execute "printf '' > $WORLD_DIR/query.dat" $USER_NAME
-  execute "printf '' > $WORLD_DIR/response.dat" $USER_NAME
-  # Start a tail process to watch for changes to the query.dat file to pipe
+  # Initialize the query.in and query.out buffer files.
+  execute "printf '' > $WORLD_DIR/query.in" $USER_NAME
+  execute "printf '' > $WORLD_DIR/query.out" $USER_NAME
+  # Start a tail process to watch for changes to the query.in file to pipe
   # to the Minecraft query server via socat.  The response from the query
-  # server is piped into the response.dat file.
+  # server is piped into the query.out file.
   execute "
-    tail -f --pid=$PID $WORLD_DIR/query.dat | \
+    tail -f --pid=$PID $WORLD_DIR/query.in | \
     $SOCAT - UDP:127.0.0.1:$(getPropertiesValue $1 'server-port') > \
-    $WORLD_DIR/response.dat
+    $WORLD_DIR/query.out
   " $USER_NAME
 }
 
@@ -951,27 +951,27 @@ querySendPacket() {
   local PACKET RESPONSE WORLD_DIR
   # The world's directory.
   WORLD_DIR="$WORLDS_LOCATION/$1"
-  # Make sure the query.dat and response.dat buffer files exist before
+  # Make sure the query.in and query.out buffer files exist before
   # preparing and sending the packet to the Query server.
-  if [ -e $WORLD_DIR/query.dat ] && [ -e $WORLD_DIR/response.dat ]; then
+  if [ -e $WORLD_DIR/query.in ] && [ -e $WORLD_DIR/query.out ]; then
     # Add the magic bytes to the incoming packet.
     PACKET=$(printf "FEFD%s%s%s" "$2" "$3" "$4")
-    # Remove any old responses from the response.dat buffer file.
-    execute "printf '' > $WORLD_DIR/response.dat" $USER_NAME
-    # Pack the hex string packet and write it to the query.dat buffer file.
+    # Remove any old responses from the query.out buffer file.
+    execute "printf '' > $WORLD_DIR/query.out" $USER_NAME
+    # Pack the hex string packet and write it to the query.in buffer file.
     execute "$PERL -e '
       print map { pack (\"C\", hex(\$_)) } (\"'$PACKET'\" =~ /(..)/g);
-    ' >> $WORLD_DIR/query.dat" $USER_NAME
+    ' >> $WORLD_DIR/query.in" $USER_NAME
     # Give the Query server a moment to respond.
     sleep 1
-    # Unpack the token from the response.dat buffer file.  There are a
+    # Unpack the token from the query.out buffer file.  There are a
     # variable amount of null bytes at the start of the response string, so
     # find the start of the packet by searching for the packet type and ID.
     RESPONSE=$($PERL -ne '
       $hex .= sprintf "%.2x", $_ foreach (unpack "C*", $_);
       $hex =~ s/^0*'$2$3'/'$2$3'/;
       print $hex;
-    ' $WORLD_DIR/response.dat)
+    ' $WORLD_DIR/query.out)
   fi
   # Return the response in the format requested.
   $PERL -e '
