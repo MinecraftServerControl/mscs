@@ -355,22 +355,9 @@ getJavaPID() {
   local PID
   PID=$(
     ps -a -u $USER_NAME -o pid,ppid,comm |
-    $PERL -ne 'if ($_ =~ /^\s*(\d+)\s+'$(getScreenPID $1)'\s+java/) { print $1; }'
+    $PERL -ne 'if ($_ =~ /^\s*(\d+)\s+'$(getScreenPID "$1")'\s+java/) { print $1; }'
   )
   echo $PID
-}
-
-# ---------------------------------------------------------------------------
-# Get the PIDs of the Screen and Java process for the world server.
-#
-# @param 1 The world server of interest.
-# @return The Screen and Java PIDs.
-# ---------------------------------------------------------------------------
-getProcessIDs() {
-  local SCREEN_PID JAVA_PID
-  SCREEN_PID=$(getScreenPID $1)
-  JAVA_PID=$(getJavaPID $1)
-  echo "$SCREEN_PID $JAVA_PID"
 }
 
 # ---------------------------------------------------------------------------
@@ -381,9 +368,8 @@ getProcessIDs() {
 # ---------------------------------------------------------------------------
 serverRunning() {
   local PIDS SCREEN_PID JAVA_PID
-  PIDS=$(getProcessIDs $1)
-  SCREEN_PID=$(echo "$PIDS" | cut -d ' ' -f1)
-  JAVA_PID=$(echo "$PIDS" | cut -d ' ' -f2)
+  SCREEN_PID=$(getScreenPID "$1")
+  JAVA_PID=$(getJavaPID "$1")
   # Try to determine if the world is running.
   if [ -n "$SCREEN_PID" ] && [ $SCREEN_PID -gt 0 ] &&
     [ -n "$JAVA_PID" ] && [ $JAVA_PID -gt 0 ]; then
@@ -402,7 +388,7 @@ serverRunning() {
 sendCommand() {
   local COMMAND PID
   COMMAND=$(printf "$2\r")
-  PID=$(echo $(getProcessIDs $1) | cut -d ' ' -f1)
+  PID=$(getScreenPID "$1")
   execute "$SCREEN -S $PID.minecraft-$1 -p 0 -X stuff \"$COMMAND\"" $USER_NAME
   if [ $? -ne 0 ]; then
     printf "Error sending command to server $1.\n"
@@ -417,7 +403,7 @@ sendCommand() {
 # ---------------------------------------------------------------------------
 displayScreen() {
   local PID TTY_PERMISSIONS
-  PID=$(echo $(getProcessIDs $1) | cut -d ' ' -f1)
+  PID=$(getScreenPID "$1")
   TTY_PERMISSIONS=$($PERL -e 'printf "%04o", ((stat(shift))[2] & 07777);' $(tty))
   # Make sure that we have read/write access to the tty.
   execute "chmod o+rw $(tty)" > /dev/null 2>&1
@@ -725,7 +711,7 @@ watchLog() {
   # Make sure that the latest.log file exists.
   if [ -e "$WORLD_DIR/logs/latest.log" ]; then
     # Watch the log.
-    PID=$(echo $(getProcessIDs $1) | cut -d ' ' -f2)
+    PID=$(getJavaPID "$1")
     tail -n0 -f --pid=$PID $WORLD_DIR/logs/latest.log
   fi
 }
@@ -788,13 +774,13 @@ start() {
     exit 1
   fi
   # Grab the Screen Process ID of the server.
-  PID=$(echo $(getProcessIDs $1) | cut -d ' ' -f1)
+  PID=$(getScreenPID "$1")
   if [ ! -n "$PID" ]; then
     printf "Error starting the server: SCREEN failed to create a screen for the server.\n"
     exit 1
   fi
   # Grab the Java Process ID of the server.
-  PID=$(echo $(getProcessIDs $1) | cut -d ' ' -f2)
+  PID=$(getJavaPID "$1")
   if [ ! -n "$PID" ]; then
     printf "Error starting the server: couldn't retrieve the server's process ID.\n"
     exit 1
@@ -847,13 +833,11 @@ stop() {
 # @param 1 The world server to forcibly stop.
 # ---------------------------------------------------------------------------
 forceStop() {
-  local PIDS
-  PIDS=$(getProcessIDs $1)
   # Try to stop the server cleanly first.
-  stop $1
+  stop "$1"
   sleep 5
   # Kill the process ids of the world server.
-  kill -9 $PIDS > /dev/null 2>&1
+  kill -9 $(getScreenPID "$1") $(getJavaPID "$1") > /dev/null 2>&1
   # Cleanup the dead screen.
   execute "$SCREEN -wipe" $USER_NAME  > /dev/null 2>&1
   # Remove the lock file on Redhat and derivatives if it is still
@@ -947,7 +931,7 @@ queryStart() {
   # Grab the location of the world's directory.
   WORLD_DIR="$WORLDS_LOCATION/$1"
   # Grab the Java Process ID of the world server.
-  PID=$(echo $(getProcessIDs $1) | cut -d ' ' -f2)
+  PID=$(getJavaPID "$1")
   # Delete any old query.in or query.out buffer files.
   execute "rm -Rf $WORLD_DIR/query.in $WORLD_DIR/query.out" $USER_NAME
   # Give the server a moment to start before initializing the
@@ -1202,7 +1186,7 @@ worldStatus() {
     else
       printf "running (query server offline).\n"
     fi
-    printf "    Process IDs: Screen %d, Java %d.\n" $(getProcessIDs $1)
+    printf "    Process IDs: Screen %d, Java %d.\n" $(getScreenPID "$1") $(getJavaPID "$1") 
   else
     printf "not running.\n"
   fi
