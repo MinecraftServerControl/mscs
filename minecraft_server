@@ -769,10 +769,12 @@ start() {
   cd $WORLD_DIR
   # Start the server.
   execute "$SCREEN -dmS minecraft-$1 $SERVER_COMMAND" $USER_NAME
+  # Verify the server is running.
   if [ $? -ne 0 ]; then
     printf "Error starting the server.\n"
     exit 1
   fi
+  sleep 1
   # Grab the Screen Process ID of the server.
   PID=$(getScreenPID "$1")
   if [ ! -n "$PID" ]; then
