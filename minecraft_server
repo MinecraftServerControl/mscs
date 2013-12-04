@@ -173,7 +173,7 @@ CURRENT_VERSION=$(
 # Choose only one server distribution, leave the other commented out.
 
 # Default Mojang server distribution.
-SERVER_JAR="minecraft_server.jar"
+SERVER_JAR="minecraft_server.$CURRENT_VERSION.jar"
 SERVER_URL="https://s3.amazonaws.com/Minecraft.Download/versions/$CURRENT_VERSION/minecraft_server.$CURRENT_VERSION.jar"
 SERVER_ARGS="nogui"
 
