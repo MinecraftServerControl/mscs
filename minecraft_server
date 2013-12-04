@@ -773,15 +773,11 @@ start() {
     exit 1
   fi
   sleep 1
-  # Grab the Screen Process ID of the server.
-  PID=$(getScreenPID "$1")
-  if [ ! -n "$PID" ]; then
+  if [ $(getScreenPID "$1") -eq 0 ]; then
     printf "Error starting the server: SCREEN failed to create a screen for the server.\n"
     exit 1
   fi
-  # Grab the Java Process ID of the server.
-  PID=$(getJavaPID "$1")
-  if [ ! -n "$PID" ]; then
+  if [ $(getJavaPID "$1") -eq 0 ]; then
     printf "Error starting the server: couldn't retrieve the server's process ID.\n"
     exit 1
   fi
