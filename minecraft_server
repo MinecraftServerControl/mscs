@@ -342,7 +342,7 @@ getScreenPID() {
     execute "$SCREEN -ls" $USER_NAME |
     $PERL -ne 'if ($_ =~ /^\t(\d+)\.minecraft-'$1'\s+/) { print $1; }'
   )
-  echo $PID
+  printf "%d\n" $PID
 }
 
 # ---------------------------------------------------------------------------
@@ -357,7 +357,7 @@ getJavaPID() {
     ps -a -u $USER_NAME -o pid,comm,args |
     $PERL -ne 'if ($_ =~ /^\s*(\d+)\s+java.+mscs-world='$1'$/) { print $1; }'
   )
-  echo $PID
+  printf "%d\n" $PID
 }
 
 # ---------------------------------------------------------------------------
