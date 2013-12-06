@@ -856,7 +856,7 @@ syncMirrorImage() {
 # @param 1 The world server to start.
 # ---------------------------------------------------------------------------
 start() {
-  local PID SERVER_COMMAND WORLD_DIR
+  local PID WORLD_DIR
   # Make sure that the server software exists.
   updateServerSoftware "$1"
   # Make sure that the world's directory exists.
@@ -887,8 +887,7 @@ start() {
   # Change to the world's directory.
   cd $WORLD_DIR
   # Start the server.
-  SERVER_COMMAND=$(getServerCommand "$1")
-  execute "$SCREEN -dmS minecraft-$1 $SERVER_COMMAND" $USER_NAME
+  execute "$SCREEN -dmS minecraft-$1 $(getServerCommand "$1")" $USER_NAME
   if [ $? -ne 0 ]; then
     printf "Error starting the server.\n"
     exit 1
