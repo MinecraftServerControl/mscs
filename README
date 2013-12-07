@@ -45,8 +45,6 @@ Java 6/7 JRE   The Minecraft server software requires this.
 Perl 5         Most, if not all, Unix and Linux like systems have this
                  preinstalled.
 Python         Required by the Minecraft Overviewer mapping software.
-GNU Screen     Allows the script to run the Java process as a background
-                 daemon and send commands to the server.
 GNU Wget       Allows the script to download software updates via the
                  internet.
 rdiff-backup   Allows the script to efficiently run backups.
@@ -57,7 +55,7 @@ Iptables       Although not explicitly required, a good firewall should be
 If you are running Debian or Ubuntu, you can make sure that these are
 installed by running:
 
-sudo apt-get install default-jre perl screen wget rdiff-backup socat iptables
+sudo apt-get install default-jre perl wget rdiff-backup socat iptables
 
 
 Mapping Software
@@ -176,9 +174,6 @@ Options
       by default.
     backup <world>
       Backup the Minecraft world.  Backup all worlds by default.
-    screen <world>
-      Connect to the Screen holding the world's console.  See more detailed
-      notes below.
     watch <world>
       Watch the log file for the Minecraft world server.
     map <world>
@@ -209,13 +204,6 @@ To send a command to a world server, issue the command:
 
 ie.
 /etc/init.d/minecraft_server send alpha say Hello world!
-
-
-Screen
------------------------------
-The screen option allows an admin to connect to and interact with the Screen
-holding the Minecraft world server's console.  To exit out of this Screen
-requires the admin to hit Ctrl-A, followed by the letter d.
 
 
 Message of the Day (MOTD)
