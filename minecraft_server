@@ -103,9 +103,6 @@ Options:
   send <world> <command>
     Send a command to a Minecraft world server.
 
-  screen <world>
-    Display the Screen for the Minecraft world server.
-
   watch <world>
     Watch the log file for the Minecraft world server.
 
@@ -148,7 +145,6 @@ JAVA=$(which java)
 PERL=$(which perl)
 PYTHON=$(which python)
 RSYNC=$(which rsync)
-SCREEN=$(which screen)
 WGET=$(which wget)
 RDIFF_BACKUP=$(which rdiff-backup)
 SOCAT=$(which socat)
@@ -331,21 +327,6 @@ execute() {
 }
 
 # ---------------------------------------------------------------------------
-# Get the PID of the Screen process for the world server.
-#
-# @param 1 The world server of interest.
-# @return The Screen PID.
-# ---------------------------------------------------------------------------
-getScreenPID() {
-  local PID
-  PID=$(
-    execute "$SCREEN -ls" $USER_NAME |
-    $PERL -ne 'if ($_ =~ /^\t(\d+)\.minecraft-'$1'\s+/) { print $1; }'
-  )
-  printf "%d\n" $PID
-}
-
-# ---------------------------------------------------------------------------
 # Get the PID of the Java process for the world server.
 #
 # @param 1 The world server of interest.
@@ -384,39 +365,7 @@ serverRunning() {
 sendCommand() {
   local COMMAND PID
   COMMAND=$(printf "$2\r")
-  PID=$(getScreenPID "$1")
-  execute "$SCREEN -S $PID.minecraft-$1 -p 0 -X stuff \"$COMMAND\"" $USER_NAME
-  if [ $? -ne 0 ]; then
-    printf "Error sending command to server $1.\n"
-    exit 1
-  fi
-}
-
-# ---------------------------------------------------------------------------
-# Connect to the Screen of a world server.
-#
-# @param 1 The world server of interest.
-# ---------------------------------------------------------------------------
-displayScreen() {
-  local TTY_PERMISSIONS
-  TTY_PERMISSIONS=$($PERL -e 'printf "%04o", ((stat(shift))[2] & 07777);' $(tty))
-  # Make sure that we have read/write access to the tty.
-  execute "chmod o+rw $(tty)" > /dev/null 2>&1
-  if [ $? -ne 0 ]; then
-    printf "Error changing the permissions of the tty.\n"
-    printf "Try giving user '$USER_NAME' access to the tty with:\n"
-    printf "  chmod o+rw $(tty)\n"
-    printf "\n"
-    printf "Attempting to load the screen anyway.\n"
-  fi
-  # Connect to the screen of the world server.
-  execute "$SCREEN -x $(getScreenPID $1).minecraft-$1" $USER_NAME
-  if [ $? -ne 0 ]; then
-    printf "Error connecting to Screen.\n"
-    execute "chmod $TTY_PERMISSIONS $(tty)" > /dev/null 2>&1
-    exit 1
-  fi
-  execute "chmod $TTY_PERMISSIONS $(tty)" > /dev/null 2>&1
+  echo "$COMMAND" >> $WORLDS_LOCATION/$1/console.in
 }
 
 # ---------------------------------------------------------------------------
@@ -761,18 +710,22 @@ start() {
   fi
   # Change to the world's directory.
   cd $WORLD_DIR
+  # Delete any old console.in buffer file.
+  execute "rm -f $WORLD_DIR/console.in" $USER_NAME
+  # Initialize the console.in buffer file.
+  execute "printf '' > $WORLD_DIR/console.in" $USER_NAME
   # Start the server.
-  execute "$SCREEN -dmS minecraft-$1 $SERVER_COMMAND mscs-world=$1" $USER_NAME
+  execute "
+    tail -f --pid=\$$ $WORLD_DIR/console.in | {
+      $SERVER_COMMAND mscs-world=$1 > /dev/null 2>&1 && kill \$$; 
+    }
+  " $USER_NAME &
   # Verify the server is running.
   if [ $? -ne 0 ]; then
     printf "Error starting the server.\n"
     exit 1
   fi
   sleep 1
-  if [ $(getScreenPID "$1") -eq 0 ]; then
-    printf "Error starting the server: SCREEN failed to create a screen for the server.\n"
-    exit 1
-  fi
   if [ $(getJavaPID "$1") -eq 0 ]; then
     printf "Error starting the server: couldn't retrieve the server's process ID.\n"
     exit 1
@@ -1174,7 +1127,7 @@ worldStatus() {
     else
       printf "running (query server offline).\n"
     fi
-    printf "    Process IDs: Screen %d, Java %d.\n" $(getScreenPID "$1") $(getJavaPID "$1") 
+    printf "    Process ID: %d.\n" $(getJavaPID "$1")
   else
     printf "not running.\n"
   fi
@@ -1185,8 +1138,7 @@ worldStatus() {
 # ---------------------------------------------------------------------------
 
 
-# Make sure that Java, Perl, Python, Rsync, GNU Screen, and GNU Wget are
-# installed.
+# Make sure that Java, Perl, Python, Rsync, and GNU Wget are installed.
 if [ ! -e "$JAVA" ]; then
   printf "ERROR: Java not found!\n"
   printf "Try installing this with:\n"
@@ -1209,12 +1161,6 @@ if [ ! -e "$RSYNC" ] && [ $ENABLE_MIRROR -eq 1 ]; then
   printf "ERROR: Rsync not found!\n"
   printf "Try installing this with:\n"
   printf "sudo apt-get install rsync\n"
-  exit 1
-fi
-if [ ! -e "$SCREEN" ]; then
-  printf "ERROR: GNU Screen not found!\n"
-  printf "Try installing this with:\n"
-  printf "sudo apt-get install screen\n"
   exit 1
 fi
 if [ ! -e "$WGET" ]; then
@@ -1502,24 +1448,6 @@ case "$1" in
     else
       printf "Usage:  $0 $1 <world> <command>\n"
       printf "   ie:  $0 $1 world say Hello World!\n"
-      exit 1
-    fi
-  ;;
-  screen)
-    checkPermission
-    # Check for the world command line argument.
-    if [ -n "$2" ] && [ $(listContains $2 "$ALL_WORLDS") -eq 1 ]; then
-      printf "About to load the screen for world: $2.\n"
-      printf "To exit the screen, hit Ctrl+A then type the letter d.\n"
-      sleep 5
-      displayScreen $2
-    else
-      if [ -n "$2" ]; then
-        printf "Minecraft world $2 not found!\n"
-      else
-        printf "Minecraft world not provided!\n"
-      fi
-      printf "  Usage:  $0 $1 <world>\n"
       exit 1
     fi
   ;;
