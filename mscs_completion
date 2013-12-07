@@ -8,7 +8,7 @@ _minecraft_server() {
 
   OPTS="
     backup create delete disable enable force-restart force-stop list
-    logrotate map new overviewer remove restart screen send show start status
+    logrotate map new overviewer remove restart send show start status
     stop sync update watch  
   "
 
@@ -26,7 +26,7 @@ _minecraft_server() {
         WORLDS=$($MINECRAFT_SERVER list running)
         COMPREPLY=($(compgen -W "$WORLDS" -- $CUR))
       ;;
-      delete|remove|disable|status|show|sync|send|screen|watch|logrotate| \
+      delete|remove|disable|status|show|sync|send|watch|logrotate| \
       backup|map|overviewer)
         WORLDS=$($MINECRAFT_SERVER list enabled)
         COMPREPLY=($(compgen -W "$WORLDS" -- $CUR))
