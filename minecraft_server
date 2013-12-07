@@ -83,8 +83,13 @@ Options:
   enable <world>
     Enable a disabled world server.
 
-  list
-    Display a list of enabled worlds.
+  list <option>
+    Display a list of worlds.
+    Options:
+      enabled   Display a list of enabled worlds, default.
+      disabled  Display a list of disabled worlds.
+      running   Display a list of running worlds.
+      stopped   Display a list of stopped worlds.
 
   status <world>
     Display the status of the Minecraft world server.  Display the status of
@@ -349,16 +354,33 @@ execute() {
 }
 
 # ---------------------------------------------------------------------------
-# Get the PIDs of the Screen and Java process for the world server.
+# Get the PID of the Screen process for the world server.
 #
 # @param 1 The world server of interest.
-# @return The Screen and Java PIDs.
+# @return The Screen PID.
 # ---------------------------------------------------------------------------
-getProcessIDs() {
-  local SCREEN_PID JAVA_PID
-  SCREEN_PID=$(execute "$SCREEN -ls" $USER_NAME | $PERL -ne 'if ($_ =~ /^\t(\d+)\.minecraft-'$1'\s+/) { print $1; }')
-  JAVA_PID=$(ps -a -u $USER_NAME -o pid,ppid,comm | $PERL -ne 'if ($_ =~ /^\s*(\d+)\s+'$SCREEN_PID'\s+java/) { print $1; }')
-  echo "$SCREEN_PID $JAVA_PID"
+getScreenPID() {
+  local PID
+  PID=$(
+    execute "$SCREEN -ls" $USER_NAME |
+    $PERL -ne 'if ($_ =~ /^\t(\d+)\.minecraft-'$1'\s+/) { print $1; }'
+  )
+  printf "%d\n" $PID
+}
+
+# ---------------------------------------------------------------------------
+# Get the PID of the Java process for the world server.
+#
+# @param 1 The world server of interest.
+# @return The Java PID.
+# ---------------------------------------------------------------------------
+getJavaPID() {
+  local PID
+  PID=$(
+    ps -a -u $USER_NAME -o pid,comm,args |
+    $PERL -ne 'if ($_ =~ /^\s*(\d+)\s+java.+mscs-world='$1'$/) { print $1; }'
+  )
+  printf "%d\n" $PID
 }
 
 # ---------------------------------------------------------------------------
@@ -368,13 +390,10 @@ getProcessIDs() {
 # @return A 1 if the server is thought to be running, a 0 otherwise.
 # ---------------------------------------------------------------------------
 serverRunning() {
-  local PIDS SCREEN_PID JAVA_PID
-  PIDS=$(getProcessIDs $1)
-  SCREEN_PID=$(echo "$PIDS" | cut -d ' ' -f1)
-  JAVA_PID=$(echo "$PIDS" | cut -d ' ' -f2)
+  local PID
+  PID=$(getJavaPID "$1")
   # Try to determine if the world is running.
-  if [ -n "$SCREEN_PID" ] && [ $SCREEN_PID -gt 0 ] &&
-    [ -n "$JAVA_PID" ] && [ $JAVA_PID -gt 0 ]; then
+  if [ -n "$PID" ] && [ $PID -gt 0 ]; then
     echo 1
   else
     echo 0
@@ -390,7 +409,7 @@ serverRunning() {
 sendCommand() {
   local COMMAND PID
   COMMAND=$(printf "$2\r")
-  PID=$(echo $(getProcessIDs $1) | cut -d ' ' -f1)
+  PID=$(getScreenPID "$1")
   execute "$SCREEN -S $PID.minecraft-$1 -p 0 -X stuff \"$COMMAND\"" $USER_NAME
   if [ $? -ne 0 ]; then
     printf "Error sending command to server $1.\n"
@@ -405,7 +424,7 @@ sendCommand() {
 # ---------------------------------------------------------------------------
 displayScreen() {
   local PID TTY_PERMISSIONS
-  PID=$(echo $(getProcessIDs $1) | cut -d ' ' -f1)
+  PID=$(getScreenPID "$1")
   TTY_PERMISSIONS=$($PERL -e 'printf "%04o", ((stat(shift))[2] & 07777);' $(tty))
   # Make sure that we have read/write access to the tty.
   execute "chmod o+rw $(tty)" > /dev/null 2>&1
@@ -514,15 +533,31 @@ getMOTD() {
 }
 
 # ---------------------------------------------------------------------------
-# Grab the list of worlds.
+# Grab the list of enabled worlds.
 #
-# @return The list of worlds.
+# @return The list of enabled worlds.
 # ---------------------------------------------------------------------------
-getWorlds() {
+getEnabledWorlds() {
   local WORLD WORLDS
   WORLDS=""
   for WORLD in $(ls $WORLDS_LOCATION); do
     if [ -f $WORLDS_LOCATION/$WORLD/server.properties ]; then
+      WORLDS="$WORLDS $WORLD"
+    fi
+  done
+  echo $WORLDS
+}
+
+# ---------------------------------------------------------------------------
+# Grab the list of disabled worlds.
+#
+# @return The list of disabled worlds.
+# ---------------------------------------------------------------------------
+getDisabledWorlds() {
+  local WORLD WORLDS
+  WORLDS=""
+  for WORLD in $(ls $DISABLED_WORLDS_LOCATION); do
+    if [ -f $DISABLED_WORLDS_LOCATION/$WORLD/server.properties ]; then
       WORLDS="$WORLDS $WORLD"
     fi
   done
@@ -830,7 +865,7 @@ watchLog() {
   # Make sure that the latest.log file exists.
   if [ -e "$WORLD_DIR/logs/latest.log" ]; then
     # Watch the log.
-    PID=$(echo $(getProcessIDs $1) | cut -d ' ' -f2)
+    PID=$(getJavaPID "$1")
     tail -n0 -f --pid=$PID $WORLD_DIR/logs/latest.log
   fi
 }
@@ -887,21 +922,20 @@ start() {
   # Change to the world's directory.
   cd $WORLD_DIR
   # Start the server.
-  execute "$SCREEN -dmS minecraft-$1 $(getServerCommand "$1")" $USER_NAME
+  execute "
+    $SCREEN -dmS minecraft-$1 $(getServerCommand "$1") mscs-world=$1
+  " $USER_NAME
   # Verify the server is running.
   if [ $? -ne 0 ]; then
     printf "Error starting the server.\n"
     exit 1
   fi
-  # Grab the Screen Process ID of the server.
-  PID=$(echo $(getProcessIDs $1) | cut -d ' ' -f1)
-  if [ ! -n "$PID" ]; then
+  sleep 1
+  if [ $(getScreenPID "$1") -eq 0 ]; then
     printf "Error starting the server: SCREEN failed to create a screen for the server.\n"
     exit 1
   fi
-  # Grab the Java Process ID of the server.
-  PID=$(echo $(getProcessIDs $1) | cut -d ' ' -f2)
-  if [ ! -n "$PID" ]; then
+  if [ $(getJavaPID "$1") -eq 0 ]; then
     printf "Error starting the server: couldn't retrieve the server's process ID.\n"
     exit 1
   fi
@@ -953,15 +987,11 @@ stop() {
 # @param 1 The world server to forcibly stop.
 # ---------------------------------------------------------------------------
 forceStop() {
-  local PIDS
-  PIDS=$(getProcessIDs $1)
   # Try to stop the server cleanly first.
-  stop $1
+  stop "$1"
   sleep 5
-  # Kill the process ids of the world server.
-  kill -9 $PIDS > /dev/null 2>&1
-  # Cleanup the dead screen.
-  execute "$SCREEN -wipe" $USER_NAME  > /dev/null 2>&1
+  # Kill the process id of the world server.
+  kill -9 $(getJavaPID "$1") > /dev/null 2>&1
   # Remove the lock file on Redhat and derivatives if it is still
   # around.
   rm -f /var/lock/subsys/minecraft_server
@@ -1057,22 +1087,22 @@ queryStart() {
   # Grab the location of the world's directory.
   WORLD_DIR="$WORLDS_LOCATION/$1"
   # Grab the Java Process ID of the world server.
-  PID=$(echo $(getProcessIDs $1) | cut -d ' ' -f2)
-  # Delete any old query.dat or response.dat buffer files.
-  execute "rm -Rf $WORLD_DIR/query.dat $WORLD_DIR/response.dat" $USER_NAME
+  PID=$(getJavaPID "$1")
+  # Delete any old query.in or query.out buffer files.
+  execute "rm -Rf $WORLD_DIR/query.in $WORLD_DIR/query.out" $USER_NAME
   # Give the server a moment to start before initializing the
   # Query handler.
   sleep 10
-  # Initialize the query.dat and response.dat buffer files.
-  execute "printf '' > $WORLD_DIR/query.dat" $USER_NAME
-  execute "printf '' > $WORLD_DIR/response.dat" $USER_NAME
-  # Start a tail process to watch for changes to the query.dat file to pipe
+  # Initialize the query.in and query.out buffer files.
+  execute "printf '' > $WORLD_DIR/query.in" $USER_NAME
+  execute "printf '' > $WORLD_DIR/query.out" $USER_NAME
+  # Start a tail process to watch for changes to the query.in file to pipe
   # to the Minecraft query server via socat.  The response from the query
-  # server is piped into the response.dat file.
+  # server is piped into the query.out file.
   execute "
-    tail -f --pid=$PID $WORLD_DIR/query.dat | \
+    tail -f --pid=$PID $WORLD_DIR/query.in | \
     $SOCAT - UDP:127.0.0.1:$(getPropertiesValue $1 'server-port') > \
-    $WORLD_DIR/response.dat
+    $WORLD_DIR/query.out
   " $USER_NAME
 }
 
@@ -1091,27 +1121,27 @@ querySendPacket() {
   local PACKET RESPONSE WORLD_DIR
   # The world's directory.
   WORLD_DIR="$WORLDS_LOCATION/$1"
-  # Make sure the query.dat and response.dat buffer files exist before
+  # Make sure the query.in and query.out buffer files exist before
   # preparing and sending the packet to the Query server.
-  if [ -e $WORLD_DIR/query.dat ] && [ -e $WORLD_DIR/response.dat ]; then
+  if [ -e $WORLD_DIR/query.in ] && [ -e $WORLD_DIR/query.out ]; then
     # Add the magic bytes to the incoming packet.
     PACKET=$(printf "FEFD%s%s%s" "$2" "$3" "$4")
-    # Remove any old responses from the response.dat buffer file.
-    execute "printf '' > $WORLD_DIR/response.dat" $USER_NAME
-    # Pack the hex string packet and write it to the query.dat buffer file.
+    # Remove any old responses from the query.out buffer file.
+    execute "printf '' > $WORLD_DIR/query.out" $USER_NAME
+    # Pack the hex string packet and write it to the query.in buffer file.
     execute "$PERL -e '
       print map { pack (\"C\", hex(\$_)) } (\"'$PACKET'\" =~ /(..)/g);
-    ' >> $WORLD_DIR/query.dat" $USER_NAME
+    ' >> $WORLD_DIR/query.in" $USER_NAME
     # Give the Query server a moment to respond.
     sleep 1
-    # Unpack the token from the response.dat buffer file.  There are a
+    # Unpack the token from the query.out buffer file.  There are a
     # variable amount of null bytes at the start of the response string, so
     # find the start of the packet by searching for the packet type and ID.
     RESPONSE=$($PERL -ne '
       $hex .= sprintf "%.2x", $_ foreach (unpack "C*", $_);
       $hex =~ s/^0*'$2$3'/'$2$3'/;
       print $hex;
-    ' $WORLD_DIR/response.dat)
+    ' $WORLD_DIR/query.out)
   fi
   # Return the response in the format requested.
   $PERL -e '
@@ -1312,7 +1342,7 @@ worldStatus() {
     else
       printf "running (query server offline).\n"
     fi
-    printf "    Process IDs: Screen %d, Java %d.\n" $(getProcessIDs $1)
+    printf "    Process IDs: Screen %d, Java %d.\n" $(getScreenPID "$1") $(getJavaPID "$1") 
   else
     printf "not running.\n"
   fi
@@ -1374,8 +1404,8 @@ if [ ! -e "$SOCAT" ]; then
   exit 1
 fi
 
-# Grab the list of worlds.
-ALL_WORLDS=$(getWorlds)
+# Grab the list of enabled worlds.
+ALL_WORLDS=$(getEnabledWorlds)
 
 # Respond to the command line arguments.
 case "$1" in
@@ -1555,8 +1585,34 @@ case "$1" in
     printf ".\n"
   ;;
   ls|list)
-    # Display a list of enabled worlds.
-    printf "$ALL_WORLDS\n"
+    # Grab the desired list of worlds.
+    WORLDS=""
+    case "$2" in
+      enabled)
+        WORLDS="$ALL_WORLDS"
+      ;;
+      disabled)
+        WORLDS=$(getDisabledWorlds)
+      ;;
+      running)
+        for WORLD in $ALL_WORLDS; do
+          if [ $(serverRunning $WORLD) -eq 1 ]; then
+            WORLDS="$WORLDS $WORLD"
+          fi
+        done
+      ;;
+      stopped)
+        for WORLD in $ALL_WORLDS; do
+          if [ $(serverRunning $WORLD) -eq 0 ]; then
+            WORLDS="$WORLDS $WORLD"
+          fi
+        done
+      ;;
+      *)
+        WORLDS="$ALL_WORLDS"
+      ;;
+    esac
+    echo $WORLDS
   ;;
   status|show)
     checkPermission
