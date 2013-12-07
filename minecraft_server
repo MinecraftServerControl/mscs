@@ -367,10 +367,8 @@ getJavaPID() {
 # @return A 1 if the server is thought to be running, a 0 otherwise.
 # ---------------------------------------------------------------------------
 serverRunning() {
-  local PID
-  PID=$(getJavaPID "$1")
   # Try to determine if the world is running.
-  if [ -n "$PID" ] && [ $PID -gt 0 ]; then
+  if [ $(getJavaPID "$1") -gt 0 ]; then
     echo 1
   else
     echo 0
@@ -400,8 +398,7 @@ sendCommand() {
 # @param 1 The world server of interest.
 # ---------------------------------------------------------------------------
 displayScreen() {
-  local PID TTY_PERMISSIONS
-  PID=$(getScreenPID "$1")
+  local TTY_PERMISSIONS
   TTY_PERMISSIONS=$($PERL -e 'printf "%04o", ((stat(shift))[2] & 07777);' $(tty))
   # Make sure that we have read/write access to the tty.
   execute "chmod o+rw $(tty)" > /dev/null 2>&1
@@ -413,7 +410,7 @@ displayScreen() {
     printf "Attempting to load the screen anyway.\n"
   fi
   # Connect to the screen of the world server.
-  execute "$SCREEN -x $PID.minecraft-$1" $USER_NAME
+  execute "$SCREEN -x $(getScreenPID $1).minecraft-$1" $USER_NAME
   if [ $? -ne 0 ]; then
     printf "Error connecting to Screen.\n"
     execute "chmod $TTY_PERMISSIONS $(tty)" > /dev/null 2>&1
@@ -704,13 +701,12 @@ rotateLog() {
 # @param 1 The world server generating the log to watch.
 # ---------------------------------------------------------------------------
 watchLog() {
-  local PID WORLD_DIR
+  local WORLD_DIR
   WORLD_DIR="$WORLDS_LOCATION/$1"
   # Make sure that the latest.log file exists.
   if [ -e "$WORLD_DIR/logs/latest.log" ]; then
     # Watch the log.
-    PID=$(getJavaPID "$1")
-    tail -n0 -f --pid=$PID $WORLD_DIR/logs/latest.log
+    tail -n0 -f --pid=$(getJavaPID "$1") $WORLD_DIR/logs/latest.log
   fi
 }
 
@@ -921,11 +917,9 @@ overviewer() {
 # @param 1 The world server to start a Query handler for.
 # ---------------------------------------------------------------------------
 queryStart() {
-  local PID WORLD_DIR
+  local WORLD_DIR
   # Grab the location of the world's directory.
   WORLD_DIR="$WORLDS_LOCATION/$1"
-  # Grab the Java Process ID of the world server.
-  PID=$(getJavaPID "$1")
   # Delete any old query.in or query.out buffer files.
   execute "rm -Rf $WORLD_DIR/query.in $WORLD_DIR/query.out" $USER_NAME
   # Give the server a moment to start before initializing the
@@ -938,7 +932,7 @@ queryStart() {
   # to the Minecraft query server via socat.  The response from the query
   # server is piped into the query.out file.
   execute "
-    tail -f --pid=$PID $WORLD_DIR/query.in | \
+    tail -f --pid=$(getJavaPID $1) $WORLD_DIR/query.in | \
     $SOCAT - UDP:127.0.0.1:$(getPropertiesValue $1 'server-port') > \
     $WORLD_DIR/query.out
   " $USER_NAME
