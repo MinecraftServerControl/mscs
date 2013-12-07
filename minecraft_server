@@ -888,6 +888,7 @@ start() {
   cd $WORLD_DIR
   # Start the server.
   execute "$SCREEN -dmS minecraft-$1 $(getServerCommand "$1")" $USER_NAME
+  # Verify the server is running.
   if [ $? -ne 0 ]; then
     printf "Error starting the server.\n"
     exit 1
