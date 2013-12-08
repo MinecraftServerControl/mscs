@@ -177,7 +177,7 @@ Options
     watch <world>
       Watch the log file for the Minecraft world server.
     map <world>
-      Run the Mincraft Overviewer mapping software on the Minecraft world.
+      Run the Minecraft Overviewer mapping software on the Minecraft world.
       Maps all worlds by default.
     update
       Update the client and server software packages.
@@ -242,38 +242,47 @@ Example motd.txt:
 §fLook out for those §2creepers§f!
 
 
-CraftBukkit
+Server Customization
 -----------------------------
-To use the CraftBukkit server distribution instead of the default Mojang
-server, modify the following lines of code:
+The server settings for each world can be customized by adding certain
+key/value pairs to the world's server.properties file.
 
-## Minecraft server options.
+The following keys are available:
+    mscs-server-version - Assign the version of the server to run.
+    mscs-server-jar - Assign the .jar file for the server to run.
+    mscs-server-url - Assign the download URL for the server software.
+    mscs-server-args - Assign the arguments to the server.
+    mscs-initial-memory - Assign the initial amount of memory for the server.
+    mscs-maximum-memory - Assign the maximum amount of memory for the server.
+    mscs-server-location - Assign the location of the server .jar file.
+    mscs-server-command - Assign the command to run for the server.
+ 
+The following variables may be used in some of the values of the above keys:
+    $JAVA - The Java virtual machine.
+    $CURRENT_VERSION - The current Mojang Minecraft release version.
+    $SERVER_VERSION - The version of the server that will be run.
+    $SERVER_JAR - The .jar file to run for the server.
+    $SERVER_ARGS - The arguments to the server.
+    $INITIAL_MEMORY - The initial amount of memory for the server.
+    $MAXIMUM_MEMORY - The maximum amount of memory for the server.
+    $SERVER_LOCATION - The location of the server .jar file.
 
-# Choose only one server distribution, leave the other commented out.
+The following example key/value pairs are equivalent to the default values:
+    mscs-server-version=$CURRENT_VERSION
+    mscs-server-jar=minecraft_server.$SERVER_VERSION.jar
+    mscs-server-url=https://s3.amazonaws.com/Minecraft.Download/versions/$SERVER_VERSION/minecraft_server.$SERVER_VERSION.jar
+    mscs-server-args=nogui
+    mscs-initial-memory=128M
+    mscs-maximum-memory=2048M
+    mscs-server-location=/home/minecraft/minecraft_server
+    mscs-server-command=$JAVA -Xms$INITIAL_MEMORY -Xmx$MAXIMUM_MEMORY -jar $SERVER_LOCATION/$SERVER_JAR $SERVER_ARGS
 
-# Default Mojang server distribution.
-SERVER_URL="http://www.minecraft.net/download/minecraft_server.jar"
-SERVER_JAR="minecraft_server.jar"
-SERVER_ARGS="nogui"
-
-# CraftBukkit server distribution.
-# SERVER_URL="http://dl.bukkit.org/latest-rb/craftbukkit.jar"
-# SERVER_JAR="craftbukkit.jar"
-# SERVER_ARGS=""
-
-
-Bukkit plugins are world specific and are contained within the plugins
-directory of the world. ie.
-
-/home/minecraft/worlds/alpha/plugins
-
-
-If you would prefer to use the same plugins directory for all of your worlds,
-you can create symlinks for each world.  ie.
-
-mkdir /home/minecraft/plugins
-ln -s /home/minecraft/plugins /home/minecraft/worlds/alpha/plugins
-ln -s /home/minecraft/plugins /home/minecraft/worlds/beta/plugins
+The following example key/value pairs will use the latest CraftBukkit recommended build:
+    mscs-server-jar=craftbukkit.jar
+    mscs-server-url=http://dl.bukkit.org/latest-rb/craftbukkit.jar
+    mscs-server-args=
+    mscs-initial-memory=128M
+    mscs-maximum-memory=2048M
 
 
 Lib Notify
