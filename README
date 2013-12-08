@@ -31,6 +31,7 @@ It can also be accomplished manually with the following commands:
 
 The Minecraft server software will be automatically downloaded to the
 following location on the first run:
+
     /home/minecraft/minecraft_server/
 
 
@@ -54,7 +55,7 @@ Iptables       Although not explicitly required, a good firewall should be
 If you are running Debian or Ubuntu, you can make sure that these are
 installed by running:
 
-sudo apt-get install default-jre perl wget rdiff-backup socat iptables
+    sudo apt-get install default-jre perl wget rdiff-backup socat iptables
 
 
 Mapping Software
@@ -77,8 +78,10 @@ If you have a firewall installed on your computer, or a router using NAT
 installed in your network, you will need to route some ports to your server.
 Instructions on how to accomplish this are beyond the scope of this post, but
 here are some things you will need to know:
-  The default port for the Minecraft server is: 25565.
-  If you wish to run multiple world servers using this script, you will
+
+    The default port for the Minecraft server is: 25565.
+
+    If you wish to run multiple world servers using this script, you will
     want to open a range of ports (for example 25565 - 25575).
 
 If you are using iptables, and you should be, here is a very basic ruleset
@@ -132,12 +135,12 @@ user or as root (through sudo).
 Note: If the script is run as the root user, all important server processes
 will be started using the minecraft user for security purposes.
 
-su minecraft
-/etc/init.d/minecraft_server <option>
+    su minecraft
+    /etc/init.d/minecraft_server <option>
 
 or
 
-sudo /etc/init.d/minecraft_server <option>
+    sudo /etc/init.d/minecraft_server <option>
 
 
 Options
@@ -184,25 +187,25 @@ Options
 
 To start all of the world servers, issue the command:
 
-/etc/init.d/minecraft_server start
+    /etc/init.d/minecraft_server start
 
 
 To create a world named alpha, issue the command:
 
-/etc/init.d/minecraft_server create alpha 25565
+    /etc/init.d/minecraft_server create alpha 25565
 
 
 To start just the world named alpha, issue the command:
 
-/etc/init.d/minecraft_server start alpha
+    /etc/init.d/minecraft_server start alpha
 
 
 To send a command to a world server, issue the command:
 
-/etc/init.d/minecraft_server send <world> <command>
+    /etc/init.d/minecraft_server send <world> <command>
 
 ie.
-/etc/init.d/minecraft_server send alpha say Hello world!
+    /etc/init.d/minecraft_server send alpha say Hello world!
 
 
 Message of the Day (MOTD)
@@ -210,7 +213,7 @@ Message of the Day (MOTD)
 To whisper the message of the day to users as they log into the world, add a
 file called motd.txt to the /home/minecraft directory.
 
-nano /home/minecraft/motd.txt
+    editor /home/minecraft/motd.txt
 
 
 Colors
@@ -236,9 +239,9 @@ into your text:
 
 Example motd.txt:
 
-§fWelcome to Minecraft!
-§fToday's theme is §4red§f.
-§fLook out for those §2creepers§f!
+    §fWelcome to Minecraft!
+    §fToday's theme is §4red§f.
+    §fLook out for those §2creepers§f!
 
 
 CraftBukkit
@@ -284,7 +287,7 @@ First, you need to know the name of the display you want to route the
 messages to.  This is usually ":0.0", but it may be something different on
 your system.
 
-glxinfo | grep "name of display"
+    glxinfo | grep "name of display"
 
 
 If your username is different than the user used for the Minecraft server,
