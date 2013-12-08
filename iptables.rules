@@ -1,0 +1,38 @@
+*filter
+:INPUT DROP [0:0]
+:FORWARD DROP [0:0]
+:OUTPUT DROP [0:0]
+
+# Handle loopback addresses
+-A INPUT -i lo -j ACCEPT
+-A OUTPUT -o lo -j ACCEPT
+
+# Allow outbound packets if state related, and inbound if established
+-A OUTPUT -m state --state NEW,ESTABLISHED,RELATED -j ACCEPT
+-A INPUT -m state --state ESTABLISHED,RELATED -j ACCEPT
+
+# Drop stealth scans
+-A INPUT -i eth0 -p tcp -m tcp --tcp-flags FIN,SYN,RST,PSH,ACK,URG NONE
+-A INPUT -i eth0 -p tcp -m tcp --tcp-flags SYN,FIN SYN,FIN
+-A INPUT -i eth0 -p tcp -m tcp --tcp-flags SYN,RST SYN,RST
+-A INPUT -i eth0 -p tcp -m tcp --tcp-flags FIN,RST FIN,RST
+-A INPUT -i eth0 -p tcp -m tcp --tcp-flags ACK,FIN FIN
+-A INPUT -i eth0 -p tcp -m tcp --tcp-flags ACK,URG URG
+
+# Allow ICMP pings
+-A OUTPUT -p icmp -m state --state NEW,ESTABLISHED,RELATED -j ACCEPT
+-A INPUT -p icmp -m state --state ESTABLISHED,RELATED -j ACCEPT
+
+# Allow port 22 for SSH
+-A INPUT -m state --state NEW -m tcp -p tcp --dport 22 -j ACCEPT
+
+# Allow port 80 for HTTP
+-A INPUT -m state --state NEW -m tcp -p tcp --dport 80 -j ACCEPT
+
+# Allow port 443 for HTTPS
+-A INPUT -m state --state NEW -m tcp -p tcp --dport 443 -j ACCEPT
+
+# Allow ports 25565 - 25575 for Minecraft world servers
+-A INPUT -m state --state NEW -m tcp -p tcp --dport 25565:25575 -j ACCEPT
+
+COMMIT
