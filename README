@@ -7,32 +7,31 @@ A powerful command-line control script for Linux-powered Minecraft servers.
 Installation
 -----------------------------
 To get your server to run the script on startup, and cleanly down the server
-on shutdown, you need to copy the minecraft_server script to `/etc/init.d`,
-set execute permissions on the file, and instruct the system to use the script
-on startup and shutdown.
+on shutdown, the minecraft_server script must be copied to `/etc/init.d`,
+have its execute permissions set, and the system must be instructed to use
+the script on startup and shutdown.  For Bash programmable completion
+support, the mscs_completion script must be copied to 
+`/etc/bash_completion.d`.  For security reasons, the script uses a user
+account named minecraft rather than root and the account must be created
+before the script is used.
 
-The following commands will work in Debian and Ubuntu like environments, ymmv
-in others.
+This can all be done automatically with the included Makefile in Debian and
+Ubuntu like environments by running:
 
-sudo cp minecraft_server /etc/init.d/minecraft_server
-sudo chmod 755 /etc/init.d/minecraft_server
-sudo update-rc.d minecraft_server defaults
-
-
-For Bash programmable completion support, you need to copy the mscs_completion
-script to `/etc/bash_completion.d`.
-
-sudo cp mscs_completion /etc/bash_completion.d/mscs_completion
+    sudo make install
 
 
-For security reasons, the script uses a user account named minecraft rather
-than root.  As such, you need to create the user before using this script:
+It can also be accomplished manually with the following commands:
 
-sudo adduser minecraft
+    sudo cp minecraft_server /etc/init.d/minecraft_server
+    sudo cp mscs_completion /etc/bash_completion.d/mscs_completion
+    sudo chmod 755 /etc/init.d/minecraft_server
+    sudo update-rc.d minecraft_server defaults
+    sudo adduser minecraft
 
-If the Minecraft server software is not located when the server start command
-is issued, the software will be downloaded to the proper location:
-  /home/minecraft/minecraft_server/minecraft_server.jar
+The Minecraft server software will be automatically downloaded to the
+following location on the first run:
+    /home/minecraft/minecraft_server/
 
 
 Requirements
@@ -177,7 +176,7 @@ Options
     watch <world>
       Watch the log file for the Minecraft world server.
     map <world>
-      Run the Mincraft Overviewer mapping software on the Minecraft world.
+      Run the Minecraft Overviewer mapping software on the Minecraft world.
       Maps all worlds by default.
     update
       Update the client and server software packages.
