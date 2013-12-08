@@ -207,6 +207,7 @@ DEFAULT_SERVER_COMMAND='$JAVA -Xms$INITIAL_MEMORY -Xmx$MAXIMUM_MEMORY -jar $SERV
 # The following example key/value pairs are equivalent to the default values:
 #   mscs-server-version=$CURRENT_VERSION
 #   mscs-server-jar=minecraft_server.$SERVER_VERSION.jar
+#   mscs-server-url=https://s3.amazonaws.com/Minecraft.Download/versions/$SERVER_VERSION/minecraft_server.$SERVER_VERSION.jar
 #   mscs-server-args=nogui
 #   mscs-initial-memory=128M
 #   mscs-maximum-memory=2048M
