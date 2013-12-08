@@ -7,32 +7,32 @@ A powerful command-line control script for Linux-powered Minecraft servers.
 Installation
 -----------------------------
 To get your server to run the script on startup, and cleanly down the server
-on shutdown, you need to copy the minecraft_server script to `/etc/init.d`,
-set execute permissions on the file, and instruct the system to use the script
-on startup and shutdown.
+on shutdown, the minecraft_server script must be copied to `/etc/init.d`,
+have its execute permissions set, and the system must be instructed to use
+the script on startup and shutdown.  For Bash programmable completion
+support, the mscs_completion script must be copied to 
+`/etc/bash_completion.d`.  For security reasons, the script uses a user
+account named minecraft rather than root and the account must be created
+before the script is used.
 
-The following commands will work in Debian and Ubuntu like environments, ymmv
-in others.
+This can all be done automatically with the included Makefile in Debian and
+Ubuntu like environments by running:
 
-sudo cp minecraft_server /etc/init.d/minecraft_server
-sudo chmod 755 /etc/init.d/minecraft_server
-sudo update-rc.d minecraft_server defaults
-
-
-For Bash programmable completion support, you need to copy the mscs_completion
-script to `/etc/bash_completion.d`.
-
-sudo cp mscs_completion /etc/bash_completion.d/mscs_completion
+    sudo make install
 
 
-For security reasons, the script uses a user account named minecraft rather
-than root.  As such, you need to create the user before using this script:
+It can also be accomplished manually with the following commands:
 
-sudo adduser minecraft
+    sudo cp minecraft_server /etc/init.d/minecraft_server
+    sudo cp mscs_completion /etc/bash_completion.d/mscs_completion
+    sudo chmod 755 /etc/init.d/minecraft_server
+    sudo update-rc.d minecraft_server defaults
+    sudo adduser minecraft
 
-If the Minecraft server software is not located when the server start command
-is issued, the software will be downloaded to the proper location:
-  /home/minecraft/minecraft_server/minecraft_server.jar
+The Minecraft server software will be automatically downloaded to the
+following location on the first run:
+
+    /home/minecraft/minecraft_server/
 
 
 Requirements
@@ -41,21 +41,21 @@ I've made an attempt to utilize only features that are normally installed in
 most Linux and UNIX environments in this script, but there are a few
 requirements that this script has that may not already be in place:
 
-Java 6/7 JRE   The Minecraft server software requires this.
-Perl 5         Most, if not all, Unix and Linux like systems have this
+* Java 6/7 JRE - The Minecraft server software requires this.
+* Perl 5       - Most, if not all, Unix and Linux like systems have this
                  preinstalled.
-Python         Required by the Minecraft Overviewer mapping software.
-GNU Wget       Allows the script to download software updates via the
+* Python       - Required by the Minecraft Overviewer mapping software.
+* GNU Wget     - Allows the script to download software updates via the
                  internet.
-rdiff-backup   Allows the script to efficiently run backups.
-Socat          Allows the script to communicate with the Minecraft server.
-Iptables       Although not explicitly required, a good firewall should be
+* rdiff-backup - Allows the script to efficiently run backups.
+* Socat        - Allows the script to communicate with the Minecraft server.
+* Iptables     - Although not explicitly required, a good firewall should be
                  installed.
 
 If you are running Debian or Ubuntu, you can make sure that these are
 installed by running:
 
-sudo apt-get install default-jre perl wget rdiff-backup socat iptables
+    sudo apt-get install default-jre perl wget rdiff-backup socat iptables
 
 
 Mapping Software
@@ -78,9 +78,10 @@ If you have a firewall installed on your computer, or a router using NAT
 installed in your network, you will need to route some ports to your server.
 Instructions on how to accomplish this are beyond the scope of this post, but
 here are some things you will need to know:
-  The default port for the Minecraft server is: 25565.
-  If you wish to run multiple world servers using this script, you will
-    want to open a range of ports (for example 25565 - 25575).
+
+* The default port for the Minecraft server is: 25565.
+* If you wish to run multiple world servers using this script, you will
+  want to open a range of ports (for example 25565 - 25575).
 
 If you are using iptables, and you should be, here is a very basic ruleset
 that you can use.
@@ -133,12 +134,12 @@ user or as root (through sudo).
 Note: If the script is run as the root user, all important server processes
 will be started using the minecraft user for security purposes.
 
-su minecraft
-/etc/init.d/minecraft_server <option>
+    su minecraft
+    /etc/init.d/minecraft_server <option>
 
 or
 
-sudo /etc/init.d/minecraft_server <option>
+    sudo /etc/init.d/minecraft_server <option>
 
 
 Options
@@ -185,25 +186,25 @@ Options
 
 To start all of the world servers, issue the command:
 
-/etc/init.d/minecraft_server start
+    /etc/init.d/minecraft_server start
 
 
 To create a world named alpha, issue the command:
 
-/etc/init.d/minecraft_server create alpha 25565
+    /etc/init.d/minecraft_server create alpha 25565
 
 
 To start just the world named alpha, issue the command:
 
-/etc/init.d/minecraft_server start alpha
+    /etc/init.d/minecraft_server start alpha
 
 
 To send a command to a world server, issue the command:
 
-/etc/init.d/minecraft_server send <world> <command>
+    /etc/init.d/minecraft_server send <world> <command>
 
 ie.
-/etc/init.d/minecraft_server send alpha say Hello world!
+    /etc/init.d/minecraft_server send alpha say Hello world!
 
 
 Message of the Day (MOTD)
@@ -211,7 +212,7 @@ Message of the Day (MOTD)
 To whisper the message of the day to users as they log into the world, add a
 file called motd.txt to the /home/minecraft directory.
 
-nano /home/minecraft/motd.txt
+    editor /home/minecraft/motd.txt
 
 
 Colors
@@ -237,9 +238,9 @@ into your text:
 
 Example motd.txt:
 
-§fWelcome to Minecraft!
-§fToday's theme is §4red§f.
-§fLook out for those §2creepers§f!
+    §fWelcome to Minecraft!
+    §fToday's theme is §4red§f.
+    §fLook out for those §2creepers§f!
 
 
 Server Customization
@@ -294,7 +295,7 @@ First, you need to know the name of the display you want to route the
 messages to.  This is usually ":0.0", but it may be something different on
 your system.
 
-glxinfo | grep "name of display"
+    glxinfo | grep "name of display"
 
 
 If your username is different than the user used for the Minecraft server,
@@ -327,3 +328,4 @@ environment where the error occurs to the support thread, and I'll try to
 work out a solution with you.
 
 Support thread:  http://www.minecraftforum.net/viewtopic.php?f=10&t=129833
+Github Issues: https://github.com/sandain/MinecraftServerControlScript/issues
