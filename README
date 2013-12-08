@@ -41,15 +41,15 @@ I've made an attempt to utilize only features that are normally installed in
 most Linux and UNIX environments in this script, but there are a few
 requirements that this script has that may not already be in place:
 
-Java 6/7 JRE   The Minecraft server software requires this.
-Perl 5         Most, if not all, Unix and Linux like systems have this
+* Java 6/7 JRE - The Minecraft server software requires this.
+* Perl 5       - Most, if not all, Unix and Linux like systems have this
                  preinstalled.
-Python         Required by the Minecraft Overviewer mapping software.
-GNU Wget       Allows the script to download software updates via the
+* Python       - Required by the Minecraft Overviewer mapping software.
+* GNU Wget     - Allows the script to download software updates via the
                  internet.
-rdiff-backup   Allows the script to efficiently run backups.
-Socat          Allows the script to communicate with the Minecraft server.
-Iptables       Although not explicitly required, a good firewall should be
+* rdiff-backup - Allows the script to efficiently run backups.
+* Socat        - Allows the script to communicate with the Minecraft server.
+* Iptables     - Although not explicitly required, a good firewall should be
                  installed.
 
 If you are running Debian or Ubuntu, you can make sure that these are
@@ -79,10 +79,9 @@ installed in your network, you will need to route some ports to your server.
 Instructions on how to accomplish this are beyond the scope of this post, but
 here are some things you will need to know:
 
-    The default port for the Minecraft server is: 25565.
-
-    If you wish to run multiple world servers using this script, you will
-    want to open a range of ports (for example 25565 - 25575).
+* The default port for the Minecraft server is: 25565.
+* If you wish to run multiple world servers using this script, you will
+  want to open a range of ports (for example 25565 - 25575).
 
 If you are using iptables, and you should be, here is a very basic ruleset
 that you can use.
@@ -320,3 +319,4 @@ environment where the error occurs to the support thread, and I'll try to
 work out a solution with you.
 
 Support thread:  http://www.minecraftforum.net/viewtopic.php?f=10&t=129833
+Github Issues: https://github.com/sandain/MinecraftServerControlScript/issues
