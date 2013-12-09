@@ -68,12 +68,6 @@ needed.
     http://overviewer.org/
 
 
-Multiple Worlds
------------------------------
-The script can handle running multiple Minecraft world servers.  See the
-description for the 'create' world option below.
-
-
 Firewall / NAT
 -----------------------------
 If you have a firewall installed on your computer, or a router using NAT
