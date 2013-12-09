@@ -101,44 +101,70 @@ or
 
 Options
     start <world>
-      Start the Minecraft world server.  Starts all world servers by default.
+        Start the Minecraft world server.  Start all worlds by default.
+
     stop <world>
-      Stop the Minecraft world server.  Stops all world servers by default.
+        Stop the Minecraft world server.  Stop all worlds by default.
+
     force-stop <world>
-      Forcibly stop the Minecraft world server.  Forcibly stops all world
-      servers by default.
+        Forcibly stop the Minecraft world server.  Forcibly stop all worlds
+        by default.
+
     restart <world>
-      Restart the Minecraft world server.  Restarts all world servers by
-      default.
+        Restart the Minecraft world server.  Restart all worlds by default.
+
     force-restart <world>
-      Forcibly restart the Minecraft world server.  Forcibly restarts all
-      world servers by default.
+        Forcibly restart the Minecraft world server.  Forcibly restart all
+        worlds by default.
+
     create <world> <port> <ip>
-      Create a Minecraft world server.  The world name and port must be
-      provided, the IP address is usually blank.
+        Create a Minecraft world server.  The world name and port must be
+        provided, the IP address is usually blank.
+
     delete <world>
-      Delete a Minecraft world server.
+        Delete a Minecraft world server.
+
     disable <world>
-      Temporarily disable a world server.
+        Temporarily disable a world server.
+
     enable <world>
-      Enable a disabled world server.
+        Enable a disabled world server.
+
+    list <option>
+        Display a list of worlds.
+        Options:
+            enabled
+                Display a list of enabled worlds, default.
+            disabled
+                Display a list of disabled worlds.
+            running
+                Display a list of running worlds.
+            stopped
+                Display a list of stopped worlds.
+
     status <world>
-      Display the status of the Minecraft world server.  Displays the status
-      of all world servers by default.
+        Display the status of the Minecraft world server.  Display the
+        status of all worlds by default.
+
     send <world> <command>
-      Send a command to a Minecraft world server.
+        Send a command to a Minecraft world server.
+
     logrotate <world>
-      Rotate the server.log file.  Rotate the server.log file for all worlds
-      by default.
+        Rotate the server.log file.  Rotate the server.log file for all
+        worlds by default.
+
     backup <world>
-      Backup the Minecraft world.  Backup all worlds by default.
+        Backup the Minecraft world.  Backup all worlds by default.
+
     watch <world>
-      Watch the log file for the Minecraft world server.
+        Watch the log file for the Minecraft world server.
+
     map <world>
-      Run the Minecraft Overviewer mapping software on the Minecraft world.
-      Maps all worlds by default.
+        Run the Minecraft Overviewer mapping software on the Minecraft world.
+        Map all worlds by default.
+
     update
-      Update the client and server software packages.
+        Update the client and server software packages.
 
 
 To start all of the world servers, issue the command:
