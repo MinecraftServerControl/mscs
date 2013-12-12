@@ -65,11 +65,7 @@ maps of your worlds.  You can download premade binaries for supported systems
 (Debian/Ubuntu, CentOS/RHEL/Fedora), or build your own binary from source if
 needed.
 
-
-Multiple Worlds
------------------------------
-The script can handle running multiple Minecraft world servers.  See the
-description for the 'create' world option below.
+    http://overviewer.org/
 
 
 Firewall / NAT
@@ -83,47 +79,8 @@ here are some things you will need to know:
 * If you wish to run multiple world servers using this script, you will
   want to open a range of ports (for example 25565 - 25575).
 
-If you are using iptables, and you should be, here is a very basic ruleset
-that you can use.
-
-*filter
-:INPUT DROP [0:0]
-:FORWARD DROP [0:0]
-:OUTPUT DROP [0:0]
-
-# Handle loopback addresses
--A INPUT -i lo -j ACCEPT
--A OUTPUT -o lo -j ACCEPT
-
-# Allow outbound packets if state related, and inbound if established
--A OUTPUT -m state --state NEW,ESTABLISHED,RELATED -j ACCEPT
--A INPUT -m state --state ESTABLISHED,RELATED -j ACCEPT
-
-# Drop stealth scans
--A INPUT -i eth0 -p tcp -m tcp --tcp-flags FIN,SYN,RST,PSH,ACK,URG NONE
--A INPUT -i eth0 -p tcp -m tcp --tcp-flags SYN,FIN SYN,FIN
--A INPUT -i eth0 -p tcp -m tcp --tcp-flags SYN,RST SYN,RST
--A INPUT -i eth0 -p tcp -m tcp --tcp-flags FIN,RST FIN,RST
--A INPUT -i eth0 -p tcp -m tcp --tcp-flags ACK,FIN FIN
--A INPUT -i eth0 -p tcp -m tcp --tcp-flags ACK,URG URG
-
-# Allow ICMP pings
--A OUTPUT -p icmp -m state --state NEW,ESTABLISHED,RELATED -j ACCEPT
--A INPUT -p icmp -m state --state ESTABLISHED,RELATED -j ACCEPT
-
-# Allow port 22 for SSH
--A INPUT -m state --state NEW -m tcp -p tcp --dport 22 -j ACCEPT
-
-# Allow port 80 for HTTP
--A INPUT -m state --state NEW -m tcp -p tcp --dport 80 -j ACCEPT
-
-# Allow port 443 for HTTPS
--A INPUT -m state --state NEW -m tcp -p tcp --dport 443 -j ACCEPT
-
-# Allow ports 25565 - 25575 for Minecraft world servers
--A INPUT -m state --state NEW -m tcp -p tcp --dport 25565:25575 -j ACCEPT
-
-COMMIT
+See the iptables.rules file for a very basic set of rules that you can use
+with the Iptables filewall.
 
 
 Usage
@@ -144,44 +101,70 @@ or
 
 Options
     start <world>
-      Start the Minecraft world server.  Starts all world servers by default.
+        Start the Minecraft world server.  Start all worlds by default.
+
     stop <world>
-      Stop the Minecraft world server.  Stops all world servers by default.
+        Stop the Minecraft world server.  Stop all worlds by default.
+
     force-stop <world>
-      Forcibly stop the Minecraft world server.  Forcibly stops all world
-      servers by default.
+        Forcibly stop the Minecraft world server.  Forcibly stop all worlds
+        by default.
+
     restart <world>
-      Restart the Minecraft world server.  Restarts all world servers by
-      default.
+        Restart the Minecraft world server.  Restart all worlds by default.
+
     force-restart <world>
-      Forcibly restart the Minecraft world server.  Forcibly restarts all
-      world servers by default.
+        Forcibly restart the Minecraft world server.  Forcibly restart all
+        worlds by default.
+
     create <world> <port> <ip>
-      Create a Minecraft world server.  The world name and port must be
-      provided, the IP address is usually blank.
+        Create a Minecraft world server.  The world name and port must be
+        provided, the IP address is usually blank.
+
     delete <world>
-      Delete a Minecraft world server.
+        Delete a Minecraft world server.
+
     disable <world>
-      Temporarily disable a world server.
+        Temporarily disable a world server.
+
     enable <world>
-      Enable a disabled world server.
+        Enable a disabled world server.
+
+    list <option>
+        Display a list of worlds.
+        Options:
+            enabled
+                Display a list of enabled worlds, default.
+            disabled
+                Display a list of disabled worlds.
+            running
+                Display a list of running worlds.
+            stopped
+                Display a list of stopped worlds.
+
     status <world>
-      Display the status of the Minecraft world server.  Displays the status
-      of all world servers by default.
+        Display the status of the Minecraft world server.  Display the
+        status of all worlds by default.
+
     send <world> <command>
-      Send a command to a Minecraft world server.
+        Send a command to a Minecraft world server.
+
     logrotate <world>
-      Rotate the server.log file.  Rotate the server.log file for all worlds
-      by default.
+        Rotate the server.log file.  Rotate the server.log file for all
+        worlds by default.
+
     backup <world>
-      Backup the Minecraft world.  Backup all worlds by default.
+        Backup the Minecraft world.  Backup all worlds by default.
+
     watch <world>
-      Watch the log file for the Minecraft world server.
+        Watch the log file for the Minecraft world server.
+
     map <world>
-      Run the Minecraft Overviewer mapping software on the Minecraft world.
-      Maps all worlds by default.
+        Run the Minecraft Overviewer mapping software on the Minecraft world.
+        Map all worlds by default.
+
     update
-      Update the client and server software packages.
+        Update the client and server software packages.
 
 
 To start all of the world servers, issue the command:
