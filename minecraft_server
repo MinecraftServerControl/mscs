@@ -171,6 +171,10 @@ CURRENT_VERSION=$(
 DEFAULT_WORLD="world"
 DEFAULT_PORT="25565"
 DEFAULT_IP=""
+DEFAULT_CLIENT_VERSION=$CURRENT_VERSION
+DEFAULT_CLIENT_JAR='$CLIENT_VERSION.jar'
+DEFAULT_CLIENT_URL='https://s3.amazonaws.com/Minecraft.Download/versions/$CLIENT_VERSION/$CLIENT_VERSION.jar'
+DEFAULT_CLIENT_LOCATION=$LOCATION'/.minecraft/versions/$CLIENT_VERSION'
 DEFAULT_SERVER_VERSION=$CURRENT_VERSION
 DEFAULT_SERVER_JAR='minecraft_server.$SERVER_VERSION.jar'
 DEFAULT_SERVER_URL='https://s3.amazonaws.com/Minecraft.Download/versions/$SERVER_VERSION/minecraft_server.$SERVER_VERSION.jar'
@@ -184,8 +188,12 @@ DEFAULT_SERVER_COMMAND='$JAVA -Xms$INITIAL_MEMORY -Xmx$MAXIMUM_MEMORY -jar $SERV
 # key/value pairs to the world's server.properties file.
 #
 # The following keys are available:
-#   mscs-server-version  - Assign the version of the server to run.
-#   mscs-server-jar      - Assign the .jar file for the server to run.
+#   mscs-client-version  - Assign the version of the client software.
+#   mscs-client-jar      - Assign the .jar file for the client software.
+#   mscs-client-url      - Assign the download URL for the client software.
+#   mscs-client-location - Assign the location of the client .jar file.
+#   mscs-server-version  - Assign the version of the server software.
+#   mscs-server-jar      - Assign the .jar file for the server software.
 #   mscs-server-url      - Assign the download URL for the server software.
 #   mscs-server-args     - Assign the arguments to the server.
 #   mscs-initial-memory  - Assign the initial amount of memory for the server.
@@ -197,7 +205,8 @@ DEFAULT_SERVER_COMMAND='$JAVA -Xms$INITIAL_MEMORY -Xmx$MAXIMUM_MEMORY -jar $SERV
 # keys:
 #   $JAVA                - The Java virtual machine.
 #   $CURRENT_VERSION     - The current Mojang Minecraft release version.
-#   $SERVER_VERSION      - The version of the server that will be run.
+#   $CLIENT_VERSION      - The version of the client software.
+#   $SERVER_VERSION      - The version of the server software.
 #   $SERVER_JAR          - The .jar file to run for the server.
 #   $SERVER_ARGS         - The arguments to the server.
 #   $INITIAL_MEMORY      - The initial amount of memory for the server.
@@ -205,6 +214,10 @@ DEFAULT_SERVER_COMMAND='$JAVA -Xms$INITIAL_MEMORY -Xmx$MAXIMUM_MEMORY -jar $SERV
 #   $SERVER_LOCATION     - The location of the server .jar file.
 #
 # The following example key/value pairs are equivalent to the default values:
+#   mscs-client-version=$CURRENT_VERSION
+#   mscs-client-jar=$CLIENT_VERSION.jar
+#   mscs-client-url=https://s3.amazonaws.com/Minecraft.Download/versions/$CLIENT_VERSION/$CLIENT_VERSION.jar
+#   mscs-client-location=/home/minecraft/.minecraft/versions/$CLIENT_VERSION
 #   mscs-server-version=$CURRENT_VERSION
 #   mscs-server-jar=minecraft_server.$SERVER_VERSION.jar
 #   mscs-server-url=https://s3.amazonaws.com/Minecraft.Download/versions/$SERVER_VERSION/minecraft_server.$SERVER_VERSION.jar
@@ -213,15 +226,6 @@ DEFAULT_SERVER_COMMAND='$JAVA -Xms$INITIAL_MEMORY -Xmx$MAXIMUM_MEMORY -jar $SERV
 #   mscs-maximum-memory=2048M
 #   mscs-server-location=/home/minecraft/minecraft_server
 #   mscs-server-command=$JAVA -Xms$INITIAL_MEMORY -Xmx$MAXIMUM_MEMORY -jar $SERVER_LOCATION/$SERVER_JAR $SERVER_ARGS
-
-
-# Minecraft Client Settings
-# ---------------------------------------------------------------------------
-# Used by Minecraft Overviewer mapping software.
-
-CLIENT_JAR="$CURRENT_VERSION.jar"
-CLIENT_URL="https://s3.amazonaws.com/Minecraft.Download/versions/$CURRENT_VERSION/$CURRENT_VERSION.jar"
-CLIENT_LOCATION="$LOCATION/.minecraft/versions/$CURRENT_VERSION"
 
 
 # World (Server Instance) Configuration
@@ -554,6 +558,93 @@ setPropertiesValue() {
   else
     execute "printf \"$2=$3\\n\" >> $PROPERTY_FILE" $USER_NAME
   fi
+}
+
+# ---------------------------------------------------------------------------
+# Retrieve the version of the client for the world.
+#
+# @param 1 The world server.
+# @return CLIENT_VERSION
+# ---------------------------------------------------------------------------
+getClientVersion() {
+  local CLIENT_VERSION
+  # Get the client version, use the default version if not provided.
+  CLIENT_VERSION=$(
+    getPropertiesValue "$1" "mscs-client-version" "$DEFAULT_CLIENT_VERSION" |
+    $PERL -ne '
+      $current_version="'$CURRENT_VERSION'";
+      $_ =~ s/\$CURRENT_VERSION/$current_version/g;
+      print;
+    '
+  )
+  echo "$CLIENT_VERSION"
+}
+  
+# ---------------------------------------------------------------------------
+# Retrieve the .jar file name for the client for the world.
+#
+# @param 1 The world server.
+# @return CLIENT_JAR
+# ---------------------------------------------------------------------------
+getClientJar() {
+  local CLIENT_JAR
+  # Get the client jar, use the default value if not provided.
+  CLIENT_JAR=$(
+    getPropertiesValue "$1" "mscs-client-jar" "$DEFAULT_CLIENT_JAR" |
+    $PERL -ne '
+      $current_version="'$CURRENT_VERSION'";
+      $client_version="'$(getClientVersion "$1")'";
+      $_ =~ s/\$CURRENT_VERSION/$current_version/g;
+      $_ =~ s/\$CLIENT_VERSION/$client_version/g;
+      print;
+    '
+  )
+  echo "$CLIENT_JAR"
+}
+
+# ---------------------------------------------------------------------------
+# Retrieve the location of the client files for the world.
+#
+# @param 1 The world server.
+# @return CLIENT_LOCATION
+# ---------------------------------------------------------------------------
+getClientLocation() {
+  local CLIENT_LOCATION
+  # Get the client location, use the default value if not provided.
+  CLIENT_LOCATION=$(
+    getPropertiesValue "$1" "mscs-client-location" "$DEFAULT_CLIENT_LOCATION" |
+    $PERL -ne '
+      $current_version="'$CURRENT_VERSION'";
+      $client_version="'$(getClientVersion "$1")'";
+      $_ =~ s/\$CURRENT_VERSION/$current_version/g;
+      $_ =~ s/\$CLIENT_VERSION/$client_version/g;
+      print;
+    '
+  )
+  echo "$CLIENT_LOCATION"
+}
+
+# ---------------------------------------------------------------------------
+# Retrieve the URL to download the client for the world.
+#
+# @param 1 The world server.
+# @return CLIENT_URL
+# ---------------------------------------------------------------------------
+getClientURL() {
+  local CLIENT_URL
+  # Get the client download URL, use the default value if not provided.
+  CLIENT_URL=$(
+    getPropertiesValue "$1" "mscs-client-url" "$DEFAULT_CLIENT_URL" |
+    $PERL -ne '
+      $current_version="'$CURRENT_VERSION'";
+      $client_version="'$(getClientVersion "$1")'";
+      $_ =~ s/\$CURRENT_VERSION/$current_version/g;
+      $_ =~ s/\$CLIENT_VERSION/$client_version/g;
+      $_ =~ s/\\\:/\:/g;
+      print;
+    '
+  )
+  echo "$CLIENT_URL"
 }
 
 # ---------------------------------------------------------------------------
@@ -963,12 +1054,18 @@ worldBackup() {
 
 # ---------------------------------------------------------------------------
 # Update the Minecraft client software.
+#
+# @param 1 The world to update.
 # ---------------------------------------------------------------------------
 updateClientSoftware() {
+  local CLIENT_JAR CLIENT_LOCATION CLIENT_URL
+  CLIENT_JAR=$(getClientJar "$1")
+  CLIENT_LOCATION=$(getClientLocation "$1")
+  CLIENT_URL=$(getClientURL "$1")
   # Make sure the client software directory exists.
   execute "mkdir -p $CLIENT_LOCATION" $USER_NAME
-  # Download the Minecraft client software.
   if [ ! -e "$CLIENT_LOCATION/$CLIENT_JAR" ]; then
+    # Download the Minecraft client software.
     execute "$WGET -qO \"$CLIENT_LOCATION/$CLIENT_JAR\" \"$CLIENT_URL\"" $USER_NAME
     # Report any errors.
     if [ $? -ne 0 ]; then
@@ -988,9 +1085,10 @@ updateServerSoftware() {
   SERVER_JAR=$(getServerJar "$1")
   SERVER_LOCATION=$(getServerLocation "$1")
   SERVER_URL=$(getServerURL "$1")
+  # Make sure the server software directory exists.
   execute "mkdir -p $SERVER_LOCATION" $USER_NAME
   if [ ! -e "$SERVER_LOCATION/$SERVER_JAR" ]; then
-    # Download the new minecraft server software.
+    # Download the Minecraft server software.
     execute "$WGET -qO \"$SERVER_LOCATION/$SERVER_JAR\" \"$SERVER_URL\"" $USER_NAME
     # Report any errors.
     if [ $? -ne 0 ]; then
@@ -1010,7 +1108,7 @@ overviewer() {
   # Make sure the maps directory exists.
   execute "mkdir -p $MAPS_LOCATION/$1" $USER_NAME
   # Make sure the Minecraft client is available.
-  updateClientSoftware
+  updateClientSoftware "$1"
   # Make sure that the world files are actually there before mapping.
   if [ -e "$WORLDS_LOCATION/$1/server.properties" ]; then
     # Check for Overviewer settings file.
