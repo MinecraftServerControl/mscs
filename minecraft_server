@@ -253,8 +253,8 @@ BACKUP_DURATION=15
 # Server Log Configuration
 # ---------------------------------------------------------------------------
 
-# How many rotations of latest.log to keep
-LOG_COUNT=10
+# Length in days that logs survive.
+LOG_DURATION=15
 
 
 # Mirror Image Options
@@ -604,44 +604,36 @@ checkUserIsAdmin() {
 }
 
 # ---------------------------------------------------------------------------
-# Rotates the world latest.log file.
+# Remove old world log files and rotate log files from old servers (v < 1.7).
 #
 # @param 1 The world server generating the log to rotate.
 # ---------------------------------------------------------------------------
 rotateLog() {
-  local WORLD_DIR LOG_LIST LOG_LINES LOG_NUMBER
+  local WORLD_DIR DATE LOG NUMBER
   WORLD_DIR="$WORLDS_LOCATION/$1"
-  # Make sure that the latest.log file exists.
-  execute "touch $WORLD_DIR/logs/latest.log" $USER_NAME
-  # Scan the log for entires and skip rotate is none are found.
-  LOG_LINES="$(cat "$WORLD_DIR/logs/latest.log" | wc -l )"
-  if [ $LOG_LINES -le 1 ]; then
-    printf "\nNo new log entries to rotate. No changes made.\n"
-    return 0
+  # Make sure the log directory exists.
+  execute "mkdir -p $WORLD_DIR/logs" $USER_NAME
+  # Delete old log files.
+  execute "
+    find $WORLD_DIR/logs -type f -mtime +$LOG_DURATION -delete
+  " $USER_NAME
+  # Archive and rotate the log files for old Minecraft servers (Versions 1.7
+  # and greater do this automatically).
+  if [ -e $WORLD_DIR/server.log ] && 
+    [ $(wc -l < $WORLD_DIR/server.log) -ge 1 ]; then
+    # Make a copy of the log file in the world's logs directory.
+    DATE=$(date +%F)
+    execute "cp $WORLD_DIR/server.log $WORLD_DIR/logs/$DATE-0.log" $USER_NAME
+    execute "gzip $WORLD_DIR/logs/$DATE-0.log" $USER_NAME
+    # Empty the contents of the worlds log file.
+    execute "cp /dev/null $WORLD_DIR/server.log" $USER_NAME
+    # Rotate the files in the world's logs directory.
+    for LOG in $(ls -r $WORLD_DIR/logs/$DATE-*.log.gz); do
+      NUMBER=$(echo $LOG | cut -d "." -f 1 | cut -d "-" -f 4)
+      NUMBER=$(($NUMBER+1))
+      execute "mv -f $LOG $WORLD_DIR/logs/$DATE-$NUMBER.log.gz" $USER_NAME
+    done
   fi
-  # Server logfiles in chronological order.
-  LOGLIST=$(ls -r $WORLD_DIR/logs/latest.log* | grep -v lck)
-  # Look at all the logfiles
-  for i in $LOGLIST; do
-    LOG_NUMBER=$(ls $i | cut -d "." -f 3)
-    # If we're working with latest.log, append .1 then compress
-    # it.
-    if [ -z $LOG_NUMBER ]; then
-      LOG_NUMBER="1"
-      execute "cp $WORLD_DIR/logs/latest.log $WORLD_DIR/logs/latest.log.$LOG_NUMBER" $USER_NAME
-      execute "gzip $WORLD_DIR/logs/latest.log.$LOG_NUMBER" $USER_NAME
-    # Otherwise, check if the file number is under $LOG_COUNT.
-    elif [ $LOG_NUMBER -ge $LOG_COUNT ]; then
-      # If so, delete it.
-      execute "rm -f $i" $USER_NAME
-    else
-      # Otherwise, add one to the number.
-      LOG_NUMBER=$(($LOG_NUMBER+1))
-      execute "mv -f $i $WORLD_DIR/logs/latest.log.$LOG_NUMBER.gz" $USER_NAME
-    fi
-  done
-  # Blank the existing logfile to renew it.
-  execute "cp /dev/null $WORLD_DIR/logs/latest.log" $USER_NAME
 }
 
 # ---------------------------------------------------------------------------
@@ -654,8 +646,11 @@ watchLog() {
   WORLD_DIR="$WORLDS_LOCATION/$1"
   # Make sure that the latest.log file exists.
   if [ -e "$WORLD_DIR/logs/latest.log" ]; then
-    # Watch the log.
+    # Watch the log file of worlds running Minecraft 1.7 +.
     tail -n0 -f --pid=$(getJavaPID "$1") $WORLD_DIR/logs/latest.log
+  elif [ -e $WORLD_DIR/server.log ]; then
+    # Watch the log file of worlds running older Minecraft servers.
+    tail -n0 -f --pid=$(getJavaPID "$1") $WORLD_DIR/server.log
   fi
 }
 
@@ -686,6 +681,8 @@ start() {
   # Make sure that the world's directory exists.
   WORLD_DIR="$WORLDS_LOCATION/$1"
   execute "mkdir -p $WORLD_DIR" $USER_NAME
+  # Rotate the world's log files.
+  rotateLog "$1"
   # Make a mirror image of the world directory if requested.
   if [ $ENABLE_MIRROR -eq 1 ]; then
     execute "mkdir -p $MIRROR_PATH/$1" $USER_NAME
