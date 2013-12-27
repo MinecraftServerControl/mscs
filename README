@@ -232,8 +232,12 @@ The server settings for each world can be customized by adding certain
 key/value pairs to the world's server.properties file.
 
 The following keys are available:
-    mscs-server-version - Assign the version of the server to run.
-    mscs-server-jar - Assign the .jar file for the server to run.
+    mscs-client-version - Assign the version of the client software.
+    mscs-client-jar - Assign the .jar file for the client software.
+    mscs-client-url - Assign the download URL for the client software.
+    mscs-client-location - Assign the location of the client .jar file.
+    mscs-server-version - Assign the version of the server software.
+    mscs-server-jar - Assign the .jar file for the server software.
     mscs-server-url - Assign the download URL for the server software.
     mscs-server-args - Assign the arguments to the server.
     mscs-initial-memory - Assign the initial amount of memory for the server.
@@ -244,7 +248,8 @@ The following keys are available:
 The following variables may be used in some of the values of the above keys:
     $JAVA - The Java virtual machine.
     $CURRENT_VERSION - The current Mojang Minecraft release version.
-    $SERVER_VERSION - The version of the server that will be run.
+    $CLIENT_VERSION - The version of the client software.
+    $SERVER_VERSION - The version of the server software.
     $SERVER_JAR - The .jar file to run for the server.
     $SERVER_ARGS - The arguments to the server.
     $INITIAL_MEMORY - The initial amount of memory for the server.
@@ -252,6 +257,10 @@ The following variables may be used in some of the values of the above keys:
     $SERVER_LOCATION - The location of the server .jar file.
 
 The following example key/value pairs are equivalent to the default values:
+    mscs-client-version=$CURRENT_VERSION
+    mscs-client-jar=$CLIENT_VERSION.jar
+    mscs-client-url=https://s3.amazonaws.com/Minecraft.Download/versions/$CLIENT_VERSION/$CLIENT_VERSION.jar
+    mscs-client-location=/home/minecraft/.minecraft/versions/$CLIENT_VERSION
     mscs-server-version=$CURRENT_VERSION
     mscs-server-jar=minecraft_server.$SERVER_VERSION.jar
     mscs-server-url=https://s3.amazonaws.com/Minecraft.Download/versions/$SERVER_VERSION/minecraft_server.$SERVER_VERSION.jar
