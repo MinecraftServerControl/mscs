@@ -1006,7 +1006,7 @@ stop() {
   # are stopped.
   if [ -e "/var/lock/subsys/minecraft_server" ]; then
     NUM=0
-    for WORLD in $ALL_WORLDS; do
+    for WORLD in $(getEnabledWorlds); do
       if [ "$1" != "$WORLD" ] && [ $(serverRunning $WORLD) -eq 1 ]; then
         NUM=$(($NUM + 1))
       fi
@@ -1438,22 +1438,20 @@ if [ ! -e "$SOCAT" ]; then
   exit 1
 fi
 
-# Grab the list of enabled worlds.
-ALL_WORLDS=$(getEnabledWorlds)
 
 # Respond to the command line arguments.
 case "$1" in
   start)
     checkPermission
     # Figure out which worlds to start.
-    WORLDS="$ALL_WORLDS"
+    WORLDS=$(getEnabledWorlds)
     # If there are no worlds in the list, then use the default world.
     if [ ! -n "$WORLDS" ]; then
       WORLDS="$DEFAULT_WORLD"
       createWorld "$DEFAULT_WORLD" "$DEFAULT_PORT" "$DEFAULT_IP"
     fi
     # If an optional argument was supplied, verify it is a valid world.
-    if [ -n "$2" ] && [ $(listContains "$2" "$ALL_WORLDS") -eq 1 ]; then
+    if [ -n "$2" ] && [ $(listContains "$2" "$WORLDS") -eq 1 ]; then
       WORLDS="$2"
     elif [ -n "$2" ]; then
       printf "World '$2' not recognized.\n"
@@ -1473,8 +1471,8 @@ case "$1" in
   stop|force-stop)
     checkPermission
     # Figure out which worlds to stop.
-    WORLDS="$ALL_WORLDS"
-    if [ -n "$2" ] && [ $(listContains "$2" "$ALL_WORLDS") -eq 1 ]; then
+    WORLDS=$(getEnabledWorlds)
+    if [ -n "$2" ] && [ $(listContains "$2" "$WORLDS") -eq 1 ]; then
       WORLDS="$2"
     elif [ -n "$2" ]; then
       printf "World '$2' not recognized.\n"
@@ -1510,8 +1508,8 @@ case "$1" in
   restart|reload|force-restart|force-reload)
     checkPermission
     # Figure out which worlds to restart.
-    WORLDS="$ALL_WORLDS"
-    if [ -n "$2" ] && [ $(listContains "$2" "$ALL_WORLDS") -eq 1 ]; then
+    WORLDS=$(getEnabledWorlds)
+    if [ -n "$2" ] && [ $(listContains "$2" "$WORLDS") -eq 1 ]; then
       WORLDS="$2"
     elif [ -n "$2" ]; then
       printf "World '$2' not recognized.\n"
@@ -1559,7 +1557,9 @@ case "$1" in
   ;;
   delete|remove)
     checkPermission
-    if [ ! -n "$2" ] || [ $(listContains "$2" "$ALL_WORLDS") -eq 0 ]; then
+    # Get list of enabled worlds.
+    WORLDS=$(getEnabledWorlds)
+    if [ ! -n "$2" ] || [ $(listContains "$2" "$WORLDS") -eq 0 ]; then
       printf "World not found, unable to delete world '$2'.\n"
       exit 1
     fi
@@ -1583,7 +1583,9 @@ case "$1" in
   ;;
   disable)
     checkPermission
-    if [ ! -n "$2" ] || [ $(listContains "$2" "$ALL_WORLDS") -eq 0 ]; then
+    # Get list of enabled worlds.
+    WORLDS=$(getEnabledWorlds)
+    if [ ! -n "$2" ] || [ $(listContains "$2" "$WORLDS") -eq 0 ]; then
       printf "World not found, unable to disable world '$2'.\n"
       exit 1
     fi
@@ -1623,27 +1625,27 @@ case "$1" in
     WORLDS=""
     case "$2" in
       enabled)
-        WORLDS="$ALL_WORLDS"
+        WORLDS=$(getEnabledWorlds)
       ;;
       disabled)
         WORLDS=$(getDisabledWorlds)
       ;;
       running)
-        for WORLD in $ALL_WORLDS; do
+        for WORLD in $(getEnabledWorlds); do
           if [ $(serverRunning $WORLD) -eq 1 ]; then
             WORLDS="$WORLDS $WORLD"
           fi
         done
       ;;
       stopped)
-        for WORLD in $ALL_WORLDS; do
+        for WORLD in $(getEnabledWorlds); do
           if [ $(serverRunning $WORLD) -eq 0 ]; then
             WORLDS="$WORLDS $WORLD"
           fi
         done
       ;;
       *)
-        WORLDS="$ALL_WORLDS"
+        WORLDS=$(getEnabledWorlds)
       ;;
     esac
     echo $WORLDS
@@ -1651,8 +1653,8 @@ case "$1" in
   status|show)
     checkPermission
     # Figure out which worlds to show the status for.
-    WORLDS="$ALL_WORLDS"
-    if [ -n "$2" ] && [ $(listContains "$2" "$ALL_WORLDS") -eq 1 ]; then
+    WORLDS=$(getEnabledWorlds)
+    if [ -n "$2" ] && [ $(listContains "$2" "$WORLDS") -eq 1 ]; then
       WORLDS="$2"
     elif [ -n "$2" ]; then
       printf "World '$2' not recognized.\n"
@@ -1669,8 +1671,8 @@ case "$1" in
   sync|synchronize)
     checkPermission
     # Figure out which worlds to synchronize.
-    WORLDS="$ALL_WORLDS"
-    if [ -n "$2" ] && [ $(listContains "$2" "$ALL_WORLDS") -eq 1 ]; then
+    WORLDS=$(getEnabledWorlds)
+    if [ -n "$2" ] && [ $(listContains "$2" "$WORLDS") -eq 1 ]; then
       WORLDS="$2"
     elif [ -n "$2" ]; then
       printf "World '$2' not recognized.\n"
@@ -1695,8 +1697,10 @@ case "$1" in
   ;;
   send)
     checkPermission
+    # Get list of enabled worlds.
+    WORLDS=$(getEnabledWorlds)
     # Check for the world command line argument.
-    if [ -n "$2" ] && [ $(listContains $2 "$ALL_WORLDS") -eq 1 ] && [ -n "$3" ]; then
+    if [ -n "$2" ] && [ $(listContains $2 "$WORLDS") -eq 1 ] && [ -n "$3" ]; then
       WORLD=$2
       shift 2
       printf "Sending command to world: $WORLD - '$*'.\n"
@@ -1709,8 +1713,10 @@ case "$1" in
   ;;
   watch)
     checkPermission
+    # Get list of enabled worlds.
+    WORLDS=$(getEnabledWorlds)
     # Check for the world command line argument.
-    if [ -n "$2" ] && [ $(listContains $2 "$ALL_WORLDS") -eq 1 ]; then
+    if [ -n "$2" ] && [ $(listContains $2 "$WORLDS") -eq 1 ]; then
       printf "Monitoring Minecraft Server: $2.\n"
       watchLog $2
     else
@@ -1726,8 +1732,8 @@ case "$1" in
   logrotate)
     checkPermission
     # Figure out which worlds to rotate the log.
-    WORLDS="$ALL_WORLDS"
-    if [ -n "$2" ] && [ $(listContains "$2" "$ALL_WORLDS") -eq 1 ]; then
+    WORLDS=$(getEnabledWorlds)
+    if [ -n "$2" ] && [ $(listContains "$2" "$WORLDS") -eq 1 ]; then
       WORLDS="$2"
     elif [ -n "$2" ]; then
       printf "World '$2' not recognized.\n"
@@ -1745,8 +1751,8 @@ case "$1" in
   backup)
     checkPermission
     # Figure out which worlds to backup.
-    WORLDS="$ALL_WORLDS"
-    if [ -n "$2" ] && [ $(listContains "$2" "$ALL_WORLDS") -eq 1 ]; then
+    WORLDS=$(getEnabledWorlds)
+    if [ -n "$2" ] && [ $(listContains "$2" "$WORLDS") -eq 1 ]; then
       WORLDS="$2"
     elif [ -n "$2" ]; then
       printf "World '$2' not recognized.\n"
@@ -1774,8 +1780,8 @@ case "$1" in
   update)
     checkPermission
     # Figure out which worlds to update.
-    WORLDS="$ALL_WORLDS"
-    if [ -n "$2" ] && [ $(listContains "$2" "$ALL_WORLDS") -eq 1 ]; then
+    WORLDS=$(getEnabledWorlds)
+    if [ -n "$2" ] && [ $(listContains "$2" "$WORLDS") -eq 1 ]; then
       WORLDS="$2"
     elif [ -n "$2" ]; then
       printf "World '$2' not recognized.\n"
@@ -1827,8 +1833,8 @@ case "$1" in
       exit 1
     fi
     # Figure out which worlds to map.
-    WORLDS="$ALL_WORLDS"
-    if [ -n "$2" ] && [ $(listContains "$2" "$ALL_WORLDS") -eq 1 ]; then
+    WORLDS=$(getEnabledWorlds)
+    if [ -n "$2" ] && [ $(listContains "$2" "$WORLDS") -eq 1 ]; then
       WORLDS="$2"
     elif [ -n "$2" ]; then
       printf "World '$2' not recognized.\n"
