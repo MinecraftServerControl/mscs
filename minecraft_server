@@ -107,8 +107,8 @@ Options:
     Watch the log file for the Minecraft world server.
 
   logrotate <world>
-    Rotate the latest.log file.  Rotate the latest.log file for all worlds by
-    default.
+    Rotate the log file for the Minecraft world.  Rotate the log file for
+    all worlds by default.
 
   backup <world>
     Backup the Minecraft world.  Backup all worlds by default.
