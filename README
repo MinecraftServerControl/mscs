@@ -270,6 +270,10 @@ The following example key/value pairs are equivalent to the default values:
     mscs-server-location=/home/minecraft/minecraft_server
     mscs-server-command=$JAVA -Xms$INITIAL_MEMORY -Xmx$MAXIMUM_MEMORY -jar $SERVER_LOCATION/$SERVER_JAR $SERVER_ARGS
 
+The following example key/value pairs will run a Minecraft version 1.6.4 server:
+    mscs-client-version=1.6.4
+    mscs-server-version=1.6.4
+
 The following example key/value pairs will use the latest CraftBukkit recommended build:
     mscs-server-jar=craftbukkit.jar
     mscs-server-url=http://dl.bukkit.org/latest-rb/craftbukkit.jar
