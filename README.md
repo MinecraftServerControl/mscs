@@ -1,7 +1,21 @@
-MinecraftServerControlScript
+Minecraft Server Control Script
 =============================
 
 A powerful command-line control script for Linux-powered Minecraft servers.
+
+
+Download
+-----------------------------
+You can download the script from the following locations: 
+
+[Zip file](https://github.com/sandain/MinecraftServerControlScript/archive/master.zip)
+
+    wget https://github.com/sandain/MinecraftServerControlScript/archive/master.zip
+
+[Git](https://github.com/sandain/MinecraftServerControlScript.git)
+
+
+    git clone https://github.com/sandain/MinecraftServerControlScript.git
 
 
 Installation
@@ -60,12 +74,19 @@ installed by running:
 
 Mapping Software
 -----------------------------
-The script now uses the Minecraft Overviewer mapping software to generate
-maps of your worlds.  You can download premade binaries for supported systems
-(Debian/Ubuntu, CentOS/RHEL/Fedora), or build your own binary from source if
-needed.
+The script uses the [Minecraft Overviewer](http://overviewer.org) mapping
+software to generate maps of your worlds.  Minecraft Overviewer is a
+command-line tool for rendering high-resolution maps of Minecraft worlds. It
+generates a set of static html and image files and uses the Google Maps API to
+display a nice interactive map.
 
-    http://overviewer.org/
+You can [download](http://overviewer.org/downloads) premade binaries for
+supported systems, or build your own binary from source if needed.
+
+Repositories for automatic installation are also available:
+
+* [Debian/Ubuntu](http://overviewer.org/debian/info)
+* [RHEL/CentOS/Fedora](http://overviewer.org/rpms/info)
 
 
 Firewall / NAT
@@ -100,71 +121,97 @@ or
 
 
 Options
-    start <world>
-        Start the Minecraft world server.  Start all worlds by default.
+ 
+* start [world]
 
-    stop <world>
-        Stop the Minecraft world server.  Stop all worlds by default.
+    Start the Minecraft world server.  Start all worlds by default.
 
-    force-stop <world>
-        Forcibly stop the Minecraft world server.  Forcibly stop all worlds
-        by default.
+* stop [world]
+ 
+    Stop the Minecraft world server.  Stop all worlds by default.
 
-    restart <world>
-        Restart the Minecraft world server.  Restart all worlds by default.
+* force-stop [world]
 
-    force-restart <world>
-        Forcibly restart the Minecraft world server.  Forcibly restart all
-        worlds by default.
+    Forcibly stop the Minecraft world server.  Forcibly stop all worlds by
+    default.
 
-    create <world> <port> <ip>
-        Create a Minecraft world server.  The world name and port must be
-        provided, the IP address is usually blank.
+* restart [world]
 
-    delete <world>
-        Delete a Minecraft world server.
+    Restart the Minecraft world server.  Restart all worlds by default.
 
-    disable <world>
-        Temporarily disable a world server.
+* force-restart [world]
 
-    enable <world>
-        Enable a disabled world server.
+    Forcibly restart the Minecraft world server.  Forcibly restart all
+    worlds by default.
 
-    list <option>
-        Display a list of worlds.
-        Options:
-            enabled
-                Display a list of enabled worlds, default.
-            disabled
-                Display a list of disabled worlds.
-            running
-                Display a list of running worlds.
-            stopped
-                Display a list of stopped worlds.
+* create [world] [port] [ip]
 
-    status <world>
-        Display the status of the Minecraft world server.  Display the
-        status of all worlds by default.
+    Create a Minecraft world server.  The world name and port must be
+    provided, the IP address is usually blank.
 
-    send <world> <command>
-        Send a command to a Minecraft world server.
+* delete [world]
 
-    logrotate <world>
-        Rotate the server.log file.  Rotate the server.log file for all
-        worlds by default.
+    Delete a Minecraft world server.
 
-    backup <world>
-        Backup the Minecraft world.  Backup all worlds by default.
+* disable [world]
 
-    watch <world>
-        Watch the log file for the Minecraft world server.
+    Temporarily disable a world server.
 
-    map <world>
-        Run the Minecraft Overviewer mapping software on the Minecraft world.
-        Map all worlds by default.
+* enable [world]
 
-    update
-        Update the client and server software packages.
+    Enable a disabled world server.
+
+* list [option]
+
+    Display a list of worlds.
+    Options:
+
+    * enabled
+
+        Display a list of enabled worlds, default.
+
+    * disabled
+
+        Display a list of disabled worlds.
+
+    * running
+
+        Display a list of running worlds.
+
+    * stopped
+
+        Display a list of stopped worlds.
+
+* status [world]
+ 
+    Display the status of the Minecraft world server.  Display the
+    status of all worlds by default.
+
+* send [world] [command]
+
+    Send a command to a Minecraft world server.
+
+* logrotate [world]
+
+    Rotate the server.log file.  Rotate the server.log file for all
+    worlds by default.
+
+* backup [world]
+
+    Backup the Minecraft world.  Backup all worlds by default.
+
+* watch [world]
+
+    Watch the log file for the Minecraft world server.
+
+* map [world]
+
+    Run the Minecraft Overviewer mapping software on the Minecraft world.
+    Map all worlds by default.
+
+* update
+
+    Update the client and server software packages.
 
 
 To start all of the world servers, issue the command:
@@ -187,6 +234,7 @@ To send a command to a world server, issue the command:
     /etc/init.d/minecraft_server send <world> <command>
 
 ie.
+
     /etc/init.d/minecraft_server send alpha say Hello world!
 
 
@@ -202,22 +250,23 @@ Colors
 -----------------------------
 To add colors to your Help or MOTD files, insert the following color codes
 into your text:
-    §0 - black
-    §1 - blue
-    §2 - deep green
-    §3 - aqua
-    §4 - deep red
-    §5 - purple
-    §6 - gold
-    §7 - gray
-    §8 - dark gray
-    §9 - light blue
-    §a - green
-    §b - teal
-    §c - red
-    §d - magenta
-    §e - yellow
-    §f - white
+
+* §0 - black
+* §1 - blue
+* §2 - deep green
+* §3 - aqua
+* §4 - deep red
+* §5 - purple
+* §6 - gold
+* §7 - gray
+* §8 - dark gray
+* §9 - light blue
+* §a - green
+* §b - teal
+* §c - red
+* §d - magenta
+* §e - yellow
+* §f - white
 
 Example motd.txt:
 
@@ -232,31 +281,34 @@ The server settings for each world can be customized by adding certain
 key/value pairs to the world's server.properties file.
 
 The following keys are available:
-    mscs-client-version - Assign the version of the client software.
-    mscs-client-jar - Assign the .jar file for the client software.
-    mscs-client-url - Assign the download URL for the client software.
-    mscs-client-location - Assign the location of the client .jar file.
-    mscs-server-version - Assign the version of the server software.
-    mscs-server-jar - Assign the .jar file for the server software.
-    mscs-server-url - Assign the download URL for the server software.
-    mscs-server-args - Assign the arguments to the server.
-    mscs-initial-memory - Assign the initial amount of memory for the server.
-    mscs-maximum-memory - Assign the maximum amount of memory for the server.
-    mscs-server-location - Assign the location of the server .jar file.
-    mscs-server-command - Assign the command to run for the server.
+
+* mscs-client-version - Assign the version of the client software.
+* mscs-client-jar - Assign the .jar file for the client software.
+* mscs-client-url - Assign the download URL for the client software.
+* mscs-client-location - Assign the location of the client .jar file.
+* mscs-server-version - Assign the version of the server software.
+* mscs-server-jar - Assign the .jar file for the server software.
+* mscs-server-url - Assign the download URL for the server software.
+* mscs-server-args - Assign the arguments to the server.
+* mscs-initial-memory - Assign the initial amount of memory for the server.
+* mscs-maximum-memory - Assign the maximum amount of memory for the server.
+* mscs-server-location - Assign the location of the server .jar file.
+* mscs-server-command - Assign the command to run for the server.
  
 The following variables may be used in some of the values of the above keys:
-    $JAVA - The Java virtual machine.
-    $CURRENT_VERSION - The current Mojang Minecraft release version.
-    $CLIENT_VERSION - The version of the client software.
-    $SERVER_VERSION - The version of the server software.
-    $SERVER_JAR - The .jar file to run for the server.
-    $SERVER_ARGS - The arguments to the server.
-    $INITIAL_MEMORY - The initial amount of memory for the server.
-    $MAXIMUM_MEMORY - The maximum amount of memory for the server.
-    $SERVER_LOCATION - The location of the server .jar file.
+
+* $JAVA - The Java virtual machine.
+* $CURRENT_VERSION - The current Mojang Minecraft release version.
+* $CLIENT_VERSION - The version of the client software.
+* $SERVER_VERSION - The version of the server software.
+* $SERVER_JAR - The .jar file to run for the server.
+* $SERVER_ARGS - The arguments to the server.
+* $INITIAL_MEMORY - The initial amount of memory for the server.
+* $MAXIMUM_MEMORY - The maximum amount of memory for the server.
+* $SERVER_LOCATION - The location of the server .jar file.
 
 The following example key/value pairs are equivalent to the default values:
+
     mscs-client-version=$CURRENT_VERSION
     mscs-client-jar=$CLIENT_VERSION.jar
     mscs-client-url=https://s3.amazonaws.com/Minecraft.Download/versions/$CLIENT_VERSION/$CLIENT_VERSION.jar
@@ -271,10 +323,12 @@ The following example key/value pairs are equivalent to the default values:
     mscs-server-command=$JAVA -Xms$INITIAL_MEMORY -Xmx$MAXIMUM_MEMORY -jar $SERVER_LOCATION/$SERVER_JAR $SERVER_ARGS
 
 The following example key/value pairs will run a Minecraft version 1.6.4 server:
+
     mscs-client-version=1.6.4
     mscs-server-version=1.6.4
 
 The following example key/value pairs will use the latest CraftBukkit recommended build:
+
     mscs-server-jar=craftbukkit.jar
     mscs-server-url=http://dl.bukkit.org/latest-rb/craftbukkit.jar
     mscs-server-args=
@@ -300,13 +354,13 @@ username.
 
 Modify the following lines of code in the script:
 
-# To use lib-notify to print a message on your desktop of important server
-events, change the following to a 1.
-USE_LIBNOTIFY=0
+    # To use lib-notify to print a message on your desktop of important server
+    events, change the following to a 1.
+    USE_LIBNOTIFY=0
 
-# The username and display that notifications will be routed to.
-LIBNOTIFY_USER_NAME=$USER_NAME
-LIBNOTIFY_DISPLAY=":0.0"
+    # The username and display that notifications will be routed to.
+    LIBNOTIFY_USER_NAME=$USER_NAME
+    LIBNOTIFY_DISPLAY=":0.0"
 
 
 License
@@ -324,4 +378,5 @@ environment where the error occurs to the support thread, and I'll try to
 work out a solution with you.
 
 Support thread:  http://www.minecraftforum.net/viewtopic.php?f=10&t=129833
-Github Issues: https://github.com/sandain/MinecraftServerControlScript/issues
+
+Github Issues:  https://github.com/sandain/MinecraftServerControlScript/issues
