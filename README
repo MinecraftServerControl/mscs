@@ -41,8 +41,8 @@ I've made an attempt to utilize only features that are normally installed in
 most Linux and UNIX environments in this script, but there are a few
 requirements that this script has that may not already be in place:
 
-* Java 6/7 JRE - The Minecraft server software requires this.
-* Perl 5       - Most, if not all, Unix and Linux like systems have this
+* Java JRE     - The Minecraft server software requires this.
+* Perl         - Most, if not all, Unix and Linux like systems have this
                  preinstalled.
 * Python       - Required by the Minecraft Overviewer mapping software.
 * GNU Wget     - Allows the script to download software updates via the
@@ -55,7 +55,7 @@ requirements that this script has that may not already be in place:
 If you are running Debian or Ubuntu, you can make sure that these are
 installed by running:
 
-    sudo apt-get install default-jre perl wget rdiff-backup socat iptables
+    sudo apt-get install default-jre perl python wget rdiff-backup socat iptables
 
 
 Mapping Software
