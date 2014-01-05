@@ -4,22 +4,47 @@ Minecraft Server Control Script
 A powerful command-line control script for Linux-powered Minecraft servers.
 
 
-Download
------------------------------
+## Index
+* [Features](#features)
+* [Installation](#installation)
+* [Usage](#usage)
+* [Message Of The Day](#message-of-the-day-motd)
+* [Server Customization](#server-customization)
+* [Lib Notify](#lib-notify)
+* [Issues](#issues)
+* [License](#license)
+
+
+## Features
+* Run multiple Minecraft worlds.
+* Start, stop, and restart single or multiple worlds.
+* Create, delete, disable, and enable worlds.
+* Supports [CraftBukkit](http://bukkit.org/) in addition to the standard Mojang server distribution.
+* Users automatically notified of important server events.
+* Uses the Minecraft [Query protocol](http://wiki.vg/Query) to keep track of current server conditions.
+* LSB-compatible init script, allows for seamless integration with your server's startup and shutdown sequences.
+* Map worlds using the [Minecraft Overviewer](http://overviewer.org/) mapping software.
+* Backup worlds, and remove backups older than X days.
+* Update the server and client software automatically.
+* Send commands to a world server from the command line.
+
+See the Usage section below for a description on how to use these features.
+
+
+## Installation
+
+### Download
 You can download the script from the following locations: 
 
-[Zip file](https://github.com/sandain/MinecraftServerControlScript/archive/master.zip)
+* Get a [zip file](https://github.com/sandain/MinecraftServerControlScript/archive/master.zip):
 
-    wget https://github.com/sandain/MinecraftServerControlScript/archive/master.zip
+        wget https://github.com/sandain/MinecraftServerControlScript/archive/master.zip
 
-[Git](https://github.com/sandain/MinecraftServerControlScript.git)
+* Make a clone of the git [repository](https://github.com/sandain/MinecraftServerControlScript.git):
 
+        git clone https://github.com/sandain/MinecraftServerControlScript.git
 
-    git clone https://github.com/sandain/MinecraftServerControlScript.git
-
-
-Installation
------------------------------
+### Configuration
 To get your server to run the script on startup, and cleanly down the server
 on shutdown, the minecraft_server script must be copied to `/etc/init.d`,
 have its execute permissions set, and the system must be instructed to use
@@ -34,7 +59,6 @@ Ubuntu like environments by running:
 
     sudo make install
 
-
 It can also be accomplished manually with the following commands:
 
     sudo cp minecraft_server /etc/init.d/minecraft_server
@@ -48,13 +72,10 @@ following location on the first run:
 
     /home/minecraft/minecraft_server/
 
-
-Requirements
------------------------------
-I've made an attempt to utilize only features that are normally installed in
+### Requirements
+We've made an attempt to utilize only features that are normally installed in
 most Linux and UNIX environments in this script, but there are a few
 requirements that this script has that may not already be in place:
-
 * Java JRE     - The Minecraft server software requires this.
 * Perl         - Most, if not all, Unix and Linux like systems have this
                  preinstalled.
@@ -71,9 +92,7 @@ installed by running:
 
     sudo apt-get install default-jre perl python wget rdiff-backup socat iptables
 
-
-Mapping Software
------------------------------
+### Mapping Software
 The script uses the [Minecraft Overviewer](http://overviewer.org) mapping
 software to generate maps of your worlds.  Minecraft Overviewer is a
 command-line tool for rendering high-resolution maps of Minecraft worlds. It
@@ -84,28 +103,25 @@ You can [download](http://overviewer.org/downloads) premade binaries for
 supported systems, or build your own binary from source if needed.
 
 Repositories for automatic installation are also available:
-
 * [Debian/Ubuntu](http://overviewer.org/debian/info)
 * [RHEL/CentOS/Fedora](http://overviewer.org/rpms/info)
 
-
-Firewall / NAT
------------------------------
+### Firewall / NAT
 If you have a firewall installed on your computer, or a router using NAT
 installed in your network, you will need to route some ports to your server.
 Instructions on how to accomplish this are beyond the scope of this post, but
 here are some things you will need to know:
-
 * The default port for the Minecraft server is: 25565.
 * If you wish to run multiple world servers using this script, you will
   want to open a range of ports (for example 25565 - 25575).
 
-See the iptables.rules file for a very basic set of rules that you can use
-with the Iptables filewall.
+See the [iptables.rules](https://github.com/sandain/MinecraftServerControlScript/blob/master/iptables.rules)
+file for a very basic set of rules that you can use with the Iptables filewall.
 
 
-Usage
------------------------------
+## Usage
+
+### Permissions
 All commands below assume that you are running them as either the minecraft
 user or as root (through sudo).
 
@@ -113,15 +129,13 @@ Note: If the script is run as the root user, all important server processes
 will be started using the minecraft user for security purposes.
 
     su minecraft
-    /etc/init.d/minecraft_server <option>
+    /etc/init.d/minecraft_server [option]
 
 or
 
-    sudo /etc/init.d/minecraft_server <option>
+    sudo /etc/init.d/minecraft_server [option]
 
-
-Options
- 
+### Options
 * start [world]
 
     Start the Minecraft world server.  Start all worlds by default.
@@ -213,6 +227,7 @@ Options
 
     Update the client and server software packages.
 
+### Examples
 
 To start all of the world servers, issue the command:
 
@@ -231,26 +246,23 @@ To start just the world named alpha, issue the command:
 
 To send a command to a world server, issue the command:
 
-    /etc/init.d/minecraft_server send <world> <command>
+    /etc/init.d/minecraft_server send [world] [command]
 
 ie.
 
     /etc/init.d/minecraft_server send alpha say Hello world!
 
 
-Message of the Day (MOTD)
------------------------------
+## Message of the Day (MOTD)
+
 To whisper the message of the day to users as they log into the world, add a
 file called motd.txt to the /home/minecraft directory.
 
     editor /home/minecraft/motd.txt
 
-
-Colors
------------------------------
+### Colors
 To add colors to your Help or MOTD files, insert the following color codes
 into your text:
-
 * §0 - black
 * §1 - blue
 * §2 - deep green
@@ -268,20 +280,19 @@ into your text:
 * §e - yellow
 * §f - white
 
-Example motd.txt:
+### Example motd.txt:
 
     §fWelcome to Minecraft!
     §fToday's theme is §4red§f.
     §fLook out for those §2creepers§f!
 
 
-Server Customization
------------------------------
+## Server Customization
+
 The server settings for each world can be customized by adding certain
 key/value pairs to the world's server.properties file.
 
 The following keys are available:
-
 * mscs-client-version - Assign the version of the client software.
 * mscs-client-jar - Assign the .jar file for the client software.
 * mscs-client-url - Assign the download URL for the client software.
@@ -296,7 +307,6 @@ The following keys are available:
 * mscs-server-command - Assign the command to run for the server.
  
 The following variables may be used in some of the values of the above keys:
-
 * $JAVA - The Java virtual machine.
 * $CURRENT_VERSION - The current Mojang Minecraft release version.
 * $CLIENT_VERSION - The version of the client software.
@@ -307,7 +317,9 @@ The following variables may be used in some of the values of the above keys:
 * $MAXIMUM_MEMORY - The maximum amount of memory for the server.
 * $SERVER_LOCATION - The location of the server .jar file.
 
-The following example key/value pairs are equivalent to the default values:
+### Example key/value pairs
+
+Equivalent to the default values:
 
     mscs-client-version=$CURRENT_VERSION
     mscs-client-jar=$CLIENT_VERSION.jar
@@ -322,12 +334,12 @@ The following example key/value pairs are equivalent to the default values:
     mscs-server-location=/home/minecraft/minecraft_server
     mscs-server-command=$JAVA -Xms$INITIAL_MEMORY -Xmx$MAXIMUM_MEMORY -jar $SERVER_LOCATION/$SERVER_JAR $SERVER_ARGS
 
-The following example key/value pairs will run a Minecraft version 1.6.4 server:
+Run a Minecraft version 1.6.4 server:
 
     mscs-client-version=1.6.4
     mscs-server-version=1.6.4
 
-The following example key/value pairs will use the latest CraftBukkit recommended build:
+Use the latest CraftBukkit recommended build:
 
     mscs-server-jar=craftbukkit.jar
     mscs-server-url=http://dl.bukkit.org/latest-rb/craftbukkit.jar
@@ -336,8 +348,8 @@ The following example key/value pairs will use the latest CraftBukkit recommende
     mscs-maximum-memory=2048M
 
 
-Lib Notify
------------------------------
+## Lib Notify
+
 On systems that support lib notify, you can modify the script to print a
 message on your desktop of important server events.
 
@@ -363,18 +375,19 @@ Modify the following lines of code in the script:
     LIBNOTIFY_DISPLAY=":0.0"
 
 
-License
------------------------------
-See LICENSE
+## License
 
-Issues
------------------------------
-I have only tested this code in a Debian/Ubuntu environment, but there is no
+See [LICENSE](https://github.com/sandain/MinecraftServerControlScript/blob/master/LICENSE)
+
+
+## Issues
+
+We have only tested this code in a Debian/Ubuntu environment, but there is no
 reason that it shouldn't work in any appropriately configured UNIX-like
 environment, including Apple Mac OSX and the other BSD variants, with only
 minor modifications.  If you experience errors running this script, please
 post a copy of the error message and a note detailing the operating
-environment where the error occurs to the support thread, and I'll try to
+environment where the error occurs to the support thread, and we will try to
 work out a solution with you.
 
 Support thread:  http://www.minecraftforum.net/viewtopic.php?f=10&t=129833
