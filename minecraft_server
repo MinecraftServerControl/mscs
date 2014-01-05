@@ -1863,7 +1863,7 @@ case "$1" in
     printf ".\n"
   ;;
   *)
-    printf "Error, in command line usage.\n"
+    printf "Error in command line usage.\n"
     printf "\n"
     printf "$USAGE\n"
     exit 1
