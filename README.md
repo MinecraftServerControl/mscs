@@ -40,7 +40,7 @@ You can download the script from the following locations:
 
         wget https://github.com/sandain/MinecraftServerControlScript/archive/master.zip
 
-* Make a clone of the git [repository](https://github.com/sandain/MinecraftServerControlScript.git):
+* Make a clone of the [git repository](https://github.com/sandain/MinecraftServerControlScript.git):
 
         git clone https://github.com/sandain/MinecraftServerControlScript.git
 
