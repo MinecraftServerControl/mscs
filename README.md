@@ -252,7 +252,7 @@ ie.
 
 ## Message of the Day
 
-Whisper the message of the day to users as they log into the world.
+Whisper the message of the day (motd) to users as they log into the world.
 
 ### Global MOTD
 To add a MOTD to be used by all worlds, add a file called `motd.txt`
