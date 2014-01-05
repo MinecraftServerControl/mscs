@@ -8,7 +8,7 @@ A powerful command-line control script for Linux-powered Minecraft servers.
 * [Features](#features)
 * [Installation](#installation)
 * [Usage](#usage)
-* [Message Of The Day](#message-of-the-day-motd)
+* [Message Of The Day](#message-of-the-day)
 * [Server Customization](#server-customization)
 * [Lib Notify](#lib-notify)
 * [License](#license)
