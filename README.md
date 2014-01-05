@@ -253,7 +253,7 @@ ie.
     /etc/init.d/minecraft_server send alpha say Hello world!
 
 
-## Message of the Day (MOTD)
+## Message of the Day
 
 To whisper the message of the day to users as they log into the world, add a
 file called motd.txt to the /home/minecraft directory.
