@@ -46,7 +46,7 @@ You can download the script from the following locations:
 
 ### Configuration
 To get your server to run the script on startup, and cleanly down the server
-on shutdown, the minecraft_server script must be copied to `/etc/init.d`,
+on shutdown, the `minecraft_server` script must be copied to `/etc/init.d`,
 have its execute permissions set, and the system must be instructed to use
 the script on startup and shutdown.  For Bash programmable completion
 support, the mscs_completion script must be copied to 
@@ -111,9 +111,9 @@ If you have a firewall installed on your computer, or a router using NAT
 installed in your network, you will need to route some ports to your server.
 Instructions on how to accomplish this are beyond the scope of this post, but
 here are some things you will need to know:
-* The default port for the Minecraft server is: 25565.
+* The default port for the Minecraft server is: `25565`.
 * If you wish to run multiple world servers using this script, you will
-  want to open a range of ports (for example 25565 - 25575).
+  want to open a range of ports (for example `25565` - `25575`).
 
 See the [iptables.rules](iptables.rules)
 file for a very basic set of rules that you can use with the Iptables firewall.
@@ -122,11 +122,11 @@ file for a very basic set of rules that you can use with the Iptables firewall.
 ## Usage
 
 ### Permissions
-All commands below assume that you are running them as either the minecraft
-user or as root (through sudo).
+All commands below assume that you are running them as either the `minecraft`
+user or as `root` (through sudo).
 
-Note: If the script is run as the root user, all important server processes
-will be started using the minecraft user for security purposes.
+Note: If the script is run as the `root` user, all important server processes
+will be started using the `minecraft` user instead for security purposes.
 
     su minecraft
     /etc/init.d/minecraft_server [option]
@@ -233,16 +233,13 @@ To start all of the world servers, issue the command:
 
     /etc/init.d/minecraft_server start
 
-
 To create a world named alpha, issue the command:
 
     /etc/init.d/minecraft_server create alpha 25565
 
-
 To start just the world named alpha, issue the command:
 
     /etc/init.d/minecraft_server start alpha
-
 
 To send a command to a world server, issue the command:
 
@@ -255,10 +252,19 @@ ie.
 
 ## Message of the Day
 
-To whisper the message of the day to users as they log into the world, add a
-file called motd.txt to the /home/minecraft directory.
+Whisper the message of the day to users as they log into the world.
+
+### Global MOTD
+To add a MOTD to be used by all worlds, add a file called `motd.txt`
+to the `/home/minecraft directory`.
 
     editor /home/minecraft/motd.txt
+
+### World Specific MOTD
+You can also specify a per-world message of the day by making a file called
+`[worldname].motd` in the `/home/minecraft/worlds` directory.
+
+    editor /home/minecraft/worlds/[world].motd
 
 ### Colors
 To add colors to your Help or MOTD files, insert the following color codes
@@ -280,7 +286,7 @@ into your text:
 * §e - yellow
 * §f - white
 
-### Example motd.txt:
+### Example MOTD
 
     §fWelcome to Minecraft!
     §fToday's theme is §4red§f.
@@ -290,7 +296,7 @@ into your text:
 ## Server Customization
 
 The server settings for each world can be customized by adding certain
-key/value pairs to the world's server.properties file.
+key/value pairs to the world's `server.properties` file.
 
 The following keys are available:
 * mscs-client-version - Assign the version of the client software.
@@ -354,14 +360,14 @@ On systems that support lib notify, you can modify the script to print a
 message on your desktop of important server events.
 
 First, you need to know the name of the display you want to route the
-messages to.  This is usually ":0.0", but it may be something different on
+messages to.  This is usually `:0.0`, but it may be something different on
 your system.
 
     glxinfo | grep "name of display"
 
 
 If your username is different than the user used for the Minecraft server,
-replace $USER_NAME in LIBNOTIFY_USER_NAME=$USER_NAME with the correct
+replace `$USER_NAME` in `LIBNOTIFY_USER_NAME=$USER_NAME` with the correct
 username.
 
 Modify the following lines of code in the script:
