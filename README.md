@@ -11,7 +11,7 @@ A powerful command-line control script for Linux-powered Minecraft servers.
 * [Message Of The Day](#message-of-the-day)
 * [Server Customization](#server-customization)
 * [Lib Notify](#lib-notify)
-* [License](#license)
+* [License](LICENSE)
 * [Issues](#issues)
 
 
