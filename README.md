@@ -113,7 +113,7 @@ Instructions on how to accomplish this are beyond the scope of this post, but
 here are some things you will need to know:
 * The default port for the Minecraft server is: `25565`.
 * If you wish to run multiple world servers using this script, you will
-  want to open a range of ports (for example `25565` - `25575`).
+  want to open a range of ports (for example `25565 - 25575`).
 
 See the [iptables.rules](iptables.rules)
 file for a very basic set of rules that you can use with the Iptables firewall.
