@@ -51,7 +51,7 @@ have its execute permissions set, and the system must be instructed to use
 the script on startup and shutdown.  For Bash programmable completion
 support, the `mscs_completion` script must be copied to 
 `/etc/bash_completion.d`.  For security reasons, the script uses a user
-account named minecraft rather than root and the account must be created
+account named `minecraft` rather than `root` and the account must be created
 before the script is used.
 
 This can all be done automatically with the included Makefile in Debian and
