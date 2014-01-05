@@ -11,8 +11,8 @@ A powerful command-line control script for Linux-powered Minecraft servers.
 * [Message Of The Day](#message-of-the-day-motd)
 * [Server Customization](#server-customization)
 * [Lib Notify](#lib-notify)
-* [Issues](#issues)
 * [License](#license)
+* [Issues](#issues)
 
 
 ## Features
@@ -28,7 +28,7 @@ A powerful command-line control script for Linux-powered Minecraft servers.
 * Update the server and client software automatically.
 * Send commands to a world server from the command line.
 
-See the Usage section below for a description on how to use these features.
+See the [Usage](#usage) section below for a description on how to use these features.
 
 
 ## Installation
@@ -115,8 +115,8 @@ here are some things you will need to know:
 * If you wish to run multiple world servers using this script, you will
   want to open a range of ports (for example 25565 - 25575).
 
-See the [iptables.rules](https://github.com/sandain/MinecraftServerControlScript/blob/master/iptables.rules)
-file for a very basic set of rules that you can use with the Iptables filewall.
+See the [iptables.rules](iptables.rules)
+file for a very basic set of rules that you can use with the Iptables firewall.
 
 
 ## Usage
@@ -377,7 +377,7 @@ Modify the following lines of code in the script:
 
 ## License
 
-See [LICENSE](https://github.com/sandain/MinecraftServerControlScript/blob/master/LICENSE)
+See [LICENSE](LICENSE)
 
 
 ## Issues
