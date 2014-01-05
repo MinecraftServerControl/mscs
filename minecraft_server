@@ -1375,11 +1375,22 @@ queryDetailedStatus() {
 # @param 1 The world server of interest.
 # ---------------------------------------------------------------------------
 worldStatus() {
-  local STATUS
+  local STATUS NUM MAX PLAYERS COUNTER
   if [ $(serverRunning $1) -eq 1 ]; then
-    STATUS=$(queryStatus $1)
+    STATUS=$(queryDetailedStatus $1)
     if [ -n "$STATUS" ]; then
-      printf "running (%d of %d users online).\n" $(echo "$STATUS" | cut -f6) $(echo "$STATUS" | cut -f7)
+      NUM=$(echo "$STATUS" | cut -f 19)
+      MAX=$(echo "$STATUS" | cut -f 21)
+      printf "running (%d of %d users online).\n" $NUM $MAX
+      if [ $NUM -gt 0 ]; then
+        PLAYERS=$(echo "$STATUS" | cut -f $((30)))
+        COUNTER=1
+        while [ $COUNTER -lt $NUM ]; do
+          PLAYERS=$(printf "%s, %s" "$PLAYERS" $(echo "$STATUS" | cut -f $((30+$COUNTER))))
+          COUNTER=$(($COUNTER+1))
+        done
+        printf "    Players: %s.\n" "$PLAYERS"
+      fi
     else
       printf "running (query server offline).\n"
     fi
