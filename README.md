@@ -256,7 +256,7 @@ Whisper the message of the day (motd) to users as they log into the world.
 
 ### Global MOTD
 To add a MOTD to be used by all worlds, add a file called `motd.txt`
-to the `/home/minecraft directory`.
+to the `/home/minecraft` directory.
 
     editor /home/minecraft/motd.txt
 
