@@ -159,7 +159,7 @@ SOCAT=$(which socat)
 # Detect the latest version.
 
 CURRENT_VERSION=$(
-  wget -q -O - https://s3.amazonaws.com/Minecraft.Download/versions/versions.json | 
+  wget -q -O - https://s3.amazonaws.com/Minecraft.Download/versions/versions.json |
   $PERL -ne 'if ($_ =~ /^\s+\"release\": \"([0-9\.]+)\"/) { print $1; }'
 )
 
@@ -451,7 +451,7 @@ disableWorld() {
   # Make sure the disabled world location exists.
   execute "mkdir -p $DISABLED_WORLDS_LOCATION" $USER_NAME
   # Disable the world.
-  execute "mv $WORLDS_LOCATION/$1 $DISABLED_WORLDS_LOCATION/$1" $USER_NAME 
+  execute "mv $WORLDS_LOCATION/$1 $DISABLED_WORLDS_LOCATION/$1" $USER_NAME
 }
 
 # ---------------------------------------------------------------------------
@@ -461,7 +461,7 @@ disableWorld() {
 # ---------------------------------------------------------------------------
 enableWorld() {
   # Enable the world.
-  execute "mv $DISABLED_WORLDS_LOCATION/$1 $WORLDS_LOCATION/$1" $USER_NAME 
+  execute "mv $DISABLED_WORLDS_LOCATION/$1 $WORLDS_LOCATION/$1" $USER_NAME
 }
 
 # ---------------------------------------------------------------------------
@@ -529,7 +529,7 @@ getPropertiesValue() {
   if [ -e "$PROPERTY_FILE" ]; then
     # Find the key/value combo.
     KEY=$($PERL -ne 'if ($_ =~ /^('$2')=.*$/i) { print lc $1; }' $PROPERTY_FILE)
-    VALUE=$($PERL -ne 'if ($_ =~ /^'$2'=(.*)$/i) { print lc $1; }' $PROPERTY_FILE)
+    VALUE=$($PERL -ne 'if ($_ =~ /^'$2'=(.*)$/i) { print $1; }' $PROPERTY_FILE)
     if [ -n "$KEY" ] && [ -n "$VALUE" ]; then
       echo "$VALUE"
     else
@@ -579,7 +579,7 @@ getClientVersion() {
   )
   echo "$CLIENT_VERSION"
 }
-  
+
 # ---------------------------------------------------------------------------
 # Retrieve the .jar file name for the client for the world.
 #
@@ -666,7 +666,7 @@ getServerVersion() {
   )
   echo "$SERVER_VERSION"
 }
-  
+
 # ---------------------------------------------------------------------------
 # Retrieve the .jar file name for the server running the world.
 #
@@ -867,7 +867,7 @@ rotateLog() {
   " $USER_NAME
   # Archive and rotate the log files for old Minecraft servers (Versions 1.7
   # and greater do this automatically).
-  if [ -e $WORLD_DIR/server.log ] && 
+  if [ -e $WORLD_DIR/server.log ] &&
     [ $(wc -l < $WORLD_DIR/server.log) -ge 1 ]; then
     # Make a copy of the log file in the world's logs directory.
     DATE=$(date +%F)
@@ -962,7 +962,7 @@ start() {
   # Start the server.
   execute "
     tail -f --pid=\$$ $WORLD_DIR/console.in | {
-      $(getServerCommand $1) mscs-world=$1 > /dev/null 2>&1 && kill \$$; 
+      $(getServerCommand $1) mscs-world=$1 > /dev/null 2>&1 && kill \$$;
     }
   " $USER_NAME &
   # Verify the server is running.
