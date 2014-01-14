@@ -3,7 +3,6 @@ Minecraft Server Control Script
 
 A powerful command-line control script for Linux-powered Minecraft servers.
 
-
 ## Index
 * [Features](#features)
 * [Installation](#installation)
@@ -86,6 +85,7 @@ requirements that this script has that may not already be in place:
 * Socat        - Allows the script to communicate with the Minecraft server.
 * Iptables     - Although not explicitly required, a good firewall should be
                  installed.
+* Unzip        - Required to install early forge featured servers
 
 If you are running Debian or Ubuntu, you can make sure that these are
 installed by running:
@@ -353,6 +353,28 @@ Use the latest CraftBukkit recommended build:
     mscs-initial-memory=128M
     mscs-maximum-memory=2048M
 
+### Forge featured server
+
+To install and/or use a forge server follow these steps:
+* Create a new server(Skip this part if you already got one)
+
+        /etc/init.d/minecraft_server create forge 25565
+
+* Edit the `server.properties` file and add the following lines:
+
+        # For Forge version 4.2.5.315 and newer
+        mscs-server-version=1.6.4-9.11.1.953
+        mscs-server-jar=minecraftforge-installer-$SERVER_VERSION.jar
+        mscs-server-url=http\://files.minecraftforge.net/minecraftforge/minecraftforge-installer-$SERVER_VERSION.jar
+        mscs-server-command=$JAVA -Xms$INITIAL_MEMORY -Xmx$MAXIMUM_MEMORY -cp $CLASSPATH $MAIN_CLASS $SERVER_ARGS
+        # For Forge versions earlier than 4.2.5.315
+        mscs-server-version=1.3.2-4.1.4.281
+        mscs-server-jar=minecraft_server.forge.$SERVER_VERSION.jar
+        mscs-server-url=http\://files.minecraftforge.net/minecraftforge/minecraftforge-universal-$SERVER_VERSION.zip
+
+* Start the server. All libraries and the forge files will be automatically downloaded and installed
+
+        /etc/init.d/minecraft_server start forge
 
 ## Lib Notify
 
