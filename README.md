@@ -355,12 +355,12 @@ Use the latest CraftBukkit recommended build:
 
 ### Forge featured server
 
-To install adn/or use a forge server follow these steps:
+To install and/or use a forge server follow these steps:
 * Create a new server(Skip this part if you already got one)
 
         /etc/init.d/minecraft_server create forge 25565
 
-* Edit the _server.properties_ file and add the following lines:
+* Edit the `server.properties` file and add the following lines:
 
         # For Forge version 4.2.5.315 and newer
         mscs-server-version=1.6.4-9.11.1.953
