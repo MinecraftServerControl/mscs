@@ -3,6 +3,7 @@ Minecraft Server Control Script
 
 A powerful command-line control script for Linux-powered Minecraft servers.
 
+Forge branch: Include starting/updating/installing a forge server without user input as much as possible
 
 ## Index
 * [Features](#features)
@@ -34,7 +35,7 @@ See the [Usage](#usage) section below for a description on how to use these feat
 ## Installation
 
 ### Download
-You can download the script from the following locations: 
+You can download the script from the following locations:
 
 * Get a [zip file](https://github.com/sandain/MinecraftServerControlScript/archive/master.zip):
 
@@ -49,7 +50,7 @@ To get your server to run the script on startup, and cleanly down the server
 on shutdown, the `minecraft_server` script must be copied to `/etc/init.d`,
 have its execute permissions set, and the system must be instructed to use
 the script on startup and shutdown.  For Bash programmable completion
-support, the `mscs_completion` script must be copied to 
+support, the `mscs_completion` script must be copied to
 `/etc/bash_completion.d`.  For security reasons, the script uses a user
 account named `minecraft` rather than `root` and the account must be created
 before the script is used.
@@ -141,7 +142,7 @@ or
     Start the Minecraft world server.  Start all worlds by default.
 
 * stop [world]
- 
+
     Stop the Minecraft world server.  Stop all worlds by default.
 
 * force-stop [world]
@@ -197,7 +198,7 @@ or
         Display a list of stopped worlds.
 
 * status [world]
- 
+
     Display the status of the Minecraft world server.  Display the
     status of all worlds by default.
 
@@ -311,7 +312,7 @@ The following keys are available:
 * mscs-maximum-memory - Assign the maximum amount of memory for the server.
 * mscs-server-location - Assign the location of the server .jar file.
 * mscs-server-command - Assign the command to run for the server.
- 
+
 The following variables may be used in some of the values of the above keys:
 * $JAVA - The Java virtual machine.
 * $CURRENT_VERSION - The current Mojang Minecraft release version.
