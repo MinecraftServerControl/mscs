@@ -391,7 +391,7 @@ serverRunning() {
 # @param 2 The command to send.
 # ---------------------------------------------------------------------------
 sendCommand() {
-  local COMMAND PID
+  local COMMAND
   COMMAND=$(printf "$2\r")
   echo "$COMMAND" >> $WORLDS_LOCATION/$1/console.in
 }
@@ -923,7 +923,7 @@ syncMirrorImage() {
 # @param 1 The world server to start.
 # ---------------------------------------------------------------------------
 start() {
-  local PID WORLD_DIR
+  local WORLD_DIR
   # Make sure that the server software exists.
   updateServerSoftware "$1"
   # Make sure that the world's directory exists.
