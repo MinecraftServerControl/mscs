@@ -1145,6 +1145,11 @@ queryStart() {
     $SOCAT - UDP:127.0.0.1:$(getPropertiesValue $1 'server-port') > \
     $WORLD_DIR/query.out
   " $USER_NAME
+  # Verify the connection to the query server worked.
+  if [ $? -ne 0 ]; then
+    printf "Error connecting to the query server.\n"
+  fi
+
 }
 
 # ---------------------------------------------------------------------------
