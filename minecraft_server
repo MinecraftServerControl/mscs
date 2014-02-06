@@ -1126,9 +1126,12 @@ overviewer() {
 # @param 1 The world server to start a Query handler for.
 # ---------------------------------------------------------------------------
 queryStart() {
-  local WORLD_DIR
+  local WORLD_DIR SERVER_IP SERVER_PORT
   # Grab the location of the world's directory.
   WORLD_DIR="$WORLDS_LOCATION/$1"
+  # Determine the IP address and port used by the query server.
+  SERVER_IP=$(getPropertiesValue $1 'server-ip' '127.0.0.1')
+  SERVER_PORT=$(getPropertiesValue $1 'server-port')
   # Delete any old query.in or query.out buffer files.
   execute "rm -Rf $WORLD_DIR/query.in $WORLD_DIR/query.out" $USER_NAME
   # Give the server a moment to start before initializing the
@@ -1142,8 +1145,7 @@ queryStart() {
   # server is piped into the query.out file.
   execute "
     tail -f --pid=$(getJavaPID $1) $WORLD_DIR/query.in | \
-    $SOCAT - UDP:127.0.0.1:$(getPropertiesValue $1 'server-port') > \
-    $WORLD_DIR/query.out
+    $SOCAT - UDP:$SERVER_IP:$SERVER_PORT > $WORLD_DIR/query.out
   " $USER_NAME
   # Verify the connection to the query server worked.
   if [ $? -ne 0 ]; then
