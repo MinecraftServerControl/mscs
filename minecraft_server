@@ -879,7 +879,7 @@ rotateLog() {
     for LOG in $(ls -r $WORLD_DIR/logs/$DATE-*.log.gz); do
       NUMBER=$(echo $LOG | cut -d "." -f 1 | cut -d "-" -f 4)
       NUMBER=$(($NUMBER+1))
-      execute "mv -f $LOG $WORLD_DIR/logs/$DATE-$NUMBER.log.gz" $USER_NAME
+      execute "mv -f $LOG \"$WORLD_DIR/logs/$DATE-$NUMBER.log.gz\"" $USER_NAME
     done
   fi
 }
