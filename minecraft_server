@@ -103,6 +103,9 @@ Options:
   send <world> <command>
     Send a command to a Minecraft world server.
 
+  console <world>
+    Connect to the Minecraft world server's console.  Hit <Ctrl-D> to detach.
+
   watch <world>
     Watch the log file for the Minecraft world server.
 
@@ -917,6 +920,23 @@ syncMirrorImage() {
 }
 
 # ---------------------------------------------------------------------------
+# Display the server console.
+#
+# @param 1 The world server to connect to.
+# ---------------------------------------------------------------------------
+serverConsole() {
+  local LINE WORLD_DIR
+  # Make sure that the world's directory exists.
+  WORLD_DIR="$WORLDS_LOCATION/$1"
+  # Follow the console output buffer file.
+  tail --pid=$$ -f $WORLD_DIR/console.out &
+  # Copy user input to the console input buffer file.
+  while read LINE; do
+    echo "$LINE" >> $WORLD_DIR/console.in
+  done
+}
+
+# ---------------------------------------------------------------------------
 # Start the world server.  Generate the appropriate environment for the
 # server if it doesn't already exist.
 #
@@ -955,14 +975,14 @@ start() {
   fi
   # Change to the world's directory.
   cd $WORLD_DIR
-  # Delete any old console.in buffer file.
-  execute "rm -f $WORLD_DIR/console.in" $USER_NAME
+  # Delete any old console.in or console.out buffer files.
+  execute "rm -f $WORLD_DIR/console.in $WORLD_DIR/console.out" $USER_NAME
   # Initialize the console.in buffer file.
   execute "printf '' > $WORLD_DIR/console.in" $USER_NAME
   # Start the server.
   execute "
     tail -f --pid=\$$ $WORLD_DIR/console.in | {
-      $(getServerCommand $1) mscs-world=$1 > /dev/null 2>&1 && kill \$$;
+      $(getServerCommand $1) mscs-world=$1 > $WORLD_DIR/console.out 2>&1 && kill \$$;
     }
   " $USER_NAME &
   # Verify the server is running.
@@ -1726,6 +1746,26 @@ case "$1" in
     else
       printf "Usage:  $0 $1 <world> <command>\n"
       printf "   ie:  $0 $1 world say Hello World!\n"
+      exit 1
+    fi
+  ;;
+  console)
+    checkPermission
+    # Get list of enabled worlds.
+    WORLDS=$(getEnabledWorlds)
+    # Check for the world command line argument.
+    if [ -n "$2" ] && [ $(listContains $2 "$WORLDS") -eq 1 ]; then
+      printf "Connecting to server console: $2.\n"
+      printf "  Hit <Ctrl-D> to detach.\n"
+      sleep 3
+      serverConsole $2
+    else
+      if [ -n "$2" ]; then
+        printf "Minecraft world $2 not found!\n"
+      else
+        printf "Minecraft world not provided!\n"
+      fi
+      printf "  Usage:  $0 $1 <world>\n"
       exit 1
     fi
   ;;
