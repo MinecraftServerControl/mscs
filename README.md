@@ -214,6 +214,10 @@ or
 
     Backup the Minecraft world.  Backup all worlds by default.
 
+* console [world]
+
+    Connect to the Minecraft world server's console.  Hit [Ctrl-D] to detach.
+
 * watch [world]
 
     Watch the log file for the Minecraft world server.
