@@ -1211,11 +1211,13 @@ querySendPacket() {
       print $hex;
     ' $WORLD_DIR/query.out)
   fi
-  # Return the response in the format requested.
-  $PERL -e '
-    $packed = join "", map { pack ("C", hex($_)) } ("'$RESPONSE'" =~ /(..)/g);
-    printf "%s\n", join "\t", unpack ("'$5'", $packed);
-  '
+  if [ -n "$RESPONSE" ]; then
+    # Return the response in the format requested.
+    $PERL -e '
+      $packed = join "", map { pack ("C", hex($_)) } ("'$RESPONSE'" =~ /(..)/g);
+      printf "%s\n", join "\t", unpack ("'$5'", $packed);
+    '
+  fi
 }
 
 # ---------------------------------------------------------------------------
