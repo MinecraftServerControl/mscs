@@ -254,6 +254,32 @@ ie.
     /etc/init.d/minecraft_server send alpha say Hello world!
 
 
+### Import Existing Worlds
+
+You just need to create a new directory in the worlds folder for the world you wish to import.
+Suppose the world you wish to import is called `alpha`, you would create a new folder in
+`/home/minecraft/worlds`, then copy the data files over to that directory.
+
+If the directory containing the world `alpha` you wish to import looks like this:
+
+    $ ls
+    alpha
+    banned-ips.txt
+    banned-players.txt
+    crash-reports
+    logs
+    ops.txt
+    server.properties
+    white-list.txt
+
+You can just copy your world into the worlds directory:
+
+    mkdir /home/minecraft/worlds/alpha
+    cp -R * /home/minecraft/worlds/alpha
+
+Make sure you check `server-port` and `query.port` in `server.properties` to make sure it does not overlap with other servers created by the MSCS script. Also ensure that `enable-query` is set to `true`.  If you do not have `enable-query` and a `query.port` set, you will not be able to check the status of the world with the script.
+
+
 ## Message of the Day
 
 Whisper the message of the day (motd) to users as they log into the world.
