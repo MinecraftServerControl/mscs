@@ -157,14 +157,9 @@ SOCAT=$(which socat)
 # ---------------------------------------------------------------------------
 
 
-# Mojang Versions information
+# Minecraft Versions information
 # ---------------------------------------------------------------------------
-# Detect the latest version.
-
-CURRENT_VERSION=$(
-  wget -q -O - https://s3.amazonaws.com/Minecraft.Download/versions/versions.json |
-  $PERL -ne 'if ($_ =~ /^\s+\"release\": \"([0-9\.]+)\"/) { print $1; }'
-)
+MINECRAFT_VERSIONS_URL=https://s3.amazonaws.com/Minecraft.Download/versions/versions.json
 
 
 # Minecraft Server Settings
@@ -174,6 +169,7 @@ CURRENT_VERSION=$(
 DEFAULT_WORLD='world'
 DEFAULT_PORT='25565'
 DEFAULT_IP=''
+DEFAULT_VERSION_TYPE='release'
 DEFAULT_CLIENT_VERSION='$CURRENT_VERSION'
 DEFAULT_CLIENT_JAR='$CLIENT_VERSION.jar'
 DEFAULT_CLIENT_URL='https://s3.amazonaws.com/Minecraft.Download/versions/$CLIENT_VERSION/$CLIENT_VERSION.jar'
@@ -191,6 +187,7 @@ DEFAULT_SERVER_COMMAND='$JAVA -Xms$INITIAL_MEMORY -Xmx$MAXIMUM_MEMORY -jar $SERV
 # key/value pairs to the world's server.properties file.
 #
 # The following keys are available:
+#   mscs-version-type    - Assign the version type (release or snapshot).
 #   mscs-client-version  - Assign the version of the client software.
 #   mscs-client-jar      - Assign the .jar file for the client software.
 #   mscs-client-url      - Assign the download URL for the client software.
@@ -217,6 +214,7 @@ DEFAULT_SERVER_COMMAND='$JAVA -Xms$INITIAL_MEMORY -Xmx$MAXIMUM_MEMORY -jar $SERV
 #   $SERVER_LOCATION     - The location of the server .jar file.
 #
 # The following example key/value pairs are equivalent to the default values:
+#   mscs-version-type=release
 #   mscs-client-version=$CURRENT_VERSION
 #   mscs-client-jar=$CLIENT_VERSION.jar
 #   mscs-client-url=https://s3.amazonaws.com/Minecraft.Download/versions/$CLIENT_VERSION/$CLIENT_VERSION.jar
@@ -564,6 +562,30 @@ setPropertiesValue() {
 }
 
 # ---------------------------------------------------------------------------
+# Get the current Minecraft version number.
+#
+# @param 1 The world server.
+# @return The current Minecraft version number.
+# ---------------------------------------------------------------------------
+getCurrentMinecraftVersion() {
+  local JSON VERSION TIMEOUT TYPE
+  JSON="$DEFAULT_SERVER_LOCATION/versions.json"
+  # Determine the version type for the current world.
+  TYPE=$(getPropertiesValue "$1" "mscs-version-type" "$DEFAULT_VERSION_TYPE")
+  # The timeout for the versions.json cache.
+  VERSIONS_TIMEOUT="60 min ago"
+  # Download the versions.json file if it does not exist, or it is old.
+  if [ ! -f $JSON ] || [ $(date +%s -r $JSON) -gt $(date +%s --date="$TIMEOUT") ]; then
+    execute "$WGET -qO \"$JSON\" \"$MINECRAFT_VERSIONS_URL\"" $USER_NAME
+  fi
+  # Extract the current version information.
+  VERSION=$(
+    $PERL -ne 'if ($_ =~ /^\s+\"'$TYPE'\": \"([0-9\.]+)\"/) { print $1; }' $JSON
+  )
+  echo "$VERSION"
+}
+
+# ---------------------------------------------------------------------------
 # Retrieve the version of the client for the world.
 #
 # @param 1 The world server.
@@ -575,7 +597,7 @@ getClientVersion() {
   CLIENT_VERSION=$(
     getPropertiesValue "$1" "mscs-client-version" "$DEFAULT_CLIENT_VERSION" |
     $PERL -ne '
-      $current_version="'$CURRENT_VERSION'";
+      $current_version="'$(getCurrentMinecraftVersion "$1")'";
       $_ =~ s/\$CURRENT_VERSION/$current_version/g;
       print;
     '
@@ -595,7 +617,7 @@ getClientJar() {
   CLIENT_JAR=$(
     getPropertiesValue "$1" "mscs-client-jar" "$DEFAULT_CLIENT_JAR" |
     $PERL -ne '
-      $current_version="'$CURRENT_VERSION'";
+      $current_version="'$(getCurrentMinecraftVersion "$1")'";
       $client_version="'$(getClientVersion "$1")'";
       $_ =~ s/\$CURRENT_VERSION/$current_version/g;
       $_ =~ s/\$CLIENT_VERSION/$client_version/g;
@@ -617,7 +639,7 @@ getClientLocation() {
   CLIENT_LOCATION=$(
     getPropertiesValue "$1" "mscs-client-location" "$DEFAULT_CLIENT_LOCATION" |
     $PERL -ne '
-      $current_version="'$CURRENT_VERSION'";
+      $current_version="'$(getCurrentMinecraftVersion "$1")'";
       $client_version="'$(getClientVersion "$1")'";
       $_ =~ s/\$CURRENT_VERSION/$current_version/g;
       $_ =~ s/\$CLIENT_VERSION/$client_version/g;
@@ -639,7 +661,7 @@ getClientURL() {
   CLIENT_URL=$(
     getPropertiesValue "$1" "mscs-client-url" "$DEFAULT_CLIENT_URL" |
     $PERL -ne '
-      $current_version="'$CURRENT_VERSION'";
+      $current_version="'$(getCurrentMinecraftVersion "$1")'";
       $client_version="'$(getClientVersion "$1")'";
       $_ =~ s/\$CURRENT_VERSION/$current_version/g;
       $_ =~ s/\$CLIENT_VERSION/$client_version/g;
@@ -662,7 +684,7 @@ getServerVersion() {
   SERVER_VERSION=$(
     getPropertiesValue "$1" "mscs-server-version" "$DEFAULT_SERVER_VERSION" |
     $PERL -ne '
-      $current_version="'$CURRENT_VERSION'";
+      $current_version="'$(getCurrentMinecraftVersion "$1")'";
       $_ =~ s/\$CURRENT_VERSION/$current_version/g;
       print;
     '
@@ -682,7 +704,7 @@ getServerJar() {
   SERVER_JAR=$(
     getPropertiesValue "$1" "mscs-server-jar" "$DEFAULT_SERVER_JAR" |
     $PERL -ne '
-      $current_version="'$CURRENT_VERSION'";
+      $current_version="'$(getCurrentMinecraftVersion "$1")'";
       $server_version="'$(getServerVersion "$1")'";
       $_ =~ s/\$CURRENT_VERSION/$current_version/g;
       $_ =~ s/\$SERVER_VERSION/$server_version/g;
@@ -704,7 +726,7 @@ getServerLocation() {
   SERVER_LOCATION=$(
     getPropertiesValue "$1" "mscs-server-location" "$DEFAULT_SERVER_LOCATION" |
     $PERL -ne '
-      $current_version="'$CURRENT_VERSION'";
+      $current_version="'$(getCurrentMinecraftVersion "$1")'";
       $server_version="'$(getServerVersion "$1")'";
       $_ =~ s/\$CURRENT_VERSION/$current_version/g;
       $_ =~ s/\$SERVER_VERSION/$server_version/g;
@@ -726,7 +748,7 @@ getServerURL() {
   SERVER_URL=$(
     getPropertiesValue "$1" "mscs-server-url" "$DEFAULT_SERVER_URL" |
     $PERL -ne '
-      $current_version="'$CURRENT_VERSION'";
+      $current_version="'$(getCurrentMinecraftVersion "$1")'";
       $server_version="'$(getServerVersion "$1")'";
       $_ =~ s/\$CURRENT_VERSION/$current_version/g;
       $_ =~ s/\$SERVER_VERSION/$server_version/g;
@@ -762,7 +784,7 @@ getServerCommand() {
     getPropertiesValue "$1" "mscs-server-command" "$DEFAULT_SERVER_COMMAND" |
     $PERL -ne '
       $java = "'$JAVA'";
-      $current_version = "'$CURRENT_VERSION'";
+      $current_version = "'$(getCurrentMinecraftVersion "$1")'";
       $server_version = "'$(getServerVersion "$1")'";
       $server_jar = "'$(getServerJar "$1")'";
       $server_location = "'$(getServerLocation "$1")'";
@@ -943,7 +965,7 @@ serverConsole() {
 # @param 1 The world server to start.
 # ---------------------------------------------------------------------------
 start() {
-  local WORLD_DIR
+  local SERVER_COMMAND WORLD_DIR
   # Make sure that the server software exists.
   updateServerSoftware "$1"
   # Make sure that the world's directory exists.
@@ -979,10 +1001,12 @@ start() {
   execute "rm -f $WORLD_DIR/console.in $WORLD_DIR/console.out" $USER_NAME
   # Initialize the console.in buffer file.
   execute "printf '' > $WORLD_DIR/console.in" $USER_NAME
+  # Get the server command for this world.
+  SERVER_COMMAND=$(getServerCommand "$1")
   # Start the server.
   execute "
     tail -f --pid=\$$ $WORLD_DIR/console.in | {
-      $(getServerCommand $1) mscs-world=$1 > $WORLD_DIR/console.out 2>&1 && kill \$$;
+      $SERVER_COMMAND mscs-world=$1 > $WORLD_DIR/console.out 2>&1 && kill \$$;
     }
   " $USER_NAME &
   # Verify the server is running.
