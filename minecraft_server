@@ -573,7 +573,7 @@ getCurrentMinecraftVersion() {
   # Determine the version type for the current world.
   TYPE=$(getPropertiesValue "$1" "mscs-version-type" "$DEFAULT_VERSION_TYPE")
   # The timeout for the versions.json cache.
-  VERSIONS_TIMEOUT="60 min ago"
+  TIMEOUT="60 min ago"
   # Download the versions.json file if it does not exist, or it is old.
   if [ ! -f $JSON ] || [ $(date +%s -r $JSON) -gt $(date +%s --date="$TIMEOUT") ]; then
     execute "$WGET -qO \"$JSON\" \"$MINECRAFT_VERSIONS_URL\"" $USER_NAME
