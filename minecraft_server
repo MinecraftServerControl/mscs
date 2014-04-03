@@ -1428,13 +1428,14 @@ queryDetailedStatus() {
 # @param 1 The world server of interest.
 # ---------------------------------------------------------------------------
 worldStatus() {
-  local STATUS NUM MAX PLAYERS COUNTER
+  local STATUS NUM MAX PLAYERS COUNTER VERSION
   if [ $(serverRunning $1) -eq 1 ]; then
     STATUS=$(queryDetailedStatus $1)
     if [ -n "$STATUS" ]; then
       NUM=$(echo "$STATUS" | cut -f 19)
       MAX=$(echo "$STATUS" | cut -f 21)
-      printf "running (%d of %d users online).\n" $NUM $MAX
+      VERSION=$(echo "$STATUS" | cut -f 13)
+      printf "running version %s (%d of %d users online).\n" $VERSION $NUM $MAX
       if [ $NUM -gt 0 ]; then
         PLAYERS=$(echo "$STATUS" | cut -f 30)
         COUNTER=1
