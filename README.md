@@ -8,9 +8,7 @@ A powerful command-line control script for Linux-powered Minecraft servers.
 * [Features](#features)
 * [Installation](#installation)
 * [Usage](#usage)
-* [Message Of The Day](#message-of-the-day)
 * [Server Customization](#server-customization)
-* [Lib Notify](#lib-notify)
 * [License](LICENSE)
 * [Issues](#issues)
 
@@ -280,49 +278,6 @@ You can just copy your world into the worlds directory:
 Make sure you check `server-port` and `query.port` in `server.properties` to make sure it does not overlap with other servers created by the MSCS script. Also ensure that `enable-query` is set to `true`.  If you do not have `enable-query` and a `query.port` set, you will not be able to check the status of the world with the script.
 
 
-## Message of the Day
-
-Whisper the message of the day (motd) to users as they log into the world.
-
-### Global MOTD
-To add a MOTD to be used by all worlds, add a file called `motd.txt`
-to the `/home/minecraft` directory.
-
-    editor /home/minecraft/motd.txt
-
-### World Specific MOTD
-You can also specify a per-world message of the day by making a file called
-`[worldname].motd` in the `/home/minecraft/worlds` directory.
-
-    editor /home/minecraft/worlds/[world].motd
-
-### Colors
-To add colors to your Help or MOTD files, insert the following color codes
-into your text:
-* §0 - black
-* §1 - blue
-* §2 - deep green
-* §3 - aqua
-* §4 - deep red
-* §5 - purple
-* §6 - gold
-* §7 - gray
-* §8 - dark gray
-* §9 - light blue
-* §a - green
-* §b - teal
-* §c - red
-* §d - magenta
-* §e - yellow
-* §f - white
-
-### Example MOTD
-
-    §fWelcome to Minecraft!
-    §fToday's theme is §4red§f.
-    §fLook out for those §2creepers§f!
-
-
 ## Server Customization
 
 The server settings for each world can be customized by adding certain
@@ -384,33 +339,6 @@ Use the latest CraftBukkit recommended build:
     mscs-server-args=
     mscs-initial-memory=128M
     mscs-maximum-memory=2048M
-
-
-## Lib Notify
-
-On systems that support lib notify, you can modify the script to print a
-message on your desktop of important server events.
-
-First, you need to know the name of the display you want to route the
-messages to.  This is usually `:0.0`, but it may be something different on
-your system.
-
-    glxinfo | grep "name of display"
-
-
-If your username is different than the user used for the Minecraft server,
-replace `$USER_NAME` in `LIBNOTIFY_USER_NAME=$USER_NAME` with the correct
-username.
-
-Modify the following lines of code in the script:
-
-    # To use lib-notify to print a message on your desktop of important server
-    events, change the following to a 1.
-    USE_LIBNOTIFY=0
-
-    # The username and display that notifications will be routed to.
-    LIBNOTIFY_USER_NAME=$USER_NAME
-    LIBNOTIFY_DISPLAY=":0.0"
 
 
 ## License
