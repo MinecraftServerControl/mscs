@@ -316,20 +316,6 @@ MAPS_URL="http://minecraft.server.com/maps"
 MAPS_LOCATION="$LOCATION/maps"
 
 
-# Lib-Notify Configuration
-# ---------------------------------------------------------------------------
-
-# Use lib-notify to print a message on your desktop of important server
-# events.
-# 0 - Do not use lib-notify.
-# 1 - Display server events using lib-notify.
-USE_LIBNOTIFY=0
-
-# The username and display that messages will be routed to.
-LIBNOTIFY_USER_NAME=$USER_NAME
-LIBNOTIFY_DISPLAY=":0.0"
-
-
 # ---------------------------------------------------------------------------
 # Internal Methods
 # ---------------------------------------------------------------------------
@@ -803,20 +789,6 @@ getServerCommand() {
     '
   )
   echo "$SERVER_COMMAND"
-}
-
-# ---------------------------------------------------------------------------
-# Send a message to the desktop using lib-notify, if it is available.
-#
-# @param 1 The summary of the message to send.
-# @param 2 The body of the message to send.
-# ---------------------------------------------------------------------------
-libNotify() {
-  local NOTIFY
-  NOTIFY=$(which notify-send)
-  if [ -e "$NOTIFY" ]; then
-    execute "DISPLAY=$LIBNOTIFY_DISPLAY $NOTIFY \"$1\" \"$2\"" $LIBNOTIFY_USER_NAME > /dev/null 2>&1
-  fi
 }
 
 # ---------------------------------------------------------------------------
