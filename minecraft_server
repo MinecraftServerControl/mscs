@@ -239,33 +239,6 @@ WORLDS_LOCATION="$LOCATION/worlds"
 DISABLED_WORLDS_LOCATION="$LOCATION/worlds-disabled"
 
 
-# Global Message Of The Day file (MOTD)
-# ---------------------------------------------------------------------------
-
-# Location of the file to display to users on login.  Nothing will be done if
-# this file does not exist.
-MOTD="$LOCATION/motd.txt"
-
-
-# NOTE: MOTD can contain color codes as follows:
-#  §0 - black
-#  §1 - blue
-#  §2 - dark green
-#  §3 - aqua
-#  §4 - dark red
-#  §5 - purple
-#  §6 - gold
-#  §7 - gray
-#  §8 - dark gray
-#  §9 - light blue
-#  §a - green
-#  §b - teal
-#  §c - red
-#  §d - magenta
-#  §e - yellow
-#  §f - white
-
-
 # Backup Configuration
 # ---------------------------------------------------------------------------
 
@@ -449,25 +422,6 @@ disableWorld() {
 enableWorld() {
   # Enable the world.
   execute "mv $DISABLED_WORLDS_LOCATION/$1 $WORLDS_LOCATION/$1" $USER_NAME
-}
-
-# ---------------------------------------------------------------------------
-# Grab the first line of the Message of the Day file as a summary, and strip
-# any color codes from it.
-#
-# @param 1 The world server of interest.
-# @return The global message of the day or the specifued world
-# ---------------------------------------------------------------------------
-getMOTD() {
-  local MOTD_SUMMARY WORLD_MOTD
-  MOTD_SUMMARY=""
-  WORLD_MOTD="$WORLDS_LOCATION/$1.motd"
-  if [ -e $WORLD_MOTD ]; then
-    MOTD_SUMMARY=$(head -n 1 $WORLD_MOTD | $PERL -ne '$_ =~ s/§[0-9a-fA-F]//g; print;')
-  elif [ -e $MOTD ]; then
-    MOTD_SUMMARY=$(head -n 1 $MOTD | $PERL -ne '$_ =~ s/§[0-9a-fA-F]//g; print;')
-  fi
-  echo $MOTD_SUMMARY
 }
 
 # ---------------------------------------------------------------------------
@@ -789,26 +743,6 @@ getServerCommand() {
     '
   )
   echo "$SERVER_COMMAND"
-}
-
-# ---------------------------------------------------------------------------
-# Send the contents of the Message Of The Day (MOTD) to the user.
-#
-# @param 1 The world server of interest.
-# @param 2 The user being told the contents of the motd file.
-# ---------------------------------------------------------------------------
-tellMOTD() {
-  local LINE WORLD_MOTD
-  WORLD_MOTD="$WORLDS_LOCATION/$1.motd"
-  if [ -e $WORLD_MOTD ]; then
-    while read LINE; do
-      sendCommand $1 "tell $2 $LINE"
-    done < $WORLD_MOTD
-  elif [ -e $MOTD ]; then
-    while read LINE; do
-      sendCommand $1 "tell $2 $LINE"
-    done < $MOTD
-  fi
 }
 
 # ---------------------------------------------------------------------------
