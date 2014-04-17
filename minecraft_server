@@ -515,10 +515,16 @@ getCurrentMinecraftVersion() {
   # The timeout for the versions.json cache.
   VERSIONS_DURATION=1
   # Delete the versions.json file if it is old.
-  execute "find $JSON -mtime +$VERSIONS_DURATION -delete" $USER_NAME
+  if [ -f $JSON ]; then
+    execute "find $JSON -mtime +$VERSIONS_DURATION -delete" $USER_NAME
+  fi
   # Download the versions.json file if it does not exist.
   if [ ! -f $JSON ]; then
     execute "$WGET -qO \"$JSON\" \"$MINECRAFT_VERSIONS_URL\"" $USER_NAME
+    if [ $? -ne 0 ]; then
+      printf "Error downloading the Minecraft versions.json file.\n"
+      exit 1
+    fi
   fi
   # Extract the current version information.
   VERSION=$(
