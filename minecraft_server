@@ -951,6 +951,7 @@ start() {
 stop() {
   local WORLD NUM
   sendCommand $1 "stop"
+  sendCommand $1 "end"
   # Synchronize the mirror image of the world prior to closing, if
   # required.
   if [ $ENABLE_MIRROR -eq 1 ] && [ -d $MIRROR_PATH ]; then
