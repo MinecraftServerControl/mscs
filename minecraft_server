@@ -510,6 +510,8 @@ setPropertiesValue() {
 getCurrentMinecraftVersion() {
   local JSON VERSION VERSIONS_DURATION TYPE
   JSON="$DEFAULT_SERVER_LOCATION/versions.json"
+  # Make sure the server software directory exists.
+  execute "mkdir -p $DEFAULT_SERVER_LOCATION" $USER_NAME
   # Determine the version type for the current world.
   TYPE=$(getPropertiesValue "$1" "mscs-version-type" "$DEFAULT_VERSION_TYPE")
   # The timeout for the versions.json cache.
