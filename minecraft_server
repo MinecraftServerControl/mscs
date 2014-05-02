@@ -532,12 +532,6 @@ getCurrentMinecraftVersion() {
   VERSION=$(
     $PERL -ne 'if ($_ =~ /^\s+\"'$TYPE'\": \"([\w\.]+)\"/) { print $1; }' $JSON
   )
-  # Make sure we found the version information.
-  if [ -z "$VERSION" ]; then
-    printf "Error detecting the current Minecraft version.\n"
-    execute "rm -f $JSON" $USER_NAME
-    exit 1
-  fi
   echo "$VERSION"
 }
 
