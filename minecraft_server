@@ -281,7 +281,7 @@ ENABLE_MIRROR=0
 MIRROR_PATH="/dev/shm/minecraft"
 
 
-# Mincecraft Overviewer Mapping Software Options
+# Minecraft Overviewer Mapping Software Options
 # ---------------------------------------------------------------------------
 
 OVERVIEWER_BIN=$(which overviewer.py)
@@ -1831,7 +1831,7 @@ case "$1" in
     checkPermission
     # Make sure that the Minecraft Overviewer software exists.
     if [ ! -e "$OVERVIEWER_BIN" ]; then
-      printf "Mincraft Overviewer software not found.\n"
+      printf "Minecraft Overviewer software not found.\n"
       exit 1
     fi
     # Figure out which worlds to map.
