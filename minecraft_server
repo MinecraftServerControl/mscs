@@ -514,11 +514,11 @@ getCurrentMinecraftVersion() {
   execute "mkdir -p $DEFAULT_SERVER_LOCATION" $USER_NAME
   # Determine the version type for the current world.
   TYPE=$(getPropertiesValue "$1" "mscs-version-type" "$DEFAULT_VERSION_TYPE")
-  # The timeout for the versions.json cache.
-  VERSIONS_DURATION=1
+  # The timeout (in minutes) for the versions.json cache.
+  VERSIONS_DURATION=1440
   # Delete the versions.json file if it is old.
   if [ -f $JSON ]; then
-    execute "find $JSON -mtime +$VERSIONS_DURATION -delete" $USER_NAME
+    execute "find $JSON -mmin +$VERSIONS_DURATION -delete" $USER_NAME
   fi
   # Download the versions.json file if it does not exist.
   if [ ! -s $JSON ]; then
