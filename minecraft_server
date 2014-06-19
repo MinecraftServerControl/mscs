@@ -551,7 +551,7 @@ getClientVersion() {
   local CURRENT_VERSION CLIENT_VERSION
   CURRENT_VERSION=$(getCurrentMinecraftVersion "$1")
   if [ $? -ne 0 ]; then
-    echo $CURRENT_VERSION
+    printf "$CURRENT_VERSION\n"
     exit 1
   fi
   # Get the client version, use the default version if not provided.
@@ -576,12 +576,12 @@ getClientJar() {
   local CURRENT_VERSION CLIENT_VERSION CLIENT_JAR
   CURRENT_VERSION=$(getCurrentMinecraftVersion "$1")
   if [ $? -ne 0 ]; then
-    echo $CURRENT_VERSION
+    printf "$CURRENT_VERSION\n"
     exit 1
   fi
   CLIENT_VERSION=$(getClientVersion "$1")
   if [ $? -ne 0 ]; then
-    echo $CLIENT_VERSION
+    printf "$CLIENT_VERSION\n"
     exit 1
   fi
   # Get the client jar, use the default value if not provided.
@@ -608,12 +608,12 @@ getClientLocation() {
   local CURRENT_VERSION CLIENT_VERSION CLIENT_LOCATION
   CURRENT_VERSION=$(getCurrentMinecraftVersion "$1")
   if [ $? -ne 0 ]; then
-    echo $CURRENT_VERSION
+    printf "$CURRENT_VERSION\n"
     exit 1
   fi
   CLIENT_VERSION=$(getClientVersion "$1")
   if [ $? -ne 0 ]; then
-    echo $CLIENT_VERSION
+    printf "$CLIENT_VERSION\n"
     exit 1
   fi
   # Get the client location, use the default value if not provided.
@@ -640,12 +640,12 @@ getClientURL() {
   local CURRENT_VERSION CLIENT_VERSION CLIENT_URL
   CURRENT_VERSION=$(getCurrentMinecraftVersion "$1")
   if [ $? -ne 0 ]; then
-    echo $CURRENT_VERSION
+    printf "$CURRENT_VERSION\n"
     exit 1
   fi
   CLIENT_VERSION=$(getClientVersion "$1")
   if [ $? -ne 0 ]; then
-    echo $CLIENT_VERSION
+    printf "$CLIENT_VERSION\n"
     exit 1
   fi
   # Get the client download URL, use the default value if not provided.
@@ -673,7 +673,7 @@ getServerVersion() {
   local CURRENT_VERSION SERVER_VERSION
   CURRENT_VERSION=$(getCurrentMinecraftVersion "$1")
   if [ $? -ne 0 ]; then
-    echo $CURRENT_VERSION
+    printf "$CURRENT_VERSION\n"
     exit 1
   fi
   # Get the server version, use the default version if not provided.
@@ -698,12 +698,12 @@ getServerJar() {
   local CURRENT_VERSION SERVER_VERSION SERVER_JAR
   CURRENT_VERSION=$(getCurrentMinecraftVersion "$1")
   if [ $? -ne 0 ]; then
-    echo $CURRENT_VERSION
+    printf "$CURRENT_VERSION\n"
     exit 1
   fi
   SERVER_VERSION=$(getServerVersion "$1")
   if [ $? -ne 0 ]; then
-    echo $SERVER_VERSION
+    printf "$SERVER_VERSION\n"
     exit 1
   fi
   # Get the server jar, use the default value if not provided.
@@ -730,12 +730,12 @@ getServerLocation() {
   local CURRENT_VERSION SERVER_VERSION SERVER_LOCATION
   CURRENT_VERSION=$(getCurrentMinecraftVersion "$1")
   if [ $? -ne 0 ]; then
-    echo $CURRENT_VERSION
+    printf "$CURRENT_VERSION\n"
     exit 1
   fi
   SERVER_VERSION=$(getServerVersion "$1")
   if [ $? -ne 0 ]; then
-    echo $SERVER_VERSION
+    printf "$SERVER_VERSION\n"
     exit 1
   fi
   # Get the server location, use the default value if not provided.
@@ -762,12 +762,12 @@ getServerURL() {
   local CURRENT_VERSION SERVER_VERSION SERVER_URL
   CURRENT_VERSION=$(getCurrentMinecraftVersion "$1")
   if [ $? -ne 0 ]; then
-    echo $CURRENT_VERSION
+    printf "$CURRENT_VERSION\n"
     exit 1
   fi
   SERVER_VERSION=$(getServerVersion "$1")
   if [ $? -ne 0 ]; then
-    echo $SERVER_VERSION
+    printf "$SERVER_VERSION\n"
     exit 1
   fi
   # Get the server download URL, use the default value if not provided.
@@ -796,22 +796,22 @@ getServerCommand() {
   local SERVER_ARGS INITIAL_MEMORY MAXIMUM_MEMORY SERVER_COMMAND
   CURRENT_VERSION=$(getCurrentMinecraftVersion "$1")
   if [ $? -ne 0 ]; then
-    echo $CURRENT_VERSION
+    printf "$CURRENT_VERSION\n"
     exit 1
   fi
   SERVER_VERSION=$(getServerVersion "$1")
   if [ $? -ne 0 ]; then
-    echo $SERVER_VERSION
+    printf "$SERVER_VERSION\n"
     exit 1
   fi
   SERVER_JAR=$(getServerJar "$1")
   if [ $? -ne 0 ]; then
-    echo $SERVER_JAR
+    printf "$SERVER_JAR\n"
     exit 1
   fi
   SERVER_LOCATION=$(getServerLocation "$1")
   if [ $? -ne 0 ]; then
-    echo $SERVER_LOCATION
+    printf "$SERVER_LOCATION\n"
     exit 1
   fi
   # Get the server arguments, use the default value if not provided.
@@ -1017,7 +1017,7 @@ start() {
   # Get the server command for this world.
   SERVER_COMMAND=$(getServerCommand "$1")
   if [ $? -ne 0 ]; then
-    echo $SERVER_COMMAND
+    printf "$SERVER_COMMAND\n"
     exit 1
   fi
   # Start the server.
@@ -1120,17 +1120,17 @@ updateClientSoftware() {
   local CLIENT_JAR CLIENT_LOCATION CLIENT_URL
   CLIENT_JAR=$(getClientJar "$1")
   if [ $? -ne 0 ]; then
-    printf $CLIENT_JAR
+    printf "$CLIENT_JAR\n"
     exit 1
   fi
   CLIENT_LOCATION=$(getClientLocation "$1")
   if [ $? -ne 0 ]; then
-    printf $CLIENT_LOCATION
+    printf "$CLIENT_LOCATION\n"
     exit 1
   fi
   CLIENT_URL=$(getClientURL "$1")
   if [ $? -ne 0 ]; then
-    printf $CLIENT_URL
+    printf "$CLIENT_URL\n"
     exit 1
   fi
   # Make sure the client software directory exists.
@@ -1140,7 +1140,7 @@ updateClientSoftware() {
     execute "$WGET -qO \"$CLIENT_LOCATION/$CLIENT_JAR\" \"$CLIENT_URL\"" $USER_NAME
     # Report any errors.
     if [ $? -ne 0 ]; then
-      printf "\nError updating the Minecraft client software.\n"
+      printf "Error updating the Minecraft client software.\n"
       exit 1
     fi
   fi
@@ -1155,17 +1155,17 @@ updateServerSoftware() {
   local SERVER_JAR SERVER_LOCATION SERVER_URL
   SERVER_JAR=$(getServerJar "$1")
   if [ $? -ne 0 ]; then
-    printf $SERVER_JAR
+    printf "$SERVER_JAR\n"
     exit 1
   fi
   SERVER_LOCATION=$(getServerLocation "$1")
   if [ $? -ne 0 ]; then
-    printf $SERVER_LOCATION
+    printf "$SERVER_LOCATION\n"
     exit 1
   fi
   SERVER_URL=$(getServerURL "$1")
   if [ $? -ne 0 ]; then
-    printf $SERVER_URL
+    printf "$SERVER_URL\n"
     exit 1
   fi
   # Make sure the server software directory exists.
@@ -1175,7 +1175,7 @@ updateServerSoftware() {
     execute "$WGET -qO \"$SERVER_LOCATION/$SERVER_JAR\" \"$SERVER_URL\"" $USER_NAME
     # Report any errors.
     if [ $? -ne 0 ]; then
-      printf "\nError updating the Minecraft server software.\n"
+      printf "Error updating the Minecraft server software.\n"
       exit 1
     fi
   fi
