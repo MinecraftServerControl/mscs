@@ -521,7 +521,7 @@ getCurrentMinecraftVersion() {
     execute "find $JSON -mtime +$VERSIONS_DURATION -delete" $USER_NAME
   fi
   # Download the versions.json file if it does not exist.
-  if [ ! -f $JSON ]; then
+  if [ ! -s $JSON ]; then
     execute "$WGET -qO \"$JSON\" \"$MINECRAFT_VERSIONS_URL\"" $USER_NAME
     if [ $? -ne 0 ]; then
       printf "Error downloading the Minecraft versions.json file.\n"
