@@ -5,7 +5,7 @@ BASH_COMPLETION := /etc/bash_completion.d/mscs_completion
 
 .PHONY: install clean
 
-install: $(MINECRAFT_HOME) $(MINECRAFT_SERVER) $(BASH_COMPLETION)
+install: clean $(MINECRAFT_HOME) $(MINECRAFT_SERVER) $(BASH_COMPLETION)
 
 clean:
 	update-rc.d -f minecraft_server remove
