@@ -516,16 +516,23 @@ getCurrentMinecraftVersion() {
   TYPE=$(getPropertiesValue "$1" "mscs-version-type" "$DEFAULT_VERSION_TYPE")
   # The timeout (in minutes) for the versions.json cache.
   VERSIONS_DURATION=1440
-  # Delete the versions.json file if it is old.
-  if [ -f $JSON ]; then
+  if [ -s $JSON ]; then
+    # Make a backup copy of the versions.json file.
+    execute "cp $JSON $JSON.bak" $USER_NAME
+    # Delete the versions.json file if it is old.
     execute "find $JSON -mmin +$VERSIONS_DURATION -delete" $USER_NAME
   fi
   # Download the versions.json file if it does not exist.
   if [ ! -s $JSON ]; then
     execute "$WGET -qO \"$JSON\" \"$MINECRAFT_VERSIONS_URL\"" $USER_NAME
     if [ $? -ne 0 ]; then
-      printf "Error downloading the Minecraft versions.json file.\n"
-      exit 1
+      if [ -s $JSON.bak ]; then
+        printf "Error downloading the Minecraft versions.json file, using an old copy.\n"
+        execute "cp $JSON.bak $JSON" $USER_NAME
+      else
+        printf "Error downloading the Minecraft versions.json file.\n"
+        exit 1
+      fi
     fi
   fi
   # Extract the current version information.
@@ -535,7 +542,6 @@ getCurrentMinecraftVersion() {
   # Print an error and exit if the version string is empty.
   if [ -z "$VERSION" ]; then
     printf "Error detecting the current Minecraft version.\n"
-    execute "rm -f $JSON" $USER_NAME
     exit 1
   fi
   echo "$VERSION"
