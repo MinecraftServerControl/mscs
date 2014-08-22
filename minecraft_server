@@ -537,7 +537,7 @@ getCurrentMinecraftVersion() {
   fi
   # Extract the current version information.
   VERSION=$(
-    $PERL -ne 'if ($_ =~ /^\s+\"'$TYPE'\": \"([\w\.]+)\"/) { print $1; }' $JSON
+    $PERL -ne 'if ($_ =~ /^\s+\"'$TYPE'\": \"([\w\.-]+)\"/) { print $1; }' $JSON
   )
   # Print an error and exit if the version string is empty.
   if [ -z "$VERSION" ]; then
