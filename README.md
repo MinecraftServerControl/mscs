@@ -70,6 +70,12 @@ following location on the first run:
 
     /home/minecraft/minecraft_server/
 
+### EULA
+As of Minecraft version 1.7.10, Mojang requires that users of their software read and agree to their [EULA](https://account.mojang.com/documents/minecraft_eula).  After you have read through the document, you need to modify the `eula.txt` file in your world's folder, changing the value of the `eula` variable from `false` to `true`.
+
+    #By changing the setting below to TRUE you are indicating your agreement to our EULA (https://account.mojang.com/documents/minecraft_eula).
+    eula=true
+
 ### Requirements
 We've made an attempt to utilize only features that are normally installed in
 most Linux and UNIX environments in this script, but there are a few
