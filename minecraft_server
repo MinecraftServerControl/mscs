@@ -457,6 +457,28 @@ getDisabledWorlds() {
 }
 
 # ---------------------------------------------------------------------------
+# Get the value of a key from the provided file.
+#
+# @param 1 The file containing the key/value combo.
+# @param 2 The key to get.
+# @param 3 The default value.
+# ---------------------------------------------------------------------------
+getValue() {
+  local KEY VALUE
+  # Make sure the file exists.
+  if [ -e "$1" ]; then
+    # Find the key/value combo.
+    KEY=$($PERL -ne 'if ($_ =~ /^('$2')=.*$/i) { print lc $1; }' $1)
+    VALUE=$($PERL -ne 'if ($_ =~ /^'$2'=(.*)$/i) { print $1; }' $1)
+    if [ -n "$KEY" ] && [ -n "$VALUE" ]; then
+      echo "$VALUE"
+    else
+      echo "$3"
+    fi
+  fi
+}
+
+# ---------------------------------------------------------------------------
 # Get the value of a key in a world properties file.
 #
 # @param 1 The world server of interest.
@@ -464,19 +486,9 @@ getDisabledWorlds() {
 # @param 3 The default value.
 # ---------------------------------------------------------------------------
 getPropertiesValue() {
-  local PROPERTY_FILE KEY VALUE
+  local PROPERTY_FILE
   PROPERTY_FILE=$WORLDS_LOCATION/$1/server.properties
-  # Make sure the properties file exists
-  if [ -e "$PROPERTY_FILE" ]; then
-    # Find the key/value combo.
-    KEY=$($PERL -ne 'if ($_ =~ /^('$2')=.*$/i) { print lc $1; }' $PROPERTY_FILE)
-    VALUE=$($PERL -ne 'if ($_ =~ /^'$2'=(.*)$/i) { print $1; }' $PROPERTY_FILE)
-    if [ -n "$KEY" ] && [ -n "$VALUE" ]; then
-      echo "$VALUE"
-    else
-      echo "$3"
-    fi
-  fi
+  getValue "$PROPERTY_FILE" "$2" "$3"
 }
 
 # ---------------------------------------------------------------------------
