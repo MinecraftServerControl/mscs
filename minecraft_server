@@ -479,6 +479,27 @@ getValue() {
 }
 
 # ---------------------------------------------------------------------------
+# Modify the value of a key/value combo in the provided file.
+#
+# @param 1 The file containing the key/value combo.
+# @param 2 The key to modify.
+# @param 3 The value to assign to the key.
+# ---------------------------------------------------------------------------
+setValue() {
+  local KEY_VALUE
+  # Make sure that the file exists.
+  execute "touch $1" $USER_NAME
+  # Replace the key/value combo if it already exists, otherwise just
+  # append it to the end of the file.
+  KEY_VALUE=$($PERL -ne 'if ($_ =~ /^('$2'=.*)$/) { print "$1"; }' $1)
+  if [ -n "$KEY_VALUE" ]; then
+    execute "$PERL -i -ne 'if (\$_ =~ /^$2=.*$/) { print \"$2=$3\\n\"; } else { print; }' $1" $USER_NAME
+  else
+    execute "printf \"$2=$3\\n\" >> $1" $USER_NAME
+  fi
+}
+
+# ---------------------------------------------------------------------------
 # Get the value of a key in a world properties file.
 #
 # @param 1 The world server of interest.
@@ -499,18 +520,9 @@ getPropertiesValue() {
 # @param 3 The value to assign to the key.
 # ---------------------------------------------------------------------------
 setPropertiesValue() {
-  local PROPERTY_FILE KEY_VALUE
+  local PROPERTY_FILE
   PROPERTY_FILE=$WORLDS_LOCATION/$1/server.properties
-  # Make sure that the properties file exists.
-  execute "touch $PROPERTY_FILE" $USER_NAME
-  # Replace the key/value combo if it already exists, otherwise just
-  # append it to the end of the file.
-  KEY_VALUE=$($PERL -ne 'if ($_ =~ /^('$2'=.*)$/) { print "$1"; }' $PROPERTY_FILE)
-  if [ -n "$KEY_VALUE" ]; then
-    execute "$PERL -i -ne 'if (\$_ =~ /^$2=.*$/) { print \"$2=$3\\n\"; } else { print; }' $PROPERTY_FILE" $USER_NAME
-  else
-    execute "printf \"$2=$3\\n\" >> $PROPERTY_FILE" $USER_NAME
-  fi
+  setValue "$PROPERTY_FILE" "$2" "$3"
 }
 
 # ---------------------------------------------------------------------------
