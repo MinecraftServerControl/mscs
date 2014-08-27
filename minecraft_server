@@ -470,11 +470,12 @@ getValue() {
     # Find the key/value combo.
     KEY=$($PERL -ne 'if ($_ =~ /^('$2')=.*$/i) { print lc $1; }' $1)
     VALUE=$($PERL -ne 'if ($_ =~ /^'$2'=(.*)$/i) { print $1; }' $1)
-    if [ -n "$KEY" ] && [ -n "$VALUE" ]; then
-      echo "$VALUE"
-    else
-      echo "$3"
-    fi
+  fi
+  # Return the value if found, the default value if not.
+  if [ -n "$KEY" ] && [ -n "$VALUE" ]; then
+    echo "$VALUE"
+  else
+    echo "$3"
   fi
 }
 
