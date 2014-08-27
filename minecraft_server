@@ -500,6 +500,17 @@ setValue() {
 }
 
 # ---------------------------------------------------------------------------
+# Get the value of the EULA boolean.
+#
+# @param 1 The world server of interest.
+# ---------------------------------------------------------------------------
+getEULAValue() {
+  local EULA_FILE
+  EULA_FILE=$WORLDS_LOCATION/$1/eula.txt
+  getValue "$EULA_FILE" "eula" "false"
+}
+
+# ---------------------------------------------------------------------------
 # Get the value of a key in a world properties file.
 #
 # @param 1 The world server of interest.
@@ -1008,12 +1019,19 @@ serverConsole() {
 # @param 1 The world server to start.
 # ---------------------------------------------------------------------------
 start() {
-  local SERVER_COMMAND WORLD_DIR
+  local EULA SERVER_COMMAND WORLD_DIR
   # Make sure that the server software exists.
   updateServerSoftware "$1"
   # Make sure that the world's directory exists.
   WORLD_DIR="$WORLDS_LOCATION/$1"
   execute "mkdir -p $WORLD_DIR" $USER_NAME
+  # Make sure the EULA has been set to true.
+  EULA=$(getEULAValue "$1")
+  if [ $EULA != "true" ]; then
+    printf "\nError, the EULA has not been accepted for world %s.\n" "$1"
+    printf "To accept the EULA, modify %s/eula.txt file.\n" "$WORLD_DIR"
+    exit 1
+  fi
   # Rotate the world's log files.
   rotateLog "$1"
   # Make a mirror image of the world directory if requested.
