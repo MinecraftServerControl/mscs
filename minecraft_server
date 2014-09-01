@@ -116,6 +116,9 @@ Options:
   backup <world>
     Backup the Minecraft world.  Backup all worlds by default.
 
+  list-backups <world>
+    List the datetime of the backups for the world.
+
   map <world>
     Run the Minecraft Overviewer mapping software on the Minecraft world.
     Map all worlds by default.
@@ -1161,6 +1164,27 @@ worldBackup() {
 }
 
 # ---------------------------------------------------------------------------
+# List the backups for the world server.
+#
+# @param 1 The world server of interest.
+# ---------------------------------------------------------------------------
+worldBackupList() {
+  if [ -d $BACKUP_LOCATION/$1 ]; then
+    # Grab the list of backups for the world server.
+    $RDIFF_BACKUP -l $BACKUP_LOCATION/$1 |
+    $PERL -e '
+      foreach (reverse <>) {
+        # Search for a datetime format YYYY-MM-DDThh:mm:ssTZD.
+        # Datetime specification: http://www.w3.org/TR/NOTE-datetime
+        if ($_ =~ /(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}[+-]\d{2}:\d{2})/) {
+          print "$1\n";
+        }
+      }
+    '
+  fi
+}
+
+# ---------------------------------------------------------------------------
 # Update the Minecraft client software.
 #
 # @param 1 The world to update.
@@ -1952,6 +1976,19 @@ case "$1" in
       fi
     done
     printf ".\n"
+  ;;
+  list-backups)
+    if [ -n "$2" ] && [ $(listContains "$2" "$(getEnabledWorlds)") -eq 1 ]; then
+      worldBackupList "$2"
+    elif [ -n "$2" ]; then
+      printf "World '$2' not recognized.\n"
+      printf "  Usage:  $0 $1 <world>\n"
+      exit 1
+    else 
+      printf "World not supplied.\n"
+      printf "  Usage:  $0 $1 <world>\n"
+      exit 1
+    fi
   ;;
   update)
     checkPermission
