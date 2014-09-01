@@ -1160,6 +1160,8 @@ worldBackup() {
   execute "mkdir -p $BACKUP_LOCATION" $USER_NAME
   # Create the backup.
   execute "$RDIFF_BACKUP -v5 --print-statistics $WORLDS_LOCATION/$1 $BACKUP_LOCATION/$1 >> $BACKUP_LOG" $USER_NAME
+  # Set the permissions for the backup location.
+  execute "chmod a+rX -R $BACKUP_LOCATION" $USER_NAME
   # Cleanup old backups.
   if [ $BACKUP_DURATION -gt 0 ]; then
     execute "$RDIFF_BACKUP --remove-older-than ${BACKUP_DURATION}D --force $BACKUP_LOCATION/$1 >> $BACKUP_LOG" $USER_NAME
