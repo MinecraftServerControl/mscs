@@ -218,6 +218,14 @@ or
 
     Backup the Minecraft world.  Backup all worlds by default.
 
+* list-backups [world]
+
+    List the datetime of the backups for the world.
+
+* restore-backup [world] [datetime]
+
+    Restore a backup for a world that was taken at the datetime.
+
 * console [world]
 
     Connect to the Minecraft world server's console.  Hit [Ctrl-D] to detach.
