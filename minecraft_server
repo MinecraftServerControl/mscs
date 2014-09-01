@@ -1020,7 +1020,7 @@ serverConsole() {
 # @param 1 The world server to start.
 # ---------------------------------------------------------------------------
 start() {
-  local EULA SERVER_COMMAND WORLD_DIR
+  local EULA PID SERVER_COMMAND WORLD_DIR
   # Make sure that the server software exists.
   updateServerSoftware "$1"
   # Make sure that the world's directory exists.
@@ -1081,7 +1081,8 @@ start() {
     exit 1
   fi
   sleep 1
-  if [ $(getJavaPID "$1") -eq 0 ]; then
+  PID=$(getJavaPID "$1")
+  if [ $PID -eq 0 ]; then
     printf "Error starting the server: couldn't retrieve the server's process ID.\n"
     exit 1
   fi
@@ -1089,6 +1090,8 @@ start() {
   if [ "$(getPropertiesValue $1 'enable-query')" = "true" ]; then
     queryStart "$1" &
   fi
+  # Create a PID file for the world server.
+  execute "echo $PID > $WORLDS_LOCATION/$1.pid" $USER_NAME
   # Create a lock file on RedHat and derivatives.
   if [ -d "/var/lock/subsys" ]; then
     touch /var/lock/subsys/minecraft_server
@@ -1113,6 +1116,8 @@ stop() {
     # Move the world files back to their original path name.
     execute "mv $WORLDS_LOCATION/$1/$1-original $WORLDS_LOCATION/$1/$1" $USER_NAME
   fi
+  # Remove the PID file for the world server.
+  execute "rm -f $WORLDS_LOCATION/$1.pid" $USER_NAME
   # Remove the lock file on Redhat and derivatives if all world servers
   # are stopped.
   if [ -e "/var/lock/subsys/minecraft_server" ]; then
