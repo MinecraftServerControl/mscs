@@ -119,6 +119,9 @@ Options:
   list-backups <world>
     List the datetime of the backups for the world.
 
+  restore-backup <world> <datetime>
+    Restore a backup for a world that was taken at the datetime.
+
   map <world>
     Run the Minecraft Overviewer mapping software on the Minecraft world.
     Map all worlds by default.
@@ -1185,6 +1188,18 @@ worldBackupList() {
 }
 
 # ---------------------------------------------------------------------------
+# Restore a backup for the world server.
+#
+# @param 1 The world server of interest.
+# @param 2 The datetime of the backup to restore.
+# ---------------------------------------------------------------------------
+worldBackupRestore() {
+  if [ -d $BACKUP_LOCATION/$1 ]; then
+    execute "$RDIFF_BACKUP -r $2 $BACKUP_LOCATION/$1 $WORLDS_LOCATION/$1" $USER_NAME
+  fi
+}
+
+# ---------------------------------------------------------------------------
 # Update the Minecraft client software.
 #
 # @param 1 The world to update.
@@ -1980,6 +1995,19 @@ case "$1" in
   list-backups)
     if [ -n "$2" ] && [ $(listContains "$2" "$(getEnabledWorlds)") -eq 1 ]; then
       worldBackupList "$2"
+    elif [ -n "$2" ]; then
+      printf "World '$2' not recognized.\n"
+      printf "  Usage:  $0 $1 <world>\n"
+      exit 1
+    else 
+      printf "World not supplied.\n"
+      printf "  Usage:  $0 $1 <world>\n"
+      exit 1
+    fi
+  ;;
+  restore-backup)
+    if [ -n "$2" ] && [ $(listContains "$2" "$(getEnabledWorlds)") -eq 1 ]; then
+      worldBackupRestore "$2" "$3"
     elif [ -n "$2" ]; then
       printf "World '$2' not recognized.\n"
       printf "  Usage:  $0 $1 <world>\n"
