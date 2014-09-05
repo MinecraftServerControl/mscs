@@ -2034,8 +2034,7 @@ case "$1" in
         worldBackup $WORLD
         overviewer $WORLD
         sendCommand $WORLD "save-on"
-        sendCommand $WORLD "say Mapping is complete.  You can access the maps at:"
-        sendCommand $WORLD "say $MAPS_URL/$WORLD"
+        sendCommand $WORLD "/tellraw @a {\"text\":\"\",\"extra\":[{\"text\":\"[Server] Mapping is complete.  You can access the maps \"},{\"text\":\"here\",\"color\":\"aqua\",\"clickEvent\":{\"action\":\"open_url\",\"value\":\"$MAPS_URL/$WORLD\"}},{\"text\":\".\"}]}"
       else
         worldBackup $WORLD
         overviewer $WORLD
