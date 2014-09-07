@@ -598,6 +598,27 @@ getCurrentMinecraftVersion() {
 }
 
 # ---------------------------------------------------------------------------
+# Get the release time of the Minecraft version number.
+#
+# @param 1 The Minecraft version number.
+# @return The release time of the Minecraft version number.
+# ---------------------------------------------------------------------------
+getMinecraftVersionReleaseTime() {
+  cat $VERSIONS_JSON | $PERL -e '
+    $id = null;
+    while (<>) {
+      if ($_ =~ /('$1')/) {
+        $id = $1;
+      }
+      elsif ($id != null && $_ =~ /releaseTime\":\s+\"([\w:+-]+)\"/) {
+        print $1;
+        last;
+      }
+    }
+  '
+}
+
+# ---------------------------------------------------------------------------
 # Retrieve the version of the client for the world.
 #
 # @param 1 The world server.
