@@ -630,6 +630,20 @@ compareTime() {
 }
 
 # ---------------------------------------------------------------------------
+# Compare two Minecraft version numbers.
+#
+# @param 1 The first Minecraft version number.
+# @param 2 The second Minecraft version number.
+# @return The result of the comparison: -1, 0, 1.
+# ---------------------------------------------------------------------------
+compareMinecraftVersions() {
+  local T1 T2
+  T1=$(getMinecraftVersionReleaseTime "$1")
+  T2=$(getMinecraftVersionReleaseTime "$2")
+  compareTime "$T1" "$T2"
+}
+
+# ---------------------------------------------------------------------------
 # Retrieve the version of the client for the world.
 #
 # @param 1 The world server.
