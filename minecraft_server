@@ -238,6 +238,8 @@ WORLDS_LOCATION="$LOCATION/worlds"
 # The location to store disabled world server files.
 DISABLED_WORLDS_LOCATION="$LOCATION/worlds-disabled"
 
+# The location to store the versions.json file.
+VERSIONS_JSON="$DEFAULT_SERVER_LOCATION/versions.json"
 
 # Backup Configuration
 # ---------------------------------------------------------------------------
@@ -544,27 +546,26 @@ setPropertiesValue() {
 # @return The current Minecraft version number.
 # ---------------------------------------------------------------------------
 getCurrentMinecraftVersion() {
-  local JSON VERSION VERSIONS_DURATION TYPE
-  JSON="$DEFAULT_SERVER_LOCATION/versions.json"
+  local VERSION VERSIONS_DURATION TYPE
   # Make sure the server software directory exists.
   execute "mkdir -p $DEFAULT_SERVER_LOCATION" $USER_NAME
   # Determine the version type for the current world.
   TYPE=$(getPropertiesValue "$1" "mscs-version-type" "$DEFAULT_VERSION_TYPE")
   # The timeout (in minutes) for the versions.json cache.
   VERSIONS_DURATION=1440
-  if [ -s $JSON ]; then
+  if [ -s $VERSIONS_JSON ]; then
     # Make a backup copy of the versions.json file.
-    execute "cp $JSON $JSON.bak" $USER_NAME
+    execute "cp $VERSIONS_JSON $VERSIONS_JSON.bak" $USER_NAME
     # Delete the versions.json file if it is old.
-    execute "find $JSON -mmin +$VERSIONS_DURATION -delete" $USER_NAME
+    execute "find $VERSIONS_JSON -mmin +$VERSIONS_DURATION -delete" $USER_NAME
   fi
   # Download the versions.json file if it does not exist.
-  if [ ! -s $JSON ]; then
-    execute "$WGET -qO \"$JSON\" \"$MINECRAFT_VERSIONS_URL\"" $USER_NAME
+  if [ ! -s $VERSIONS_JSON ]; then
+    execute "$WGET -qO \"$VERSIONS_JSON\" \"$MINECRAFT_VERSIONS_URL\"" $USER_NAME
     if [ $? -ne 0 ]; then
-      if [ -s $JSON.bak ]; then
+      if [ -s $VERSIONS_JSON.bak ]; then
         printf "Error downloading the Minecraft versions.json file, using an old copy.\n"
-        execute "cp $JSON.bak $JSON" $USER_NAME
+        execute "cp $VERSIONS_JSON.bak $VERSIONS_JSON" $USER_NAME
       else
         printf "Error downloading the Minecraft versions.json file.\n"
         exit 1
@@ -573,7 +574,7 @@ getCurrentMinecraftVersion() {
   fi
   # Extract the current version information.
   VERSION=$(
-    $PERL -ne 'if ($_ =~ /^\s+\"'$TYPE'\": \"([\w\.-]+)\"/) { print $1; }' $JSON
+    $PERL -ne 'if ($_ =~ /^\s+\"'$TYPE'\": \"([\w\.-]+)\"/) { print $1; }' $VERSIONS_JSON
   )
   # Print an error and exit if the version string is empty.
   if [ -z "$VERSION" ]; then
