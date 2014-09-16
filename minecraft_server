@@ -353,11 +353,9 @@ serverRunning() {
 # @param 2 The command to send.
 # ---------------------------------------------------------------------------
 sendCommand() {
-  local COMMAND
-  COMMAND=$(echo "$2" | $PERL -e '
+  echo "$2" | $PERL -e '
     while (<>) { $_ =~ s/[\r\n]+//g; $cmd .= $_; } print "$cmd\r";
-  ')
-  echo "$COMMAND" >> $WORLDS_LOCATION/$1/console.in
+  ' >> $WORLDS_LOCATION/$1/console.in
 }
 
 # ---------------------------------------------------------------------------
