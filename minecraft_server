@@ -127,6 +127,12 @@ Options:
 EOF
 )
 
+# Override Global Variables
+# ---------------------------------------------------------------------------
+# Override global variables below by adding them to the specified file.  If
+# the file does not exist, the default values below will be used.
+MSCS_DEFAULTS="/etc/default/minecraft_server"
+
 
 # User Account & Server Location
 # ---------------------------------------------------------------------------
@@ -1666,6 +1672,10 @@ worldStatus() {
 # Begin.
 # ---------------------------------------------------------------------------
 
+# Override the default values if the default file exists.
+if [ -f "$MSCS_DEFAULTS" ]; then
+  . $MSCS_DEFAULTS
+fi
 
 # Make sure that Java, Perl, Python, Rsync, and GNU Wget are installed.
 if [ ! -e "$JAVA" ]; then
