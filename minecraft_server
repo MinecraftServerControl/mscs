@@ -287,6 +287,7 @@ MIRROR_PATH="/dev/shm/minecraft"
 # ---------------------------------------------------------------------------
 
 OVERVIEWER_BIN=$(which overviewer.py)
+OVERVIEWER_URL="http://overviewer.org"
 MAPS_URL="http://minecraft.server.com/maps"
 MAPS_LOCATION="$LOCATION/maps"
 
@@ -1296,7 +1297,29 @@ overviewer() {
   SERVER_RUNNING=$(serverRunning $1)
   # Announce the mapping of the world to players.
   if [ $SERVER_RUNNING -eq 1 ]; then
-    sendCommand $1 "say The world is about to be mapped with Minecraft Overviewer."
+    if [ $(compareMinecraftVersions $(getServerVersion $1) 1.7) -ge 0 ]; then
+        sendCommand $WORLD 'tellraw @a {
+          "text" : "",
+          "extra" : [
+            {
+              "text" : "[Server] The world is about to be mapped with "
+            },
+            {
+              "text" : "Overviewer",
+              "color" : "aqua",
+              "clickEvent" : {
+                "action" : "open_url",
+                "value" : "'$OVERVIEWER_URL'"
+              }
+            },
+            {
+              "text" : "."
+            }
+          ]
+        }'
+    else
+      sendCommand $1 "say The world is about to be mapped with Overviewer."
+    fi
     sendCommand $1 "save-all"
     sendCommand $1 "save-off"
     sleep 20
