@@ -286,6 +286,14 @@ Make sure you check `server-port` and `query.port` in `server.properties` to mak
 
 ## Server Customization
 
+The default values in the script can be overwritten by modifying the
+`/etc/default/minecraft_server` file.
+
+For example, to modify the default MAPS_URL variable, add the following line
+to the file:
+
+    MAPS_URL="http://server.com/minecraft/maps"
+
 The server settings for each world can be customized by adding certain
 key/value pairs to the world's `server.properties` file.
 
