@@ -354,7 +354,9 @@ serverRunning() {
 # ---------------------------------------------------------------------------
 sendCommand() {
   local COMMAND
-  COMMAND=$(printf "$2\r")
+  COMMAND=$(echo "$2" | $PERL -e '
+    while (<>) { $_ =~ s/[\r\n]+//g; $cmd .= $_; } print "$cmd\r";
+  ')
   echo "$COMMAND" >> $WORLDS_LOCATION/$1/console.in
 }
 
