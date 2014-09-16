@@ -377,19 +377,6 @@ listContains() {
 }
 
 # ---------------------------------------------------------------------------
-# Remove unquoted spaces from a string.
-#
-# @param 1 The string to remove spaces from.
-# @return The string with unquoted spaces removed.
-# ---------------------------------------------------------------------------
-removeUnquotedSpace() {
-  echo "$1" | $PERL -ne '
-    $_ =~ s/[\r\n]+//g;
-    print map { s/\s+// unless /"/; $_; } split /("[^"]*")/, $_;
-  '
-}
-
-# ---------------------------------------------------------------------------
 # Create a world.
 #
 # @param 1 The world server to create.
