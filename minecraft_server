@@ -1294,7 +1294,7 @@ updateServerSoftware() {
 # @param 1 The world server to map with Overviewer.
 # ---------------------------------------------------------------------------
 overviewer() {
-  local JSON SERVER_RUNNING
+  local SERVER_RUNNING
   SERVER_RUNNING=$(serverRunning $1)
   # Announce the mapping of the world to players.
   if [ $SERVER_RUNNING -eq 1 ]; then
