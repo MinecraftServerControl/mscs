@@ -377,6 +377,20 @@ listContains() {
 }
 
 # ---------------------------------------------------------------------------
+# Compare two datetime strings.
+#
+# @param 1 The first datetime string.
+# @param 2 The second datetime string.
+# @return The result of the comparison: -1, 0, 1.
+# ---------------------------------------------------------------------------
+compareTime() {
+  local T1 T2
+  T1=$(date --date="$1" +%s)
+  T2=$(date --date="$2" +%s)
+  echo $(($T1 < $T2 ? -1 : $T1 > $T2 ? 1 : 0))
+}
+
+# ---------------------------------------------------------------------------
 # Create a world.
 #
 # @param 1 The world server to create.
