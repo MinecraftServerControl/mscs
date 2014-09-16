@@ -607,10 +607,10 @@ getMinecraftVersionReleaseTime() {
   cat $VERSIONS_JSON | $PERL -e '
     $id = null;
     while (<>) {
-      if ($_ =~ /('$1')/) {
+      if ($_ =~ /\"id\":\s+\"('$1')\"/) {
         $id = $1;
       }
-      elsif ($id != null && $_ =~ /releaseTime\":\s+\"([\w:+-]+)\"/) {
+      elsif ($id != null && $_ =~ /\"releaseTime\":\s+\"([\w:+-]+)\"/) {
         print $1;
         last;
       }
