@@ -626,7 +626,10 @@ getMinecraftVersionReleaseTime() {
 # @return The result of the comparison: -1, 0, 1.
 # ---------------------------------------------------------------------------
 compareTime() {
-  $PERL -e 'use Date::Parse; print str2time("'$1'") <=> str2time("'$2'")'
+  local T1 T2
+  T1=$(date --date="$1" +%s)
+  T2=$(date --date="$2" +%s)
+  echo $(($T1 < $T2 ? -1 : $T1 > $T2 ? 1 : 0))
 }
 
 # ---------------------------------------------------------------------------
