@@ -238,6 +238,8 @@ WORLDS_LOCATION="$LOCATION/worlds"
 # The location to store disabled world server files.
 DISABLED_WORLDS_LOCATION="$LOCATION/worlds-disabled"
 
+# The location to store the versions.json file.
+VERSIONS_JSON="$DEFAULT_SERVER_LOCATION/versions.json"
 
 # Backup Configuration
 # ---------------------------------------------------------------------------
@@ -352,7 +354,9 @@ serverRunning() {
 # ---------------------------------------------------------------------------
 sendCommand() {
   local COMMAND
-  COMMAND=$(printf "$2\r")
+  COMMAND=$(echo "$2" | $PERL -e '
+    while (<>) { $_ =~ s/[\r\n]+//g; $cmd .= $_; } print "$cmd\r";
+  ')
   echo "$COMMAND" >> $WORLDS_LOCATION/$1/console.in
 }
 
@@ -372,6 +376,34 @@ listContains() {
     fi
   done
   echo $MATCH
+}
+
+# ---------------------------------------------------------------------------
+# Compare two datetime strings.
+#
+# @param 1 The first datetime string.
+# @param 2 The second datetime string.
+# @return The result of the comparison: -1, 0, 1.
+# ---------------------------------------------------------------------------
+compareTime() {
+  local T1 T2
+  T1=$(date --date="$1" +%s)
+  T2=$(date --date="$2" +%s)
+  echo $(($T1 < $T2 ? -1 : $T1 > $T2 ? 1 : 0))
+}
+
+# ---------------------------------------------------------------------------
+# Compare two Minecraft version numbers.
+#
+# @param 1 The first Minecraft version number.
+# @param 2 The second Minecraft version number.
+# @return The result of the comparison: -1, 0, 1.
+# ---------------------------------------------------------------------------
+compareMinecraftVersions() {
+  local T1 T2
+  T1=$(getMinecraftVersionReleaseTime "$1")
+  T2=$(getMinecraftVersionReleaseTime "$2")
+  compareTime "$T1" "$T2"
 }
 
 # ---------------------------------------------------------------------------
@@ -544,27 +576,26 @@ setPropertiesValue() {
 # @return The current Minecraft version number.
 # ---------------------------------------------------------------------------
 getCurrentMinecraftVersion() {
-  local JSON VERSION VERSIONS_DURATION TYPE
-  JSON="$DEFAULT_SERVER_LOCATION/versions.json"
+  local VERSION VERSIONS_DURATION TYPE
   # Make sure the server software directory exists.
   execute "mkdir -p $DEFAULT_SERVER_LOCATION" $USER_NAME
   # Determine the version type for the current world.
   TYPE=$(getPropertiesValue "$1" "mscs-version-type" "$DEFAULT_VERSION_TYPE")
   # The timeout (in minutes) for the versions.json cache.
   VERSIONS_DURATION=1440
-  if [ -s $JSON ]; then
+  if [ -s $VERSIONS_JSON ]; then
     # Make a backup copy of the versions.json file.
-    execute "cp $JSON $JSON.bak" $USER_NAME
+    execute "cp $VERSIONS_JSON $VERSIONS_JSON.bak" $USER_NAME
     # Delete the versions.json file if it is old.
-    execute "find $JSON -mmin +$VERSIONS_DURATION -delete" $USER_NAME
+    execute "find $VERSIONS_JSON -mmin +$VERSIONS_DURATION -delete" $USER_NAME
   fi
   # Download the versions.json file if it does not exist.
-  if [ ! -s $JSON ]; then
-    execute "$WGET -qO \"$JSON\" \"$MINECRAFT_VERSIONS_URL\"" $USER_NAME
+  if [ ! -s $VERSIONS_JSON ]; then
+    execute "$WGET -qO \"$VERSIONS_JSON\" \"$MINECRAFT_VERSIONS_URL\"" $USER_NAME
     if [ $? -ne 0 ]; then
-      if [ -s $JSON.bak ]; then
+      if [ -s $VERSIONS_JSON.bak ]; then
         printf "Error downloading the Minecraft versions.json file, using an old copy.\n"
-        execute "cp $JSON.bak $JSON" $USER_NAME
+        execute "cp $VERSIONS_JSON.bak $VERSIONS_JSON" $USER_NAME
       else
         printf "Error downloading the Minecraft versions.json file.\n"
         exit 1
@@ -573,7 +604,7 @@ getCurrentMinecraftVersion() {
   fi
   # Extract the current version information.
   VERSION=$(
-    $PERL -ne 'if ($_ =~ /^\s+\"'$TYPE'\": \"([\w\.-]+)\"/) { print $1; }' $JSON
+    $PERL -ne 'if ($_ =~ /^\s+\"'$TYPE'\": \"([\w\.-]+)\"/) { print $1; }' $VERSIONS_JSON
   )
   # Print an error and exit if the version string is empty.
   if [ -z "$VERSION" ]; then
@@ -581,6 +612,27 @@ getCurrentMinecraftVersion() {
     exit 1
   fi
   echo "$VERSION"
+}
+
+# ---------------------------------------------------------------------------
+# Get the release time of the Minecraft version number.
+#
+# @param 1 The Minecraft version number.
+# @return The release time of the Minecraft version number.
+# ---------------------------------------------------------------------------
+getMinecraftVersionReleaseTime() {
+  cat $VERSIONS_JSON | $PERL -e '
+    $id = null;
+    while (<>) {
+      if ($_ =~ /\"id\":\s+\"('$1')\"/) {
+        $id = $1;
+      }
+      elsif ($id != null && $_ =~ /\"releaseTime\":\s+\"([\w:+-]+)\"/) {
+        print $1;
+        last;
+      }
+    }
+  '
 }
 
 # ---------------------------------------------------------------------------
@@ -1242,6 +1294,17 @@ updateServerSoftware() {
 # @param 1 The world server to map with Overviewer.
 # ---------------------------------------------------------------------------
 overviewer() {
+  local SERVER_RUNNING
+  SERVER_RUNNING=$(serverRunning $1)
+  # Announce the mapping of the world to players.
+  if [ $SERVER_RUNNING -eq 1 ]; then
+    sendCommand $1 "say The world is about to be mapped with Minecraft Overviewer."
+    sendCommand $1 "save-all"
+    sendCommand $1 "save-off"
+    sleep 20
+  fi
+  # Run a backup of the world.
+  worldBackup $1
   # Make sure the maps directory exists.
   execute "mkdir -p $MAPS_LOCATION/$1" $USER_NAME
   # Make sure the Minecraft client is available.
@@ -1256,6 +1319,34 @@ overviewer() {
     else
       # Generate map with default settings.
       execute "$OVERVIEWER_BIN --rendermodes=normal,lighting,cave --processes 1 $WORLDS_LOCATION/$1/$1 $MAPS_LOCATION/$1" $USER_NAME > /dev/null 2>&1
+    fi
+  fi
+  # Announce the location to access the world map to players.
+  if [ $SERVER_RUNNING -eq 1 ]; then
+    sendCommand $1 "save-on"
+    if [ $(compareMinecraftVersions $(getServerVersion $1) 1.7) -ge 0 ]; then
+        sendCommand $WORLD 'tellraw @a {
+          "text" : "",
+          "extra" : [
+            {
+              "text" : "[Server] Mapping is complete. You can access the maps "
+            },
+            {
+              "text" : "here",
+              "color" : "aqua",
+              "clickEvent" : {
+                "action" : "open_url",
+                "value" : "'$MAPS_URL'/'$WORLD'"
+              }
+            },
+            {
+              "text" : "."
+            }
+          ]
+        }'
+    else
+        sendCommand $1 "say Mapping is complete.  You can access the maps at:"
+        sendCommand $1 "say $MAPS_URL/$WORLD"
     fi
   fi
 }
@@ -2026,20 +2117,7 @@ case "$1" in
     printf "Running Minecraft Overviewer mapping:"
     for WORLD in $WORLDS; do
       printf " $WORLD"
-      if [ $(serverRunning $WORLD) -eq 1 ]; then
-        sendCommand $WORLD "say The world is about to be mapped with Minecraft Overviewer."
-        sendCommand $WORLD "save-all"
-        sendCommand $WORLD "save-off"
-        sleep 20
-        worldBackup $WORLD
-        overviewer $WORLD
-        sendCommand $WORLD "save-on"
-        sendCommand $WORLD "say Mapping is complete.  You can access the maps at:"
-        sendCommand $WORLD "say $MAPS_URL/$WORLD"
-      else
-        worldBackup $WORLD
-        overviewer $WORLD
-      fi
+      overviewer "$WORLD"
     done
     printf ".\n"
   ;;
