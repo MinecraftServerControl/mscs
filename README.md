@@ -354,6 +354,11 @@ Use the latest CraftBukkit recommended build:
     mscs-initial-memory=128M
     mscs-maximum-memory=2048M
 
+Use the latest BungeeCord successful build:
+
+    mscs-server-jar=BungeeCord.jar
+    mscs-server-url=http://ci.md-5.net/job/BungeeCord/lastSuccessfulBuild/artifact/bootstrap/target/BungeeCord.jar
+
 
 ## License
 
