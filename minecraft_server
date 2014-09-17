@@ -1228,7 +1228,7 @@ worldBackup() {
 # @param 1 The world to update.
 # ---------------------------------------------------------------------------
 updateClientSoftware() {
-  local CLIENT_JAR CLIENT_LOCATION CLIENT_URL
+  local CLIENT_DURATION CLIENT_JAR CLIENT_LOCATION CLIENT_URL
   CLIENT_JAR=$(getClientJar "$1")
   if [ $? -ne 0 ]; then
     printf "$CLIENT_JAR\n"
@@ -1246,7 +1246,11 @@ updateClientSoftware() {
   fi
   # Make sure the client software directory exists.
   execute "mkdir -p $CLIENT_LOCATION" $USER_NAME
-  if [ ! -e "$CLIENT_LOCATION/$CLIENT_JAR" ]; then
+  # The timeout (in minutes) for the client jar file.
+  CLIENT_DURATION=1440
+  # Delete the client jar file if it is old.
+  execute "find $CLIENT_LOCATION/$CLIENT_JAR -mmin +$CLIENT_DURATION -delete" $USER_NAME
+  if [ ! -s "$CLIENT_LOCATION/$CLIENT_JAR" ]; then
     # Download the Minecraft client software.
     execute "$WGET -qO \"$CLIENT_LOCATION/$CLIENT_JAR\" \"$CLIENT_URL\"" $USER_NAME
     # Report any errors.
