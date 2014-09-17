@@ -294,6 +294,14 @@ Make sure you check `server-port` and `query.port` in `server.properties` to mak
 
 ## Server Customization
 
+The default values in the script can be overwritten by modifying the
+`/etc/default/minecraft_server` file.
+
+For example, to modify the default MAPS_URL variable, add the following line
+to the file:
+
+    MAPS_URL="http://server.com/minecraft/maps"
+
 The server settings for each world can be customized by adding certain
 key/value pairs to the world's `server.properties` file.
 
@@ -353,6 +361,11 @@ Use the latest CraftBukkit recommended build:
     mscs-server-args=
     mscs-initial-memory=128M
     mscs-maximum-memory=2048M
+
+Use the latest BungeeCord successful build:
+
+    mscs-server-jar=BungeeCord.jar
+    mscs-server-url=http://ci.md-5.net/job/BungeeCord/lastSuccessfulBuild/artifact/bootstrap/target/BungeeCord.jar
 
 
 ## License
