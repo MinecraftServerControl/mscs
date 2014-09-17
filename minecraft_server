@@ -1263,7 +1263,7 @@ updateClientSoftware() {
 # @param 1 The world server to update.
 # ---------------------------------------------------------------------------
 updateServerSoftware() {
-  local SERVER_JAR SERVER_LOCATION SERVER_URL
+  local SERVER_DURATION SERVER_JAR SERVER_LOCATION SERVER_URL
   SERVER_JAR=$(getServerJar "$1")
   if [ $? -ne 0 ]; then
     printf "$SERVER_JAR\n"
@@ -1281,7 +1281,11 @@ updateServerSoftware() {
   fi
   # Make sure the server software directory exists.
   execute "mkdir -p $SERVER_LOCATION" $USER_NAME
-  if [ ! -e "$SERVER_LOCATION/$SERVER_JAR" ]; then
+  # The timeout (in minutes) for the server jar file.
+  SERVER_DURATION=1440
+  # Delete the server jar file if it is old.
+  execute "find $SERVER_LOCATION/$SERVER_JAR -mmin +$SERVER_DURATION -delete" $USER_NAME
+  if [ ! -s "$SERVER_LOCATION/$SERVER_JAR" ]; then
     # Download the Minecraft server software.
     execute "$WGET -qO \"$SERVER_LOCATION/$SERVER_JAR\" \"$SERVER_URL\"" $USER_NAME
     # Report any errors.
