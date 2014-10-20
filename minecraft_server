@@ -316,7 +316,7 @@ execute() {
   if [ $(id -u) -eq 0 ]; then
     # Script is running as root, switch user and execute
     # the command.
-    su -c "$1" $2
+    su -s /bin/sh -c "$1" $2
   else
     # Script is running as a user, just execute the command.
     sh -c "$1"
