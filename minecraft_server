@@ -1487,32 +1487,6 @@ querySendChallengePacket() {
 }
 
 # ---------------------------------------------------------------------------
-# Send an information request packet to the Minecraft query server.
-#
-# @param 1 The world server of interest.
-# @param 2 The challenge token.
-# @return Tab separated values:
-#           type       - The packet type.
-#           id         - The packet identifier.
-#           MOTD       - The world's message of the day.
-#           gametype   - The world's game type, hardcoded to 'SMP'.
-#           map        - The world's name.
-#           numplayers - The world's current number of players.
-#           maxplayers - The world's maximum number of players.
-#           hostport   - The world's host port.
-#           hostip     - The world's host IP address.
-# ---------------------------------------------------------------------------
-querySendInformationPacket() {
-  local PACKET RESPONSE
-  # Use the challenge token for the packet.
-  PACKET=$(printf "%.8x" $2)
-  # Send the information request packet to the Minecraft query server.
-  RESPONSE=$(querySendPacket "$1" "00" "$PACKET" "Cl>Z*Z*Z*Z*Z*s<Z*")
-  # Return the response.
-  printf "$RESPONSE\n"
-}
-
-# ---------------------------------------------------------------------------
 # Send a status query to the Minecraft query server.
 #
 # @param 1 The world server of interest.
@@ -1528,13 +1502,15 @@ querySendInformationPacket() {
 #           hostip     - The host's IP address.
 # ---------------------------------------------------------------------------
 queryStatus() {
-  local TOKEN RESPONSE
+  local PACKET RESPONSE TOKEN
   if [ "$(getPropertiesValue $1 'enable-query')" = "true" ]; then
     # Send a challenge packet to the Minecraft query server.
     TOKEN=$(querySendChallengePacket $1 | cut -f 3)
     if [ -n "$TOKEN" ]; then
-      # Send an information request packet to the Minecraft query server.
-      RESPONSE=$(querySendInformationPacket $1 $TOKEN)
+      # Use the challenge token for the packet.
+      PACKET=$(printf "%.8x" $TOKEN)
+      # Send the information request packet to the Minecraft query server.
+      RESPONSE=$(querySendPacket "$1" "00" "$PACKET" "Cl>Z*Z*Z*Z*Z*s<Z*")
     fi
   fi
   # Return the response.
