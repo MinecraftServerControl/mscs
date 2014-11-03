@@ -1426,20 +1426,21 @@ queryStart() {
 #
 # @param 1 The world server of interest.
 # @param 2 The packet type.
-# @param 3 The packet ID.
-# @param 4 The packet payload.
-# @param 5 The response format.
+# @param 3 The packet payload.
+# @param 4 The response format.
 # @return The response from the Query server in the requested format.
 # ---------------------------------------------------------------------------
 querySendPacket() {
-  local PACKET RESPONSE WORLD_DIR
+  local ID PACKET RESPONSE WORLD_DIR
+  # The packet identifier.
+  ID="00000001"
   # The world's directory.
   WORLD_DIR="$WORLDS_LOCATION/$1"
   # Make sure the query.in and query.out buffer files exist before
   # preparing and sending the packet to the Query server.
   if [ -e $WORLD_DIR/query.in ] && [ -e $WORLD_DIR/query.out ]; then
     # Add the magic bytes to the incoming packet.
-    PACKET=$(printf "FEFD%s%s%s" "$2" "$3" "$4")
+    PACKET=$(printf "FEFD%s%s%s" "$2" "$ID" "$3")
     # Remove any old responses from the query.out buffer file.
     execute "printf '' > $WORLD_DIR/query.out" $USER_NAME
     # Pack the hex string packet and write it to the query.in buffer file.
@@ -1453,7 +1454,7 @@ querySendPacket() {
     # find the start of the packet by searching for the packet type and ID.
     RESPONSE=$($PERL -ne '
       $hex .= sprintf "%.2x", $_ foreach (unpack "C*", $_);
-      $hex =~ s/^0*'$2$3'/'$2$3'/;
+      $hex =~ s/^0*'$2$ID'/'$2$ID'/;
       print $hex;
     ' $WORLD_DIR/query.out)
   fi
@@ -1461,7 +1462,7 @@ querySendPacket() {
     # Return the response in the format requested.
     $PERL -e '
       $packed = join "", map { pack ("C", hex($_)) } ("'$RESPONSE'" =~ /(..)/g);
-      printf "%s\n", join "\t", unpack ("'$5'", $packed);
+      printf "%s\n", join "\t", unpack ("'$4'", $packed);
     '
   fi
 }
@@ -1476,13 +1477,11 @@ querySendPacket() {
 #           token      - The token.
 # ---------------------------------------------------------------------------
 querySendChallengePacket() {
-  local ID PACKET RESPONSE
-  # The packet identifier.
-  ID="00000001"
+  local PACKET RESPONSE
   # Use an empty packet.
   PACKET="00000000"
   # Send the challenge packet to the Minecraft query server.
-  RESPONSE=$(querySendPacket "$1" "09" "$ID" "$PACKET" "Cl>Z*")
+  RESPONSE=$(querySendPacket "$1" "09" "$PACKET" "Cl>Z*")
   # Return the response.
   printf "$RESPONSE\n"
 }
@@ -1504,13 +1503,11 @@ querySendChallengePacket() {
 #           hostip     - The world's host IP address.
 # ---------------------------------------------------------------------------
 querySendInformationPacket() {
-  local ID PACKET RESPONSE
-  # The packet identifier.
-  ID="00000001"
+  local PACKET RESPONSE
   # Use the challenge token for the packet.
   PACKET=$(printf "%.8x" $2)
   # Send the information request packet to the Minecraft query server.
-  RESPONSE=$(querySendPacket "$1" "00" "$ID" "$PACKET" "Cl>Z*Z*Z*Z*Z*s<Z*")
+  RESPONSE=$(querySendPacket "$1" "00" "$PACKET" "Cl>Z*Z*Z*Z*Z*s<Z*")
   # Return the response.
   printf "$RESPONSE\n"
 }
@@ -1559,7 +1556,7 @@ querySendDetailedInformationPacket() {
   # Use the challenge token for the packet, with the ID on the end.
   PACKET=$(printf "%.8x%s" $2 $ID)
   # Send the information request packet to the Minecraft query server.
-  RESPONSE=$(querySendPacket "$1" "00" "$ID" "$PACKET" \
+  RESPONSE=$(querySendPacket "$1" "00" "$PACKET" \
     "Cl>Z*CCZ*Z*Z*Z*Z*Z*Z*Z*Z*Z*Z*Z*Z*Z*Z*Z*Z*Z*Z*Z*CCZ*C(Z*)*")
   # Return the response.
   printf "$RESPONSE\n"
