@@ -330,12 +330,9 @@ execute() {
 # @return The Java PID.
 # ---------------------------------------------------------------------------
 getJavaPID() {
-  local PID
-  PID=$(
-    ps -a -u $USER_NAME -o pid,comm,args |
-    $PERL -ne 'if ($_ =~ /^\s*(\d+)\s+java.+mscs-world='$1'$/) { print $1; }'
-  )
-  printf "%d\n" $PID
+  ps -a -u $USER_NAME -o pid,comm,args | $PERL -ne '
+    if ($_ =~ /^\s*(\d+)\s+java.+mscs-world='$1'$/) { printf "%d\n", $1; }
+  '
 }
 
 # ---------------------------------------------------------------------------
@@ -647,22 +644,19 @@ getMinecraftVersionReleaseTime() {
 # @return CLIENT_VERSION
 # ---------------------------------------------------------------------------
 getClientVersion() {
-  local CURRENT_VERSION CLIENT_VERSION
+  local CURRENT_VERSION
   CURRENT_VERSION=$(getCurrentMinecraftVersion "$1")
   if [ $? -ne 0 ]; then
     printf "$CURRENT_VERSION\n"
     exit 1
   fi
   # Get the client version, use the default version if not provided.
-  CLIENT_VERSION=$(
-    getPropertiesValue "$1" "mscs-client-version" "$DEFAULT_CLIENT_VERSION" |
-    $PERL -ne '
-      $current_version="'$CURRENT_VERSION'";
-      $_ =~ s/\$CURRENT_VERSION/$current_version/g;
-      print;
-    '
-  )
-  echo "$CLIENT_VERSION"
+  getPropertiesValue "$1" "mscs-client-version" "$DEFAULT_CLIENT_VERSION" |
+  $PERL -ne '
+    $current_version="'$CURRENT_VERSION'";
+    $_ =~ s/\$CURRENT_VERSION/$current_version/g;
+    print;
+  '
 }
 
 # ---------------------------------------------------------------------------
@@ -672,7 +666,7 @@ getClientVersion() {
 # @return CLIENT_JAR
 # ---------------------------------------------------------------------------
 getClientJar() {
-  local CURRENT_VERSION CLIENT_VERSION CLIENT_JAR
+  local CURRENT_VERSION CLIENT_VERSION
   CURRENT_VERSION=$(getCurrentMinecraftVersion "$1")
   if [ $? -ne 0 ]; then
     printf "$CURRENT_VERSION\n"
@@ -684,17 +678,14 @@ getClientJar() {
     exit 1
   fi
   # Get the client jar, use the default value if not provided.
-  CLIENT_JAR=$(
-    getPropertiesValue "$1" "mscs-client-jar" "$DEFAULT_CLIENT_JAR" |
-    $PERL -ne '
-      $current_version="'$CURRENT_VERSION'";
-      $client_version="'$CLIENT_VERSION'";
-      $_ =~ s/\$CURRENT_VERSION/$current_version/g;
-      $_ =~ s/\$CLIENT_VERSION/$client_version/g;
-      print;
-    '
-  )
-  echo "$CLIENT_JAR"
+  getPropertiesValue "$1" "mscs-client-jar" "$DEFAULT_CLIENT_JAR" |
+  $PERL -ne '
+    $current_version="'$CURRENT_VERSION'";
+    $client_version="'$CLIENT_VERSION'";
+    $_ =~ s/\$CURRENT_VERSION/$current_version/g;
+    $_ =~ s/\$CLIENT_VERSION/$client_version/g;
+    print;
+  '
 }
 
 # ---------------------------------------------------------------------------
@@ -704,7 +695,7 @@ getClientJar() {
 # @return CLIENT_LOCATION
 # ---------------------------------------------------------------------------
 getClientLocation() {
-  local CURRENT_VERSION CLIENT_VERSION CLIENT_LOCATION
+  local CURRENT_VERSION CLIENT_VERSION
   CURRENT_VERSION=$(getCurrentMinecraftVersion "$1")
   if [ $? -ne 0 ]; then
     printf "$CURRENT_VERSION\n"
@@ -716,17 +707,14 @@ getClientLocation() {
     exit 1
   fi
   # Get the client location, use the default value if not provided.
-  CLIENT_LOCATION=$(
-    getPropertiesValue "$1" "mscs-client-location" "$DEFAULT_CLIENT_LOCATION" |
-    $PERL -ne '
-      $current_version="'$CURRENT_VERSION'";
-      $client_version="'$CLIENT_VERSION'";
-      $_ =~ s/\$CURRENT_VERSION/$current_version/g;
-      $_ =~ s/\$CLIENT_VERSION/$client_version/g;
-      print;
-    '
-  )
-  echo "$CLIENT_LOCATION"
+  getPropertiesValue "$1" "mscs-client-location" "$DEFAULT_CLIENT_LOCATION" |
+  $PERL -ne '
+    $current_version="'$CURRENT_VERSION'";
+    $client_version="'$CLIENT_VERSION'";
+    $_ =~ s/\$CURRENT_VERSION/$current_version/g;
+    $_ =~ s/\$CLIENT_VERSION/$client_version/g;
+    print;
+  '
 }
 
 # ---------------------------------------------------------------------------
@@ -736,7 +724,7 @@ getClientLocation() {
 # @return CLIENT_URL
 # ---------------------------------------------------------------------------
 getClientURL() {
-  local CURRENT_VERSION CLIENT_VERSION CLIENT_URL
+  local CURRENT_VERSION CLIENT_VERSION
   CURRENT_VERSION=$(getCurrentMinecraftVersion "$1")
   if [ $? -ne 0 ]; then
     printf "$CURRENT_VERSION\n"
@@ -748,18 +736,15 @@ getClientURL() {
     exit 1
   fi
   # Get the client download URL, use the default value if not provided.
-  CLIENT_URL=$(
-    getPropertiesValue "$1" "mscs-client-url" "$DEFAULT_CLIENT_URL" |
-    $PERL -ne '
-      $current_version="'$CURRENT_VERSION'";
-      $client_version="'$CLIENT_VERSION'";
-      $_ =~ s/\$CURRENT_VERSION/$current_version/g;
-      $_ =~ s/\$CLIENT_VERSION/$client_version/g;
-      $_ =~ s/\\\:/\:/g;
-      print;
-    '
-  )
-  echo "$CLIENT_URL"
+  getPropertiesValue "$1" "mscs-client-url" "$DEFAULT_CLIENT_URL" |
+  $PERL -ne '
+    $current_version="'$CURRENT_VERSION'";
+    $client_version="'$CLIENT_VERSION'";
+    $_ =~ s/\$CURRENT_VERSION/$current_version/g;
+    $_ =~ s/\$CLIENT_VERSION/$client_version/g;
+    $_ =~ s/\\\:/\:/g;
+    print;
+  '
 }
 
 # ---------------------------------------------------------------------------
@@ -769,22 +754,19 @@ getClientURL() {
 # @return SERVER_VERSION
 # ---------------------------------------------------------------------------
 getServerVersion() {
-  local CURRENT_VERSION SERVER_VERSION
+  local CURRENT_VERSION
   CURRENT_VERSION=$(getCurrentMinecraftVersion "$1")
   if [ $? -ne 0 ]; then
     printf "$CURRENT_VERSION\n"
     exit 1
   fi
   # Get the server version, use the default version if not provided.
-  SERVER_VERSION=$(
-    getPropertiesValue "$1" "mscs-server-version" "$DEFAULT_SERVER_VERSION" |
-    $PERL -ne '
-      $current_version="'$CURRENT_VERSION'";
-      $_ =~ s/\$CURRENT_VERSION/$current_version/g;
-      print;
-    '
-  )
-  echo "$SERVER_VERSION"
+  getPropertiesValue "$1" "mscs-server-version" "$DEFAULT_SERVER_VERSION" |
+  $PERL -ne '
+    $current_version="'$CURRENT_VERSION'";
+    $_ =~ s/\$CURRENT_VERSION/$current_version/g;
+    print;
+  '
 }
 
 # ---------------------------------------------------------------------------
@@ -806,17 +788,14 @@ getServerJar() {
     exit 1
   fi
   # Get the server jar, use the default value if not provided.
-  SERVER_JAR=$(
-    getPropertiesValue "$1" "mscs-server-jar" "$DEFAULT_SERVER_JAR" |
-    $PERL -ne '
-      $current_version="'$CURRENT_VERSION'";
-      $server_version="'$SERVER_VERSION'";
-      $_ =~ s/\$CURRENT_VERSION/$current_version/g;
-      $_ =~ s/\$SERVER_VERSION/$server_version/g;
-      print;
-    '
-  )
-  echo "$SERVER_JAR"
+  getPropertiesValue "$1" "mscs-server-jar" "$DEFAULT_SERVER_JAR" |
+  $PERL -ne '
+    $current_version="'$CURRENT_VERSION'";
+    $server_version="'$SERVER_VERSION'";
+    $_ =~ s/\$CURRENT_VERSION/$current_version/g;
+    $_ =~ s/\$SERVER_VERSION/$server_version/g;
+    print;
+  '
 }
 
 # ---------------------------------------------------------------------------
@@ -826,7 +805,7 @@ getServerJar() {
 # @return SERVER_LOCATION
 # ---------------------------------------------------------------------------
 getServerLocation() {
-  local CURRENT_VERSION SERVER_VERSION SERVER_LOCATION
+  local CURRENT_VERSION SERVER_VERSION
   CURRENT_VERSION=$(getCurrentMinecraftVersion "$1")
   if [ $? -ne 0 ]; then
     printf "$CURRENT_VERSION\n"
@@ -838,17 +817,14 @@ getServerLocation() {
     exit 1
   fi
   # Get the server location, use the default value if not provided.
-  SERVER_LOCATION=$(
-    getPropertiesValue "$1" "mscs-server-location" "$DEFAULT_SERVER_LOCATION" |
-    $PERL -ne '
-      $current_version="'$CURRENT_VERSION'";
-      $server_version="'$SERVER_VERSION'";
-      $_ =~ s/\$CURRENT_VERSION/$current_version/g;
-      $_ =~ s/\$SERVER_VERSION/$server_version/g;
-      print;
-    '
-  )
-  echo "$SERVER_LOCATION"
+  getPropertiesValue "$1" "mscs-server-location" "$DEFAULT_SERVER_LOCATION" |
+  $PERL -ne '
+    $current_version="'$CURRENT_VERSION'";
+    $server_version="'$SERVER_VERSION'";
+    $_ =~ s/\$CURRENT_VERSION/$current_version/g;
+    $_ =~ s/\$SERVER_VERSION/$server_version/g;
+    print;
+  '
 }
 
 # ---------------------------------------------------------------------------
@@ -858,7 +834,7 @@ getServerLocation() {
 # @return SERVER_URL
 # ---------------------------------------------------------------------------
 getServerURL() {
-  local CURRENT_VERSION SERVER_VERSION SERVER_URL
+  local CURRENT_VERSION SERVER_VERSION
   CURRENT_VERSION=$(getCurrentMinecraftVersion "$1")
   if [ $? -ne 0 ]; then
     printf "$CURRENT_VERSION\n"
@@ -870,18 +846,15 @@ getServerURL() {
     exit 1
   fi
   # Get the server download URL, use the default value if not provided.
-  SERVER_URL=$(
-    getPropertiesValue "$1" "mscs-server-url" "$DEFAULT_SERVER_URL" |
-    $PERL -ne '
-      $current_version="'$CURRENT_VERSION'";
-      $server_version="'$SERVER_VERSION'";
-      $_ =~ s/\$CURRENT_VERSION/$current_version/g;
-      $_ =~ s/\$SERVER_VERSION/$server_version/g;
-      $_ =~ s/\\\:/\:/g;
-      print;
-    '
-  )
-  echo "$SERVER_URL"
+  getPropertiesValue "$1" "mscs-server-url" "$DEFAULT_SERVER_URL" |
+  $PERL -ne '
+    $current_version="'$CURRENT_VERSION'";
+    $server_version="'$SERVER_VERSION'";
+    $_ =~ s/\$CURRENT_VERSION/$current_version/g;
+    $_ =~ s/\$SERVER_VERSION/$server_version/g;
+    $_ =~ s/\\\:/\:/g;
+    print;
+  '
 }
 
 # ---------------------------------------------------------------------------
@@ -892,7 +865,7 @@ getServerURL() {
 # ---------------------------------------------------------------------------
 getServerCommand() {
   local CURRENT_VERSION SERVER_VERSION SERVER_JAR SERVER_LOCATION
-  local SERVER_ARGS INITIAL_MEMORY MAXIMUM_MEMORY SERVER_COMMAND
+  local SERVER_ARGS INITIAL_MEMORY MAXIMUM_MEMORY
   CURRENT_VERSION=$(getCurrentMinecraftVersion "$1")
   if [ $? -ne 0 ]; then
     printf "$CURRENT_VERSION\n"
@@ -926,29 +899,26 @@ getServerCommand() {
     getPropertiesValue "$1" "mscs-maximum-memory" "$DEFAULT_MAXIMUM_MEMORY"
   )
   # Get the server command, use the default value if not provided.
-  SERVER_COMMAND=$(
-    getPropertiesValue "$1" "mscs-server-command" "$DEFAULT_SERVER_COMMAND" |
-    $PERL -ne '
-      $java = "'$JAVA'";
-      $current_version="'$CURRENT_VERSION'";
-      $server_version="'$SERVER_VERSION'";
-      $server_jar = "'$SERVER_JAR'";
-      $server_location = "'$SERVER_LOCATION'";
-      $server_args = "'$SERVER_ARGS'";
-      $initial_memory = "'$INITIAL_MEMORY'";
-      $maximum_memory = "'$MAXIMUM_MEMORY'";
-      $_ =~ s/\$JAVA/$java/g;
-      $_ =~ s/\$CURRENT_VERSION/$current_version/g;
-      $_ =~ s/\$SERVER_VERSION/$server_version/g;
-      $_ =~ s/\$SERVER_JAR/$server_jar/g;
-      $_ =~ s/\$SERVER_LOCATION/$server_location/g;
-      $_ =~ s/\$SERVER_ARGS/$server_args/g;
-      $_ =~ s/\$INITIAL_MEMORY/$initial_memory/g;
-      $_ =~ s/\$MAXIMUM_MEMORY/$maximum_memory/g;
-      print;
-    '
-  )
-  echo "$SERVER_COMMAND"
+  getPropertiesValue "$1" "mscs-server-command" "$DEFAULT_SERVER_COMMAND" |
+  $PERL -ne '
+    $java = "'$JAVA'";
+    $current_version="'$CURRENT_VERSION'";
+    $server_version="'$SERVER_VERSION'";
+    $server_jar = "'$SERVER_JAR'";
+    $server_location = "'$SERVER_LOCATION'";
+    $server_args = "'$SERVER_ARGS'";
+    $initial_memory = "'$INITIAL_MEMORY'";
+    $maximum_memory = "'$MAXIMUM_MEMORY'";
+    $_ =~ s/\$JAVA/$java/g;
+    $_ =~ s/\$CURRENT_VERSION/$current_version/g;
+    $_ =~ s/\$SERVER_VERSION/$server_version/g;
+    $_ =~ s/\$SERVER_JAR/$server_jar/g;
+    $_ =~ s/\$SERVER_LOCATION/$server_location/g;
+    $_ =~ s/\$SERVER_ARGS/$server_args/g;
+    $_ =~ s/\$INITIAL_MEMORY/$initial_memory/g;
+    $_ =~ s/\$MAXIMUM_MEMORY/$maximum_memory/g;
+    print;
+  '
 }
 
 # ---------------------------------------------------------------------------
