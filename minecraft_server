@@ -116,6 +116,12 @@ Options:
   backup <world>
     Backup the Minecraft world.  Backup all worlds by default.
 
+  list-backups <world>
+    List the datetime of the backups for the world.
+
+  restore-backup <world> <datetime>
+    Restore a backup for a world that was taken at the datetime.
+
   map <world>
     Run the Minecraft Overviewer mapping software on the Minecraft world.
     Map all worlds by default.
@@ -1174,9 +1180,45 @@ worldBackup() {
   execute "mkdir -p $BACKUP_LOCATION" $USER_NAME
   # Create the backup.
   execute "$RDIFF_BACKUP -v5 --print-statistics $WORLDS_LOCATION/$1 $BACKUP_LOCATION/$1 >> $BACKUP_LOG" $USER_NAME
+  # Set the permissions for the backup location.
+  execute "chmod a+rX -R $BACKUP_LOCATION" $USER_NAME
   # Cleanup old backups.
   if [ $BACKUP_DURATION -gt 0 ]; then
     execute "$RDIFF_BACKUP --remove-older-than ${BACKUP_DURATION}D --force $BACKUP_LOCATION/$1 >> $BACKUP_LOG" $USER_NAME
+  fi
+}
+
+# ---------------------------------------------------------------------------
+# List the backups for the world server.
+#
+# @param 1 The world server of interest.
+# ---------------------------------------------------------------------------
+worldBackupList() {
+  if [ -d $BACKUP_LOCATION/$1 ]; then
+    # Grab the list of backups for the world server.
+    $RDIFF_BACKUP -l $BACKUP_LOCATION/$1 |
+    $PERL -e '
+      foreach (reverse <>) {
+        # Search for a datetime format YYYY-MM-DDThh:mm:ssTZD.
+        # Datetime specification: http://www.w3.org/TR/NOTE-datetime
+        if ($_ =~ /(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}[+-]\d{2}:\d{2})/) {
+          print "$1\n";
+        }
+      }
+    '
+  fi
+}
+
+# ---------------------------------------------------------------------------
+# Restore a backup for the world server.
+#
+# @param 1 The world server of interest.
+# @param 2 The datetime of the backup to restore.
+# ---------------------------------------------------------------------------
+worldBackupRestore() {
+  if [ -d $BACKUP_LOCATION/$1 ]; then
+    worldBackup "$1"
+    execute "$RDIFF_BACKUP -r $2 $BACKUP_LOCATION/$1 $WORLDS_LOCATION/$1" $USER_NAME
   fi
 }
 
@@ -1973,6 +2015,32 @@ case "$1" in
       fi
     done
     printf ".\n"
+  ;;
+  list-backups)
+    if [ -n "$2" ] && [ $(listContains "$2" "$(getEnabledWorlds)") -eq 1 ]; then
+      worldBackupList "$2"
+    elif [ -n "$2" ]; then
+      printf "World '$2' not recognized.\n"
+      printf "  Usage:  $0 $1 <world>\n"
+      exit 1
+    else 
+      printf "World not supplied.\n"
+      printf "  Usage:  $0 $1 <world>\n"
+      exit 1
+    fi
+  ;;
+  restore-backup)
+    if [ -n "$2" ] && [ $(listContains "$2" "$(getEnabledWorlds)") -eq 1 ]; then
+      worldBackupRestore "$2" "$3"
+    elif [ -n "$2" ]; then
+      printf "World '$2' not recognized.\n"
+      printf "  Usage:  $0 $1 <world>\n"
+      exit 1
+    else 
+      printf "World not supplied.\n"
+      printf "  Usage:  $0 $1 <world>\n"
+      exit 1
+    fi
   ;;
   update)
     checkPermission
