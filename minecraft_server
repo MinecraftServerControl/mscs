@@ -977,18 +977,6 @@ checkPermission() {
 }
 
 # ---------------------------------------------------------------------------
-# Check to see if the user is in the ops.txt file of the specified world.
-#
-# @param 1 The world server of interest.
-# @param 2 The user being checked.
-# ---------------------------------------------------------------------------
-checkUserIsAdmin() {
-  local IS_ADMIN
-  IS_ADMIN=$(cat $WORLDS_LOCATION/$1/ops.txt | $PERL -ne 'if ($_ =~ /^'$2'$/i) { print "1"; }')
-  echo $IS_ADMIN
-}
-
-# ---------------------------------------------------------------------------
 # Remove old world log files and rotate log files from old servers (v < 1.7).
 #
 # @param 1 The world server generating the log to rotate.
