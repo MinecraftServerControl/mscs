@@ -1252,7 +1252,10 @@ updateClientSoftware() {
   # The timeout (in minutes) for the client jar file.
   CLIENT_DURATION=1440
   # Delete the client jar file if it is old.
-  execute "find $CLIENT_LOCATION/$CLIENT_JAR -mmin +$CLIENT_DURATION -delete" $USER_NAME
+  if [ -s "$CLIENT_LOCATION/$CLIENT_JAR" ]; then
+    execute "find $CLIENT_LOCATION/$CLIENT_JAR -mmin +$CLIENT_DURATION -delete" $USER_NAME
+  fi
+  # Download the client jar if it is missing.
   if [ ! -s "$CLIENT_LOCATION/$CLIENT_JAR" ]; then
     # Download the Minecraft client software.
     execute "$WGET -qO \"$CLIENT_LOCATION/$CLIENT_JAR\" \"$CLIENT_URL\"" $USER_NAME
@@ -1291,7 +1294,10 @@ updateServerSoftware() {
   # The timeout (in minutes) for the server jar file.
   SERVER_DURATION=1440
   # Delete the server jar file if it is old.
-  execute "find $SERVER_LOCATION/$SERVER_JAR -mmin +$SERVER_DURATION -delete" $USER_NAME
+  if [ -s "$SERVER_LOCATION/$SERVER_JAR" ]; then
+    execute "find $SERVER_LOCATION/$SERVER_JAR -mmin +$SERVER_DURATION -delete" $USER_NAME
+  fi
+  # Download the server jar if it is missing.
   if [ ! -s "$SERVER_LOCATION/$SERVER_JAR" ]; then
     # Download the Minecraft server software.
     execute "$WGET -qO \"$SERVER_LOCATION/$SERVER_JAR\" \"$SERVER_URL\"" $USER_NAME
