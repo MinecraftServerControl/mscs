@@ -336,9 +336,12 @@ execute() {
 # @return The Java PID.
 # ---------------------------------------------------------------------------
 getJavaPID() {
-  ps -a -u $USER_NAME -o pid,comm,args | $PERL -ne '
-    if ($_ =~ /^\s*(\d+)\s+java.+mscs-world='$1'$/) { printf "%d\n", $1; }
-  '
+  local PID
+  PID=$(
+    ps -a -u $USER_NAME -o pid,comm,args |
+    $PERL -ne 'if ($_ =~ /^\s*(\d+)\s+java.+mscs-world='$1'$/) { print $1; }'
+  )
+  printf "%d\n" $PID
 }
 
 # ---------------------------------------------------------------------------
