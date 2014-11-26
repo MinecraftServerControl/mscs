@@ -602,7 +602,7 @@ getCurrentMinecraftVersion() {
   fi
   # Download the versions.json file if it does not exist.
   if [ ! -s $VERSIONS_JSON ]; then
-    execute "$WGET -qO \"$VERSIONS_JSON\" \"$MINECRAFT_VERSIONS_URL\"" $USER_NAME
+    execute "$WGET --no-use-server-timestamps -qO \"$VERSIONS_JSON\" \"$MINECRAFT_VERSIONS_URL\"" $USER_NAME
     if [ $? -ne 0 ]; then
       if [ -s $VERSIONS_JSON.bak ]; then
         printf "Error downloading the Minecraft versions.json file, using an old copy.\n"
@@ -1120,6 +1120,11 @@ start() {
   if [ -d "/var/lock/subsys" ]; then
     touch /var/lock/subsys/minecraft_server
   fi
+  # Start server monitoring script if present
+  if [ -s $WORLD_DIR/server_monitor ]
+  then
+    execute "$WORLD_DIR/server_monitor start" $USER_NAME
+  fi
 }
 
 # ---------------------------------------------------------------------------
@@ -1154,6 +1159,11 @@ stop() {
     if [ $NUM -eq 0 ]; then
       rm -f /var/lock/subsys/minecraft_server
     fi
+  fi
+  # Stop server monitoring script if present
+  if [ -s $WORLD_DIR/server_monitor ]
+  then
+    execute "$WORLD_DIR/server_monitor stop" $USER_NAME
   fi
 }
 
@@ -1221,7 +1231,8 @@ worldBackupList() {
 worldBackupRestore() {
   if [ -d $BACKUP_LOCATION/$1 ]; then
     worldBackup "$1"
-    execute "$RDIFF_BACKUP -r $2 $BACKUP_LOCATION/$1 $WORLDS_LOCATION/$1" $USER_NAME
+    #Would not restore into existing directory without --force option.
+    execute "$RDIFF_BACKUP --force -r $2 $BACKUP_LOCATION/$1 $WORLDS_LOCATION/$1" $USER_NAME
   fi
 }
 
@@ -1258,7 +1269,7 @@ updateClientSoftware() {
   # Download the client jar if it is missing.
   if [ ! -s "$CLIENT_LOCATION/$CLIENT_JAR" ]; then
     # Download the Minecraft client software.
-    execute "$WGET -qO \"$CLIENT_LOCATION/$CLIENT_JAR\" \"$CLIENT_URL\"" $USER_NAME
+    execute "$WGET --no-use-server-timestamps -qO \"$CLIENT_LOCATION/$CLIENT_JAR\" \"$CLIENT_URL\"" $USER_NAME
     # Report any errors.
     if [ $? -ne 0 ]; then
       printf "Error updating the Minecraft client software.\n"
@@ -1295,12 +1306,15 @@ updateServerSoftware() {
   SERVER_DURATION=1440
   # Delete the server jar file if it is old.
   if [ -s "$SERVER_LOCATION/$SERVER_JAR" ]; then
-    execute "find $SERVER_LOCATION/$SERVER_JAR -mmin +$SERVER_DURATION -delete" $USER_NAME
+    #I don't like this line.  
+    #It needs to check and see if a new jar is possible to download first, 
+    #or at least have a mscs-server-allow-update option in server.properties, which could be true by default
+    #execute "find $SERVER_LOCATION/$SERVER_JAR -mmin +$SERVER_DURATION -delete" $USER_NAME
   fi
   # Download the server jar if it is missing.
   if [ ! -s "$SERVER_LOCATION/$SERVER_JAR" ]; then
     # Download the Minecraft server software.
-    execute "$WGET -qO \"$SERVER_LOCATION/$SERVER_JAR\" \"$SERVER_URL\"" $USER_NAME
+    execute "$WGET --no-use-server-timestamps -qO \"$SERVER_LOCATION/$SERVER_JAR\" \"$SERVER_URL\"" $USER_NAME
     # Report any errors.
     if [ $? -ne 0 ]; then
       printf "Error updating the Minecraft server software.\n"
@@ -1641,7 +1655,7 @@ if [ ! -e "$PYTHON" ]; then
   printf "sudo apt-get install python\n"
   exit 1
 fi
-if [ ! -e "$RSYNC" ] && [ $ENABLE_MIRROR -eq 1 ]; then
+if [ ! -e "$RSYNC" ] && [ $ENABLE_MIRROR -eq 1 ]; then #Is Rsync Actually used anywhere?  I can't find it.
   printf "ERROR: Rsync not found!\n"
   printf "Try installing this with:\n"
   printf "sudo apt-get install rsync\n"
