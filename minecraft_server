@@ -1209,13 +1209,14 @@ worldBackup() {
 worldBackupList() {
   if [ -d $BACKUP_LOCATION/$1 ]; then
     # Grab the list of backups for the world server.
-    $RDIFF_BACKUP -l $BACKUP_LOCATION/$1 |
+    $RDIFF_BACKUP -l --parsable-output $BACKUP_LOCATION/$1 |
     $PERL -e '
       foreach (reverse <>) {
         # Search for a datetime format YYYY-MM-DDThh:mm:ssTZD.
         # Datetime specification: http://www.w3.org/TR/NOTE-datetime
-        if ($_ =~ /(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}[+-]\d{2}:\d{2})/) {
-          print "$1\n";
+        if ($_ =~ /(\d+)/) {
+          print scalar localtime $1;
+          print "\n";
         }
       }
     '
