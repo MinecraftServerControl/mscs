@@ -159,7 +159,6 @@ LOCATION="/home/$USER_NAME"
 JAVA=$(which java)
 PERL=$(which perl)
 PYTHON=$(which python)
-RSYNC=$(which rsync)
 WGET=$(which wget)
 RDIFF_BACKUP=$(which rdiff-backup)
 SOCAT=$(which socat)
