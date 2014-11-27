@@ -1310,6 +1310,7 @@ updateServerSoftware() {
     #It needs to check and see if a new jar is possible to download first, 
     #or at least have a mscs-server-allow-update option in server.properties, which could be true by default
     #execute "find $SERVER_LOCATION/$SERVER_JAR -mmin +$SERVER_DURATION -delete" $USER_NAME
+    :
   fi
   # Download the server jar if it is missing.
   if [ ! -s "$SERVER_LOCATION/$SERVER_JAR" ]; then
@@ -1636,7 +1637,7 @@ if [ -f "$MSCS_DEFAULTS" ]; then
   . $MSCS_DEFAULTS
 fi
 
-# Make sure that Java, Perl, Python, Rsync, and GNU Wget are installed.
+# Make sure that Java, Perl, Python, GNU Wget, rdiff-backup, and socat are installed.
 if [ ! -e "$JAVA" ]; then
   printf "ERROR: Java not found!\n"
   printf "Try installing this with:\n"
@@ -1653,12 +1654,6 @@ if [ ! -e "$PYTHON" ]; then
   printf "ERROR: Python not found!\n"
   printf "Try installing this with:\n"
   printf "sudo apt-get install python\n"
-  exit 1
-fi
-if [ ! -e "$RSYNC" ] && [ $ENABLE_MIRROR -eq 1 ]; then #Is Rsync Actually used anywhere?  I can't find it.
-  printf "ERROR: Rsync not found!\n"
-  printf "Try installing this with:\n"
-  printf "sudo apt-get install rsync\n"
   exit 1
 fi
 if [ ! -e "$WGET" ]; then
