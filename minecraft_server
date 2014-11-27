@@ -1214,8 +1214,7 @@ worldBackupList() {
         # Search for a datetime format YYYY-MM-DDThh:mm:ssTZD.
         # Datetime specification: http://www.w3.org/TR/NOTE-datetime
         if ($_ =~ /(\d+)/) {
-          print scalar localtime $1;
-          print "\n";
+          print sub{sprintf "%04d-%02d-%02dT%02d:%02d:%02d", $_[5]+1900, $_[4]+1, $_[3], $_[2], $_[1],$_[0]}->(localtime($1)),"\n";
         }
       }
     '
