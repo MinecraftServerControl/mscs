@@ -159,7 +159,6 @@ LOCATION="/home/$USER_NAME"
 JAVA=$(which java)
 PERL=$(which perl)
 PYTHON=$(which python)
-RSYNC=$(which rsync)
 WGET=$(which wget)
 RDIFF_BACKUP=$(which rdiff-backup)
 SOCAT=$(which socat)
@@ -1622,7 +1621,7 @@ if [ -f "$MSCS_DEFAULTS" ]; then
   . $MSCS_DEFAULTS
 fi
 
-# Make sure that Java, Perl, Python, Rsync, and GNU Wget are installed.
+# Make sure that Java, Perl, Python, Wget, Rdiff-backup, and Socat are installed.
 if [ ! -e "$JAVA" ]; then
   printf "ERROR: Java not found!\n"
   printf "Try installing this with:\n"
@@ -1639,12 +1638,6 @@ if [ ! -e "$PYTHON" ]; then
   printf "ERROR: Python not found!\n"
   printf "Try installing this with:\n"
   printf "sudo apt-get install python\n"
-  exit 1
-fi
-if [ ! -e "$RSYNC" ] && [ $ENABLE_MIRROR -eq 1 ]; then
-  printf "ERROR: Rsync not found!\n"
-  printf "Try installing this with:\n"
-  printf "sudo apt-get install rsync\n"
   exit 1
 fi
 if [ ! -e "$WGET" ]; then
