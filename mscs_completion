@@ -9,7 +9,7 @@ _minecraft_server() {
   OPTS="
     backup console create delete disable enable force-restart force-stop list
     list-backups logrotate map new overviewer remove restart restore-backup
-    send show start status stop sync update watch
+    broadcast send show start status stop sync update watch
   "
 
   LIST_OPTS="enabled disabled running stopped"
@@ -22,7 +22,7 @@ _minecraft_server() {
         WORLDS=$($MINECRAFT_SERVER list stopped)
         COMPREPLY=($(compgen -W "$WORLDS" -- ${COMP_WORDS[COMP_CWORD]}))
       ;;
-      stop|force-stop|restart|force-restart|send|console)
+      stop|force-stop|restart|force-restart|broadcast|send|console)
         WORLDS=$($MINECRAFT_SERVER list running)
         COMPREPLY=($(compgen -W "$WORLDS" -- ${COMP_WORDS[COMP_CWORD]}))
       ;;
