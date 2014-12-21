@@ -205,6 +205,10 @@ or
     Display the status of the Minecraft world server.  Display the
     status of all worlds by default.
 
+* broadcast [command]
+
+    Broadcast a command to all running Minecraft world servers.
+
 * send [world] [command]
 
     Send a command to a Minecraft world server.
