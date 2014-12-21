@@ -22,7 +22,7 @@ _minecraft_server() {
         WORLDS=$($MINECRAFT_SERVER list stopped)
         COMPREPLY=($(compgen -W "$WORLDS" -- ${COMP_WORDS[COMP_CWORD]}))
       ;;
-      stop|force-stop|restart|force-restart|broadcast|send|console)
+      stop|force-stop|restart|force-restart|send|console)
         WORLDS=$($MINECRAFT_SERVER list running)
         COMPREPLY=($(compgen -W "$WORLDS" -- ${COMP_WORDS[COMP_CWORD]}))
       ;;
