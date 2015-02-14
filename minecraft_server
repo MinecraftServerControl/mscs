@@ -1594,8 +1594,10 @@ worldStatus() {
         done
         printf "    Players: %s.\n" "$PLAYERS"
       fi
-    else
+    elif [ "$(getPropertiesValue $1 'enable-query')" = "true" ]; then
       printf "running (query server offline).\n"
+    else
+      printf "running.\n"
     fi
     printf "    Process ID: %d.\n" $(getJavaPID "$1")
   else
