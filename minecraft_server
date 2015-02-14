@@ -340,7 +340,7 @@ execute() {
 getJavaPID() {
   local PID
   PID=$(
-    ps -a -u $USER_NAME -o pid,comm,args |
+    ps -a -U $USER_NAME -o pid,comm,args |
     $PERL -ne 'if ($_ =~ /^\s*(\d+)\s+java.+mscs-world='$1'$/) { print $1; }'
   )
   printf "%d\n" $PID
