@@ -1,23 +1,20 @@
-MINECRAFT_USER := minecraft
-MINECRAFT_HOME := /home/$(MINECRAFT_USER)
-MINECRAFT_SERVER := /etc/init.d/minecraft_server
-BASH_COMPLETION := /etc/bash_completion.d/mscs_completion
+MSCS_USER := minecraft
+MSCS_HOME := /opt/mscs
+
+MSCS := /usr/bin/mscs
+MSCS_SERVICE := /lib/systemd/system/mscs.service
+MSCS_COMPLETION := /etc/bash_completion.d/mscs_completion
 
 .PHONY: install clean
 
-install: clean $(MINECRAFT_HOME) $(MINECRAFT_SERVER) $(BASH_COMPLETION)
+install:
+	adduser --system --group --home $(MSCS_HOME) --quiet $(MSCS_USER)
+	install -m 0755 mscs $(MSCS)
+	install -m 0644 mscs.service $(MSCS_SERVICE)
+	install -m 0644 mscs_completion $(MSCS_COMPLETION)
+	systemctl -f enable mscs.service
 
 clean:
-	update-rc.d -f minecraft_server remove
-	rm -f $(MINECRAFT_SERVER) $(BASH_COMPLETION)
-
-$(MINECRAFT_HOME):
-	adduser --disabled-password --gecos ",,," --quiet $(MINECRAFT_USER)
-
-$(MINECRAFT_SERVER): minecraft_server
-	install -m 0755 minecraft_server $(MINECRAFT_SERVER)
-	update-rc.d minecraft_server defaults
-
-$(BASH_COMPLETION): mscs_completion
-	install -m 0644 mscs_completion $(BASH_COMPLETION)
+	systemctl -f disable mscs.service
+	rm -f $(MSCS) $(MSCS_SERVICE) $(MSCS_COMPLETION)
 
