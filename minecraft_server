@@ -476,6 +476,7 @@ enableWorld() {
 # ---------------------------------------------------------------------------
 getEnabledWorlds() {
   local WORLD WORLDS
+  execute "mkdir -p $WORLDS_LOCATION" $USER_NAME
   WORLDS=""
   for WORLD in $(ls $WORLDS_LOCATION); do
     if [ -f $WORLDS_LOCATION/$WORLD/server.properties ]; then
