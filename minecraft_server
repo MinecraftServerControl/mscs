@@ -2131,6 +2131,11 @@ case "$1" in
     done
     printf ".\n"
   ;;
+  usage|help)
+    printf "Minecraft Server Control Script\n"
+    printf "\n"
+    printf "$USAGE\n"
+  ;;
   *)
     printf "Error in command line usage.\n"
     printf "\n"
