@@ -20,7 +20,7 @@ A powerful command-line control script for UNIX and Linux powered Minecraft serv
 * Supports [CraftBukkit](http://bukkit.org/) in addition to the standard Mojang server distribution.
 * Users automatically notified of important server events.
 * Uses the Minecraft [Query protocol](http://wiki.vg/Query) to keep track of current server conditions.
-* LSB-compatible init script, allows for seamless integration with your server's startup and shutdown sequences.
+* LSB and systemd compatible init script, allows for seamless integration with your server's startup and shutdown sequences.
 * Map worlds using the [Minecraft Overviewer](http://overviewer.org/) mapping software.
 * Backup worlds, and remove backups older than X days.
 * Update the server and client software automatically.
