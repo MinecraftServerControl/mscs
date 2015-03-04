@@ -1,6 +1,6 @@
 #!/bin/sh
 ### BEGIN INIT INFO
-# Provides:       minecraft_server
+# Provides:       mscs
 # Required-Start: $remote_fs $syslog
 # Required-Stop:  $remote_fs $syslog
 # Default-Start:  2 3 4 5
@@ -140,7 +140,7 @@ EOF
 # ---------------------------------------------------------------------------
 # Override global variables below by adding them to the specified file.  If
 # the file does not exist, the default values below will be used.
-MSCS_DEFAULTS="/etc/default/minecraft_server"
+MSCS_DEFAULTS="/etc/default/mscs"
 
 
 # User Account & Server Location
@@ -152,7 +152,7 @@ MSCS_DEFAULTS="/etc/default/minecraft_server"
 USER_NAME="minecraft"
 
 # The location of server software and data.
-LOCATION="/home/$USER_NAME"
+LOCATION="/opt/mscs"
 
 
 # Required Software
@@ -187,14 +187,14 @@ DEFAULT_VERSION_TYPE='release'
 DEFAULT_CLIENT_VERSION='$CURRENT_VERSION'
 DEFAULT_CLIENT_JAR='$CLIENT_VERSION.jar'
 DEFAULT_CLIENT_URL='https://s3.amazonaws.com/Minecraft.Download/versions/$CLIENT_VERSION/$CLIENT_VERSION.jar'
-DEFAULT_CLIENT_LOCATION=$LOCATION'/.minecraft/versions/$CLIENT_VERSION'
+DEFAULT_CLIENT_LOCATION=$LOCATION'/client/$CLIENT_VERSION'
 DEFAULT_SERVER_VERSION='$CURRENT_VERSION'
 DEFAULT_SERVER_JAR='minecraft_server.$SERVER_VERSION.jar'
 DEFAULT_SERVER_URL='https://s3.amazonaws.com/Minecraft.Download/versions/$SERVER_VERSION/minecraft_server.$SERVER_VERSION.jar'
 DEFAULT_SERVER_ARGS='nogui'
 DEFAULT_INITIAL_MEMORY='128M'
 DEFAULT_MAXIMUM_MEMORY='2048M'
-DEFAULT_SERVER_LOCATION=$LOCATION'/minecraft_server'
+DEFAULT_SERVER_LOCATION=$LOCATION'/server'
 DEFAULT_SERVER_COMMAND='$JAVA -Xms$INITIAL_MEMORY -Xmx$MAXIMUM_MEMORY -jar $SERVER_LOCATION/$SERVER_JAR $SERVER_ARGS'
 
 # The server settings for each world can be customized by adding certain
@@ -232,14 +232,14 @@ DEFAULT_SERVER_COMMAND='$JAVA -Xms$INITIAL_MEMORY -Xmx$MAXIMUM_MEMORY -jar $SERV
 #   mscs-client-version=$CURRENT_VERSION
 #   mscs-client-jar=$CLIENT_VERSION.jar
 #   mscs-client-url=https://s3.amazonaws.com/Minecraft.Download/versions/$CLIENT_VERSION/$CLIENT_VERSION.jar
-#   mscs-client-location=/home/minecraft/.minecraft/versions/$CLIENT_VERSION
+#   mscs-client-location=/opt/mscs/client/$CLIENT_VERSION
 #   mscs-server-version=$CURRENT_VERSION
 #   mscs-server-jar=minecraft_server.$SERVER_VERSION.jar
 #   mscs-server-url=https://s3.amazonaws.com/Minecraft.Download/versions/$SERVER_VERSION/minecraft_server.$SERVER_VERSION.jar
 #   mscs-server-args=nogui
 #   mscs-initial-memory=128M
 #   mscs-maximum-memory=2048M
-#   mscs-server-location=/home/minecraft/minecraft_server
+#   mscs-server-location=/opt/msvs/server
 #   mscs-server-command=$JAVA -Xms$INITIAL_MEMORY -Xmx$MAXIMUM_MEMORY -jar $SERVER_LOCATION/$SERVER_JAR $SERVER_ARGS
 
 
@@ -294,7 +294,7 @@ ENABLE_MIRROR=0
 # The location to store the mirror image.
 #
 # NOTE: This is usually a ramdisk, e.g. /dev/shm on Debian/Ubuntu.
-MIRROR_PATH="/dev/shm/minecraft"
+MIRROR_PATH="/dev/shm/mscs"
 
 
 # Minecraft Overviewer Mapping Software Options
@@ -1121,7 +1121,7 @@ start() {
   execute "echo $PID > $WORLDS_LOCATION/$1.pid" $USER_NAME
   # Create a lock file on RedHat and derivatives.
   if [ -d "/var/lock/subsys" ]; then
-    touch /var/lock/subsys/minecraft_server
+    touch /var/lock/subsys/mscs
   fi
 }
 
@@ -1147,7 +1147,7 @@ stop() {
   execute "rm -f $WORLDS_LOCATION/$1.pid" $USER_NAME
   # Remove the lock file on Redhat and derivatives if all world servers
   # are stopped.
-  if [ -e "/var/lock/subsys/minecraft_server" ]; then
+  if [ -e "/var/lock/subsys/mscs" ]; then
     NUM=0
     for WORLD in $(getEnabledWorlds); do
       if [ "$1" != "$WORLD" ] && [ $(serverRunning $WORLD) -eq 1 ]; then
@@ -1155,7 +1155,7 @@ stop() {
       fi
     done
     if [ $NUM -eq 0 ]; then
-      rm -f /var/lock/subsys/minecraft_server
+      rm -f /var/lock/subsys/mscs
     fi
   fi
 }
@@ -1173,7 +1173,7 @@ forceStop() {
   kill -9 $(getJavaPID "$1") > /dev/null 2>&1
   # Remove the lock file on Redhat and derivatives if it is still
   # around.
-  rm -f /var/lock/subsys/minecraft_server
+  rm -f /var/lock/subsys/mscs
 }
 
 # ---------------------------------------------------------------------------
