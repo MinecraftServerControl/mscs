@@ -9,7 +9,7 @@ _minecraft_server() {
   OPTS="
     backup console create delete disable enable force-restart force-stop list
     list-backups logrotate map new overviewer remove restart restore-backup
-    broadcast send show start status stop sync update watch
+    broadcast send show start status stop sync update watch usage
   "
 
   LIST_OPTS="enabled disabled running stopped"
