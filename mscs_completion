@@ -1,6 +1,6 @@
-MINECRAFT_SERVER=/etc/init.d/minecraft_server
+MSCS=/usr/bin/mscs
 
-_minecraft_server() {
+_mscs() {
   local OPTS WORLDS
   COMPREPLY=()
 
@@ -53,4 +53,4 @@ _minecraft_server() {
   fi
   return 0
 }
-complete -F _minecraft_server $MINECRAFT_SERVER
+complete -F _mscs $MSCS
