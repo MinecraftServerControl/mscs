@@ -1,0 +1,15 @@
+[Unit]
+Description=Minecraft Server Control Script
+Documentation=https://github.com/sandain/MinecraftServerControlScript
+Requires=network.target
+After=network.target
+
+[Service]
+ExecStart=/usr/bin/mscs start
+ExecStop=/usr/bin/mscs stop
+ExecReload=/usr/bin/mscs restart
+Type=oneshot
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target
