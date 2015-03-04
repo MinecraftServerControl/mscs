@@ -44,7 +44,7 @@ You can download the script from the following locations:
 
 ### Configuration
 To get your server to run the script on startup, and cleanly down the server
-on shutdown, the `minecraft_server` script must be copied to `/etc/init.d`,
+on shutdown, the `mscs` script must be copied to `/usr/bin`,
 have its execute permissions set, and the system must be instructed to use
 the script on startup and shutdown.  For Bash programmable completion
 support, the `mscs_completion` script must be copied to
@@ -59,16 +59,16 @@ Ubuntu like environments by running:
 
 It can also be accomplished manually with the following commands:
 
-    sudo cp minecraft_server /etc/init.d/minecraft_server
-    sudo cp mscs_completion /etc/bash_completion.d/mscs_completion
-    sudo chmod 755 /etc/init.d/minecraft_server
-    sudo update-rc.d minecraft_server defaults
-    sudo adduser minecraft
+    sudo adduser --system --group --home /opt/mscs --quiet minecraft
+    sudo install -m 0755 mscs /usr/bin/mscs
+    sudo install -m 0644 mscs.service /lib/systemd/system/mscs.service
+    sudo install -m 0644 mscs_completion /etc/bash_completion.d/mscs_completion
+    sudo systemctl -f enable mscs.service
 
 The Minecraft server software will be automatically downloaded to the
 following location on the first run:
 
-    /home/minecraft/minecraft_server/
+    /opt/mscs/server/
 
 ### EULA
 As of Minecraft version 1.7.10, Mojang requires that users of their software read and agree to their [EULA](https://account.mojang.com/documents/minecraft_eula).  After you have read through the document, you need to modify the `eula.txt` file in your world's folder, changing the value of the `eula` variable from `false` to `true`.
@@ -132,12 +132,7 @@ user or as `root` (through sudo).
 Note: If the script is run as the `root` user, all important server processes
 will be started using the `minecraft` user instead for security purposes.
 
-    su minecraft
-    /etc/init.d/minecraft_server [option]
-
-or
-
-    sudo /etc/init.d/minecraft_server [option]
+    sudo mscs [option]
 
 ### Options
 * start [world]
@@ -251,30 +246,30 @@ or
 
 To start all of the world servers, issue the command:
 
-    /etc/init.d/minecraft_server start
+    sudo mscs start
 
 To create a world named alpha, issue the command:
 
-    /etc/init.d/minecraft_server create alpha 25565
+    sudo mscs create alpha 25565
 
 To start just the world named alpha, issue the command:
 
-    /etc/init.d/minecraft_server start alpha
+    sudo mscs start alpha
 
 To send a command to a world server, issue the command:
 
-    /etc/init.d/minecraft_server send [world] [command]
+    sudo mscs send [world] [command]
 
 ie.
 
-    /etc/init.d/minecraft_server send alpha say Hello world!
+    sudo mscs send alpha say Hello world!
 
 
 ### Import Existing Worlds
 
 You just need to create a new directory in the worlds folder for the world you wish to import.
 Suppose the world you wish to import is called `alpha`, you would create a new folder in
-`/home/minecraft/worlds`, then copy the data files over to that directory.
+`/opt/mscs/worlds`, then copy the data files over to that directory.
 
 If the directory containing the world `alpha` you wish to import looks like this:
 
@@ -290,8 +285,8 @@ If the directory containing the world `alpha` you wish to import looks like this
 
 You can just copy your world into the worlds directory:
 
-    mkdir /home/minecraft/worlds/alpha
-    cp -R * /home/minecraft/worlds/alpha
+    mkdir /opt/mscs/worlds/alpha
+    cp -R * /opt/mscs/worlds/alpha
 
 Make sure you check `server-port` and `query.port` in `server.properties` to make sure it does not overlap with other servers created by the MSCS script. Also ensure that `enable-query` is set to `true`.  If you do not have `enable-query` and a `query.port` set, you will not be able to check the status of the world with the script.
 
@@ -299,7 +294,7 @@ Make sure you check `server-port` and `query.port` in `server.properties` to mak
 ## Server Customization
 
 The default values in the script can be overwritten by modifying the
-`/etc/default/minecraft_server` file.
+`/etc/default/mscs` file.
 
 For example, to modify the default MAPS_URL variable, add the following line
 to the file:
@@ -343,14 +338,14 @@ Equivalent to the default values:
     mscs-client-version=$CURRENT_VERSION
     mscs-client-jar=$CLIENT_VERSION.jar
     mscs-client-url=https://s3.amazonaws.com/Minecraft.Download/versions/$CLIENT_VERSION/$CLIENT_VERSION.jar
-    mscs-client-location=/home/minecraft/.minecraft/versions/$CLIENT_VERSION
+    mscs-client-location=/opt/mscs/client/$CLIENT_VERSION
     mscs-server-version=$CURRENT_VERSION
     mscs-server-jar=minecraft_server.$SERVER_VERSION.jar
     mscs-server-url=https://s3.amazonaws.com/Minecraft.Download/versions/$SERVER_VERSION/minecraft_server.$SERVER_VERSION.jar
     mscs-server-args=nogui
     mscs-initial-memory=128M
     mscs-maximum-memory=2048M
-    mscs-server-location=/home/minecraft/minecraft_server
+    mscs-server-location=/opt/mscs/server
     mscs-server-command=$JAVA -Xms$INITIAL_MEMORY -Xmx$MAXIMUM_MEMORY -jar $SERVER_LOCATION/$SERVER_JAR $SERVER_ARGS
 
 Run a Minecraft version 1.6.4 server:
