@@ -3,7 +3,7 @@ MSCS_HOME := /opt/mscs
 
 MSCS := /usr/bin/mscs
 MSCS_SERVICE := /lib/systemd/system/mscs.service
-MSCS_COMPLETION := /etc/bash_completion.d/mscs_completion
+MSCS_COMPLETION := /etc/bash_completion.d/mscs
 
 .PHONY: install clean
 
@@ -11,7 +11,7 @@ install:
 	adduser --system --group --home $(MSCS_HOME) --quiet $(MSCS_USER)
 	install -m 0755 mscs $(MSCS)
 	install -m 0644 mscs.service $(MSCS_SERVICE)
-	install -m 0644 mscs_completion $(MSCS_COMPLETION)
+	install -m 0644 mscs.completion $(MSCS_COMPLETION)
 	systemctl -f enable mscs.service
 
 clean:
