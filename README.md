@@ -62,7 +62,7 @@ It can also be accomplished manually with the following commands:
     sudo adduser --system --group --home /opt/mscs --quiet minecraft
     sudo install -m 0755 mscs /usr/bin/mscs
     sudo install -m 0644 mscs.service /lib/systemd/system/mscs.service
-    sudo install -m 0644 mscs_completion /etc/bash_completion.d/mscs_completion
+    sudo install -m 0644 mscs.completion /etc/bash_completion.d/mscs
     sudo systemctl -f enable mscs.service
 
 The Minecraft server software will be automatically downloaded to the
