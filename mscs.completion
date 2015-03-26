@@ -1,4 +1,4 @@
-MSCS=/usr/bin/mscs
+MSCS=mscs
 
 _mscs() {
   local OPTS WORLDS
@@ -19,20 +19,20 @@ _mscs() {
   elif [ $COMP_CWORD -eq 2 ]; then
     case ${COMP_WORDS[COMP_CWORD-1]} in
       start)
-        WORLDS=$($MINECRAFT_SERVER list stopped)
+        WORLDS=$($MSCS list stopped)
         COMPREPLY=($(compgen -W "$WORLDS" -- ${COMP_WORDS[COMP_CWORD]}))
       ;;
       stop|force-stop|restart|force-restart|send|console)
-        WORLDS=$($MINECRAFT_SERVER list running)
+        WORLDS=$($MSCS list running)
         COMPREPLY=($(compgen -W "$WORLDS" -- ${COMP_WORDS[COMP_CWORD]}))
       ;;
       delete|remove|disable|status|show|sync|send|watch|logrotate| \
       backup|map|overviewer|list-backups|restore-backup)
-        WORLDS=$($MINECRAFT_SERVER list enabled)
+        WORLDS=$($MSCS list enabled)
         COMPREPLY=($(compgen -W "$WORLDS" -- ${COMP_WORDS[COMP_CWORD]}))
       ;;
       enable)
-        WORLDS=$($MINECRAFT_SERVER list disabled)
+        WORLDS=$($MSCS list disabled)
         COMPREPLY=($(compgen -W "$WORLDS" -- ${COMP_WORDS[COMP_CWORD]}))
       ;;
       ls|list)
@@ -44,7 +44,7 @@ _mscs() {
   elif [ $COMP_CWORD -eq 3 ]; then
     case ${COMP_WORDS[COMP_CWORD-2]} in
       restore-backup)
-        BACKUPS=$($MINECRAFT_SERVER list-backups "${COMP_WORDS[COMP_CWORD-1]}")
+        BACKUPS=$($MSCS list-backups "${COMP_WORDS[COMP_CWORD-1]}")
         COMPREPLY=($(compgen -W "$BACKUPS" -- "${COMP_WORDS[COMP_CWORD]}"))
       ;;
       *)
