@@ -1307,7 +1307,7 @@ updateServerSoftware() {
 # @param 1 The world server to map with Overviewer.
 # ---------------------------------------------------------------------------
 overviewer() {
-  local SERVER_RUNNING
+  local CLIENT_JAR CLIENT_LOCATION SERVER_RUNNING
   SERVER_RUNNING=$(serverRunning $1)
   # Announce the mapping of the world to players.
   if [ $SERVER_RUNNING -eq 1 ]; then
@@ -1344,17 +1344,35 @@ overviewer() {
   execute "mkdir -p $MAPS_LOCATION/$1" $USER_NAME
   # Make sure the Minecraft client is available.
   updateClientSoftware "$1"
+  CLIENT_JAR=$(getClientJar "$1")
+  CLIENT_LOCATION=$(getClientLocation "$1")
   # Make sure that the world files are actually there before mapping.
   if [ -e "$WORLDS_LOCATION/$1/server.properties" ]; then
     # Check for Overviewer settings file.
-    if [ -e "$WORLDS_LOCATION/$1/overviewer-settings.py" ]; then
-      # Generate map and POI with custom settings.
-      execute "$OVERVIEWER_BIN --config=$WORLDS_LOCATION/$1/overviewer-settings.py" $USER_NAME
-      execute "$OVERVIEWER_BIN --config=$WORLDS_LOCATION/$1/overviewer-settings.py --genpoi" $USER_NAME
-    else
-      # Generate map with default settings.
-      execute "$OVERVIEWER_BIN --rendermodes=normal,lighting,cave --processes 1 $WORLDS_LOCATION/$1/$1 $MAPS_LOCATION/$1" $USER_NAME > /dev/null 2>&1
+    if [ ! -e "$WORLDS_LOCATION/$1/overviewer-settings.py" ]; then
+      execute "touch $WORLDS_LOCATION/$1/overviewer-settings.py" $USER_NAME
+      printf "worlds['$1'] = \"$WORLDS_LOCATION/$1/$1\"\n" >> $WORLDS_LOCATION/$1/overviewer-settings.py
+      printf "\n" >> $WORLDS_LOCATION/$1/overviewer-settings.py
+      printf "renders['normalrender'] = {\n" >> $WORLDS_LOCATION/$1/overviewer-settings.py
+      printf "  'world': '$1',\n" >> $WORLDS_LOCATION/$1/overviewer-settings.py
+      printf "  'title': 'Normal',\n" >> $WORLDS_LOCATION/$1/overviewer-settings.py
+      printf "  'dimension': 'overworld',\n" >> $WORLDS_LOCATION/$1/overviewer-settings.py
+      printf "  'rendermode': 'normal'\n" >> $WORLDS_LOCATION/$1/overviewer-settings.py
+      printf "}\n" >> $WORLDS_LOCATION/$1/overviewer-settings.py
+      printf "\n" >> $WORLDS_LOCATION/$1/overviewer-settings.py
+      printf "renders['caverender'] = {\n" >> $WORLDS_LOCATION/$1/overviewer-settings.py
+      printf "  'world': '$1',\n" >> $WORLDS_LOCATION/$1/overviewer-settings.py
+      printf "  'title': 'Caves',\n" >> $WORLDS_LOCATION/$1/overviewer-settings.py
+      printf "  'dimension': 'overworld',\n" >> $WORLDS_LOCATION/$1/overviewer-settings.py
+      printf "  'rendermode': 'cave'\n" >> $WORLDS_LOCATION/$1/overviewer-settings.py
+      printf "}\n" >> $WORLDS_LOCATION/$1/overviewer-settings.py
+      printf "\n" >> $WORLDS_LOCATION/$1/overviewer-settings.py
+      printf "outputdir = \"$MAPS_LOCATION/$1\"\n" >> $WORLDS_LOCATION/$1/overviewer-settings.py
+      printf "texturepath = \"$CLIENT_LOCATION/$CLIENT_JAR\"\n" >> $WORLDS_LOCATION/$1/overviewer-settings.py
     fi
+    # Generate the map and POI.
+    execute "$OVERVIEWER_BIN --config=$WORLDS_LOCATION/$1/overviewer-settings.py" $USER_NAME >> $WORLDS_LOCATION/$1/logs/overviewer.log 2>&1
+    execute "$OVERVIEWER_BIN --config=$WORLDS_LOCATION/$1/overviewer-settings.py --genpoi" $USER_NAME >> $WORLDS_LOCATION/$1/logs/overviewer.log 2>&1
   fi
   # Announce the location to access the world map to players.
   if [ $SERVER_RUNNING -eq 1 ]; then
