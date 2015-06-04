@@ -17,7 +17,7 @@ A powerful command-line control script for UNIX and Linux powered Minecraft serv
 * Run multiple Minecraft worlds.
 * Start, stop, and restart single or multiple worlds.
 * Create, delete, disable, and enable worlds.
-* Supports [CraftBukkit](http://bukkit.org/) in addition to the standard Mojang server distribution.
+* Includes support for additional server types: [Forge](http://www.minecraftforge.net/), [BungeeCord](http://www.spigotmc.org/wiki/bungeecord/), [SpigotMC](http://www.spigotmc.org/wiki/spigot/), etc.
 * Users automatically notified of important server events.
 * Uses the Minecraft [Query protocol](http://wiki.vg/Query) to keep track of current server conditions.
 * LSB and systemd compatible init script, allows for seamless integration with your server's startup and shutdown sequences.
@@ -367,15 +367,14 @@ Run a Minecraft version 1.6.4 server:
     mscs-client-version=1.6.4
     mscs-server-version=1.6.4
 
-Use the latest CraftBukkit recommended build:
+Use Forge to run a 1.8.4 server (requires additional setup):
 
-    mscs-server-jar=craftbukkit.jar
-    mscs-server-url=http://dl.bukkit.org/latest-rb/craftbukkit.jar
-    mscs-server-args=
-    mscs-initial-memory=128M
-    mscs-maximum-memory=2048M
+    mscs-client-version=1.8.4
+    mscs-server-version=1.8.4
+    mscs-server-jar=forge-1.8-11.14.1.1419-universal.jar
+    mscs-server-url=http://files.minecraftforge.net/maven/net/minecraftforge/forge/1.8-11.14.1.1419/forge-1.8-11.14.1.1419-universal.jar
 
-Use the latest BungeeCord successful build:
+Use the latest BungeeCord successful build (requires additional setup):
 
     mscs-server-jar=BungeeCord.jar
     mscs-server-url=http://ci.md-5.net/job/BungeeCord/lastSuccessfulBuild/artifact/bootstrap/target/BungeeCord.jar
