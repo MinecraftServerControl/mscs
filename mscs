@@ -1400,7 +1400,7 @@ queryStart() {
   execute "rm -Rf $WORLD_DIR/query.in $WORLD_DIR/query.out" $USER_NAME
   # Give the server a moment to start before initializing the
   # Query handler.
-  sleep 10
+  sleep 20
   # Initialize the query.in and query.out buffer files.
   execute "printf '' > $WORLD_DIR/query.in" $USER_NAME
   execute "printf '' > $WORLD_DIR/query.out" $USER_NAME
