@@ -255,6 +255,10 @@ DISABLED_WORLDS_LOCATION="$LOCATION/worlds-disabled"
 # The location to store the versions.json file.
 VERSIONS_JSON="$DEFAULT_SERVER_LOCATION/versions.json"
 
+# The duration (in minutes) to keep the versions.json file before updating.
+VERSIONS_DURATION=1440
+
+
 # Backup Configuration
 # ---------------------------------------------------------------------------
 
@@ -590,13 +594,11 @@ setPropertiesValue() {
 # @return The current Minecraft version number.
 # ---------------------------------------------------------------------------
 getCurrentMinecraftVersion() {
-  local VERSION VERSIONS_DURATION TYPE
+  local VERSION TYPE
   # Make sure the server software directory exists.
   execute "mkdir -p $DEFAULT_SERVER_LOCATION" $USER_NAME
   # Determine the version type for the current world.
   TYPE=$(getPropertiesValue "$1" "mscs-version-type" "$DEFAULT_VERSION_TYPE")
-  # The timeout (in minutes) for the versions.json cache.
-  VERSIONS_DURATION=1440
   if [ -s $VERSIONS_JSON ]; then
     # Make a backup copy of the versions.json file.
     execute "cp -p $VERSIONS_JSON $VERSIONS_JSON.bak" $USER_NAME
