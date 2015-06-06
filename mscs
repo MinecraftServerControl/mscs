@@ -2070,9 +2070,11 @@ case "$1" in
       exit 1
     fi
     # Stop all of the world servers and backup the worlds.
+    RUNNING=
     printf "Stopping Minecraft Server:"
     for WORLD in $WORLDS; do
       if [ $(serverRunning $WORLD) -eq 1 ]; then
+        RUNNING="$RUNNING $WORLD"
         printf " $WORLD"
         if [ $(printf "%d" $(queryStatus $WORLD | cut -f6)) -gt 0 ]; then
           sendCommand $WORLD "say The server admin has initiated a software update."
@@ -2100,7 +2102,7 @@ case "$1" in
     done
     printf ".\n"
     printf "Restarting Minecraft Server:"
-    for WORLD in $WORLDS; do
+    for WORLD in $RUNNING; do
       printf " $WORLD"
       start $WORLD
     done
