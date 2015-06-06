@@ -599,7 +599,7 @@ getCurrentMinecraftVersion() {
   VERSIONS_DURATION=1440
   if [ -s $VERSIONS_JSON ]; then
     # Make a backup copy of the versions.json file.
-    execute "cp $VERSIONS_JSON $VERSIONS_JSON.bak" $USER_NAME
+    execute "cp -p $VERSIONS_JSON $VERSIONS_JSON.bak" $USER_NAME
     # Delete the versions.json file if it is old.
     execute "find $VERSIONS_JSON -mmin +$VERSIONS_DURATION -delete" $USER_NAME
   fi
@@ -609,7 +609,7 @@ getCurrentMinecraftVersion() {
     if [ $? -ne 0 ]; then
       if [ -s $VERSIONS_JSON.bak ]; then
         printf "Error downloading the Minecraft versions.json file, using an old copy.\n"
-        execute "cp $VERSIONS_JSON.bak $VERSIONS_JSON" $USER_NAME
+        execute "cp -p $VERSIONS_JSON.bak $VERSIONS_JSON" $USER_NAME
       else
         printf "Error downloading the Minecraft versions.json file.\n"
         exit 1
