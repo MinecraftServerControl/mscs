@@ -1189,18 +1189,13 @@ worldBackup() {
 # @param 1 The world server of interest.
 # ---------------------------------------------------------------------------
 worldBackupList() {
+  local SEC TYPE
   if [ -d $BACKUP_LOCATION/$1 ]; then
     # Grab the list of backups for the world server.
-    $RDIFF_BACKUP -l $BACKUP_LOCATION/$1 |
-    $PERL -e '
-      foreach (reverse <>) {
-        # Search for a datetime format YYYY-MM-DDThh:mm:ssTZD.
-        # Datetime specification: http://www.w3.org/TR/NOTE-datetime
-        if ($_ =~ /(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}[+-]\d{2}:\d{2})/) {
-          print "$1\n";
-        }
-      }
-    '
+    $RDIFF_BACKUP --parsable-output -l $BACKUP_LOCATION/$1 |
+    while read SEC TYPE
+      do date --date=\@$SEC -Iseconds
+    done
   fi
 }
 
@@ -1926,7 +1921,7 @@ case "$1" in
           printf " $WORLD"
           sendCommand $WORLD "$*"
         fi
-      done    
+      done
       printf ".\n"
     else
       printf "Usage:  $0 $1 <command>\n"
@@ -2043,7 +2038,7 @@ case "$1" in
       printf "World '$2' not recognized.\n"
       printf "  Usage:  $0 $1 <world>\n"
       exit 1
-    else 
+    else
       printf "World not supplied.\n"
       printf "  Usage:  $0 $1 <world>\n"
       exit 1
@@ -2056,7 +2051,7 @@ case "$1" in
       printf "World '$2' not recognized.\n"
       printf "  Usage:  $0 $1 <world>\n"
       exit 1
-    else 
+    else
       printf "World not supplied.\n"
       printf "  Usage:  $0 $1 <world>\n"
       exit 1
