@@ -154,6 +154,10 @@ USER_NAME="minecraft"
 # The location of server software and data.
 LOCATION="/opt/mscs"
 
+# Override the default values if the default file exists.
+if [ -f "$MSCS_DEFAULTS" ]; then
+  . $MSCS_DEFAULTS
+fi
 
 # Required Software
 # ---------------------------------------------------------------------------
@@ -169,7 +173,6 @@ SOCAT=$(which socat)
 
 # Global Server Configuration
 # ---------------------------------------------------------------------------
-
 
 # Minecraft Versions information
 # ---------------------------------------------------------------------------
@@ -309,6 +312,10 @@ OVERVIEWER_URL="http://overviewer.org"
 MAPS_URL="http://minecraft.server.com/maps"
 MAPS_LOCATION="$LOCATION/maps"
 
+# Do additional overrides if the default file exists.
+if [ -f "$MSCS_DEFAULTS" ]; then
+  . $MSCS_DEFAULTS
+fi
 
 # ---------------------------------------------------------------------------
 # Internal Methods
@@ -1609,11 +1616,6 @@ worldStatus() {
 # ---------------------------------------------------------------------------
 # Begin.
 # ---------------------------------------------------------------------------
-
-# Override the default values if the default file exists.
-if [ -f "$MSCS_DEFAULTS" ]; then
-  . $MSCS_DEFAULTS
-fi
 
 # Make sure that Java, Perl, Python, Wget, Rdiff-backup, and Socat are installed.
 if [ ! -e "$JAVA" ]; then
