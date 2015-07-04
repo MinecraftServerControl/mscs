@@ -154,6 +154,10 @@ USER_NAME="minecraft"
 # The location of server software and data.
 LOCATION="/opt/mscs"
 
+# Override the default values if the default file exists.
+if [ -f "$MSCS_DEFAULTS" ]; then
+  . $MSCS_DEFAULTS
+fi
 
 # Required Software
 # ---------------------------------------------------------------------------
@@ -169,7 +173,6 @@ SOCAT=$(which socat)
 
 # Global Server Configuration
 # ---------------------------------------------------------------------------
-
 
 # Minecraft Versions information
 # ---------------------------------------------------------------------------
@@ -309,6 +312,10 @@ OVERVIEWER_URL="http://overviewer.org"
 MAPS_URL="http://minecraft.server.com/maps"
 MAPS_LOCATION="$LOCATION/maps"
 
+# Do additional overrides if the default file exists.
+if [ -f "$MSCS_DEFAULTS" ]; then
+  . $MSCS_DEFAULTS
+fi
 
 # ---------------------------------------------------------------------------
 # Internal Methods
@@ -1182,18 +1189,13 @@ worldBackup() {
 # @param 1 The world server of interest.
 # ---------------------------------------------------------------------------
 worldBackupList() {
+  local SEC TYPE
   if [ -d $BACKUP_LOCATION/$1 ]; then
     # Grab the list of backups for the world server.
-    $RDIFF_BACKUP -l $BACKUP_LOCATION/$1 |
-    $PERL -e '
-      foreach (reverse <>) {
-        # Search for a datetime format YYYY-MM-DDThh:mm:ssTZD.
-        # Datetime specification: http://www.w3.org/TR/NOTE-datetime
-        if ($_ =~ /(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}[+-]\d{2}:\d{2})/) {
-          print "$1\n";
-        }
-      }
-    '
+    $RDIFF_BACKUP --parsable-output -l $BACKUP_LOCATION/$1 |
+    while read SEC TYPE; do
+      date --date=\@$SEC -Iseconds
+    done
   fi
 }
 
@@ -1609,11 +1611,6 @@ worldStatus() {
 # ---------------------------------------------------------------------------
 # Begin.
 # ---------------------------------------------------------------------------
-
-# Override the default values if the default file exists.
-if [ -f "$MSCS_DEFAULTS" ]; then
-  . $MSCS_DEFAULTS
-fi
 
 # Make sure that Java, Perl, Python, Wget, Rdiff-backup, and Socat are installed.
 if [ ! -e "$JAVA" ]; then
