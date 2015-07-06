@@ -1,1 +1,7 @@
 *~
+.tags*
+.TAGS*
+tags
+TAGS
+.ctags
+ctags.cnf
