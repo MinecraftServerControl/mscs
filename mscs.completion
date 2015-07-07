@@ -1,5 +1,9 @@
 MSCS=mscs
 
+list_worlds() {
+  $MSCS ls $1 | sed -n '/:/{s/^ *//;s/:.*$//;p}'
+}
+
 _mscs() {
   local OPTS WORLDS
   COMPREPLY=()
@@ -19,20 +23,20 @@ _mscs() {
   elif [ $COMP_CWORD -eq 2 ]; then
     case ${COMP_WORDS[COMP_CWORD-1]} in
       start)
-        WORLDS=$($MSCS list stopped)
+        WORLDS=$(list_worlds stopped)
         COMPREPLY=($(compgen -W "$WORLDS" -- ${COMP_WORDS[COMP_CWORD]}))
       ;;
       stop|force-stop|restart|force-restart|send|console)
-        WORLDS=$($MSCS list running)
+        WORLDS=$(list_worlds running)
         COMPREPLY=($(compgen -W "$WORLDS" -- ${COMP_WORDS[COMP_CWORD]}))
       ;;
       delete|remove|disable|status|show|sync|send|watch|logrotate| \
       backup|map|overviewer|list-backups|restore-backup)
-        WORLDS=$($MSCS list enabled)
+        WORLDS=$(list_worlds enabled)
         COMPREPLY=($(compgen -W "$WORLDS" -- ${COMP_WORDS[COMP_CWORD]}))
       ;;
       enable)
-        WORLDS=$($MSCS list disabled)
+        WORLDS=$(list_worlds disabled)
         COMPREPLY=($(compgen -W "$WORLDS" -- ${COMP_WORDS[COMP_CWORD]}))
       ;;
       ls|list)
