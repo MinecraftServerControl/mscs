@@ -83,13 +83,17 @@ Options:
   enable <world>
     Enable a disabled world server.
 
-  list <option>
+  ls <option>
     Display a list of worlds.
     Options:
       enabled   Display a list of enabled worlds, default.
       disabled  Display a list of disabled worlds.
       running   Display a list of running worlds.
       stopped   Display a list of stopped worlds.
+    If no option, 'enabled' is assumed.
+
+  list <option>
+    Same as 'ls' but more detailed.
 
   status <world>
     Display the status of the Minecraft world server.  Display the status of
@@ -280,6 +284,13 @@ BACKUP_DURATION=15
 
 # Length in days that logs survive.
 LOG_DURATION=15
+
+
+# Listing options
+# ---------------------------------------------------------------------------
+
+# Server properties for detailed listing (list).
+DETAILED_LISTING_PROPERTIES="motd server-ip server-port max-players level-type online-mode"
 
 
 # Mirror Image Options
@@ -1856,11 +1867,36 @@ case "$1" in
           fi
         done
       ;;
-      *)
+      "")
         WORLDS=$(getEnabledWorlds)
       ;;
+      *)
+        echo "Unknown list option: $2."
+        echo "  Try '$0 help' for help."
+        exit 1
+      ;;
     esac
-    echo $WORLDS
+
+    case "$1" in
+      ls)
+        # Simple list
+        for WORLD in $WORLDS; do
+          WPORT=$(getPropertiesValue "$WORLD" server-port "")
+          echo "  $WORLD: $WPORT"
+        done
+      ;;
+      list)
+        # Detailed list
+        for WORLD in $WORLDS; do
+          echo "  $WORLD:"
+          for PROP in $DETAILED_LISTING_PROPERTIES; do
+            echo -n "      "
+            echo -n "$PROP="
+            getPropertiesValue "$WORLD" "$PROP" ""
+          done
+        done
+      ;;
+    esac
   ;;
   status|show)
     checkPermission
