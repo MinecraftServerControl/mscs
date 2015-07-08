@@ -527,6 +527,31 @@ getDisabledWorlds() {
 }
 
 # ---------------------------------------------------------------------------
+# Grab the list of all available worlds.
+#
+# @return The list of all available worlds.
+# ---------------------------------------------------------------------------
+getAvailableWorlds() {
+  echo $(getEnabledWorlds) $(getDisabledWorlds)
+}
+
+# ---------------------------------------------------------------------------
+# Check to see if the world is enabled.
+#
+# @param 1 The world of interest.
+# @return A 1 if the world is enabled, a 0 otherwise.
+# ---------------------------------------------------------------------------
+isWorldEnabled() {
+  local WORLDS
+  WORLDS=$(getEnabledWorlds)
+  if [ -n "$1" ] && [ $(listContains "$1" "$WORLDS") -eq 1 ]; then
+    echo 1
+  else
+    echo 0
+  fi
+}
+
+# ---------------------------------------------------------------------------
 # Get the value of a key from the provided file.
 #
 # @param 1 The file containing the key/value combo.
@@ -616,7 +641,11 @@ setMSCSValue() {
 # ---------------------------------------------------------------------------
 getServerPropertiesValue() {
   local PROPERTY_FILE
-  PROPERTY_FILE=$WORLDS_LOCATION/$1/server.properties
+  if [ -f "$WORLDS_LOCATION/$1/server.properties" ]; then
+    PROPERTY_FILE="$WORLDS_LOCATION/$1/server.properties"
+  else
+    PROPERTY_FILE="$DISABLED_WORLDS_LOCATION/$1/server.properties"
+  fi
   getValue "$PROPERTY_FILE" "$2" "$3"
 }
 
@@ -1900,7 +1929,7 @@ case "$1" in
         done
       ;;
       "")
-        WORLDS=$(getEnabledWorlds)
+        WORLDS=$(getAvailableWorlds)
       ;;
       *)
         echo "Unknown list option: $2."
@@ -1914,16 +1943,25 @@ case "$1" in
         # Simple list
         for WORLD in $WORLDS; do
           WPORT=$(getPropertiesValue "$WORLD" server-port "")
-          echo "  $WORLD: $WPORT"
+          printf "  $WORLD: $WPORT"
+          if [ $(isWorldEnabled "$WORLD") -eq 0 ]; then
+            printf ' (disabled)\n'
+          else
+            printf '\n'
+          fi
         done
       ;;
       list)
         # Detailed list
         for WORLD in $WORLDS; do
-          echo "  $WORLD:"
+          printf "  $WORLD:"
+          if [ $(isWorldEnabled "$WORLD") -eq 0 ]; then
+            printf ' (disabled)\n'
+          else
+            printf '\n'
+          fi
           for PROP in $DETAILED_LISTING_PROPERTIES; do
-            echo -n "      "
-            echo -n "$PROP="
+            printf "    $PROP="
             getPropertiesValue "$WORLD" "$PROP" ""
           done
         done
