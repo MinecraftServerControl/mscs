@@ -316,7 +316,7 @@ to the file:
     MAPS_URL="http://server.com/minecraft/maps"
 
 The server settings for each world can be customized by adding certain
-key/value pairs to the world's `server.properties` file.
+key/value pairs to the world's `mscs.properties` file.
 
 The following keys are available:
 * mscs-enabled - Enable or disable the world server.
