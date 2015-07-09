@@ -204,6 +204,7 @@ DEFAULT_SERVER_COMMAND='$JAVA -Xms$INITIAL_MEMORY -Xmx$MAXIMUM_MEMORY -jar $SERV
 # key/value pairs to the world's server.properties file.
 #
 # The following keys are available:
+#   mscs-enabled         - Enable or disable the world server.
 #   mscs-version-type    - Assign the version type (release or snapshot).
 #   mscs-client-version  - Assign the version of the client software.
 #   mscs-client-jar      - Assign the .jar file for the client software.
@@ -231,6 +232,7 @@ DEFAULT_SERVER_COMMAND='$JAVA -Xms$INITIAL_MEMORY -Xmx$MAXIMUM_MEMORY -jar $SERV
 #   $SERVER_LOCATION     - The location of the server .jar file.
 #
 # The following example key/value pairs are equivalent to the default values:
+#   mscs-enabled=true
 #   mscs-version-type=release
 #   mscs-client-version=$CURRENT_VERSION
 #   mscs-client-jar=$CLIENT_VERSION.jar
@@ -251,9 +253,6 @@ DEFAULT_SERVER_COMMAND='$JAVA -Xms$INITIAL_MEMORY -Xmx$MAXIMUM_MEMORY -jar $SERV
 
 # The location to store files for each world server.
 WORLDS_LOCATION="$LOCATION/worlds"
-
-# The location to store disabled world server files.
-DISABLED_WORLDS_LOCATION="$LOCATION/worlds-disabled"
 
 # The location to store the versions.json file.
 VERSIONS_JSON="$DEFAULT_SERVER_LOCATION/versions.json"
@@ -446,6 +445,7 @@ createWorld() {
   setPropertiesValue "$1" "server-ip" "$3"
   setPropertiesValue "$1" "enable-query" "true"
   setPropertiesValue "$1" "query.port" "$2"
+  setPropertiesValue "$1" "mscs-enabled" "true"
 }
 
 # ---------------------------------------------------------------------------
@@ -464,10 +464,8 @@ deleteWorld() {
 # @param 1 The world server to disable.
 # ---------------------------------------------------------------------------
 disableWorld() {
-  # Make sure the disabled world location exists.
-  execute "mkdir -p $DISABLED_WORLDS_LOCATION" $USER_NAME
   # Disable the world.
-  execute "mv $WORLDS_LOCATION/$1 $DISABLED_WORLDS_LOCATION/$1" $USER_NAME
+  setPropertiesValue "$1" "mscs-enabled" "false"
 }
 
 # ---------------------------------------------------------------------------
@@ -477,7 +475,7 @@ disableWorld() {
 # ---------------------------------------------------------------------------
 enableWorld() {
   # Enable the world.
-  execute "mv $DISABLED_WORLDS_LOCATION/$1 $WORLDS_LOCATION/$1" $USER_NAME
+  setPropertiesValue "$1" "mscs-enabled" "true"
 }
 
 # ---------------------------------------------------------------------------
@@ -490,8 +488,10 @@ getEnabledWorlds() {
   execute "mkdir -p $WORLDS_LOCATION" $USER_NAME
   WORLDS=""
   for WORLD in $(ls $WORLDS_LOCATION); do
-    if [ -f $WORLDS_LOCATION/$WORLD/server.properties ]; then
-      WORLDS="$WORLDS $WORLD"
+    if [ -d $WORLDS_LOCATION/$WORLD ]; then
+      if [ "$(getPropertiesValue $WORLD 'mscs-enabled' 'true')" = "true" ]; then
+        WORLDS="$WORLDS $WORLD"
+      fi
     fi
   done
   echo $WORLDS
@@ -505,9 +505,11 @@ getEnabledWorlds() {
 getDisabledWorlds() {
   local WORLD WORLDS
   WORLDS=""
-  for WORLD in $(ls $DISABLED_WORLDS_LOCATION); do
-    if [ -f $DISABLED_WORLDS_LOCATION/$WORLD/server.properties ]; then
-      WORLDS="$WORLDS $WORLD"
+  for WORLD in $(ls $WORLDS_LOCATION); do
+    if [ -d $WORLDS_LOCATION/$WORLD ]; then
+      if [ "$(getPropertiesValue $WORLD 'mscs-enabled')" = "false" ]; then
+        WORLDS="$WORLDS $WORLD"
+      fi
     fi
   done
   echo $WORLDS
@@ -1821,7 +1823,9 @@ case "$1" in
   ;;
   enable)
     checkPermission
-    if [ ! -n "$2" ] || [ ! -f "$DISABLED_WORLDS_LOCATION/$2/server.properties" ]; then
+    # Get list of disabled worlds.
+    WORLDS=$(getDisabledWorlds)
+    if [ ! -n "$2" ] || [ $(listContains "$2" "$WORLDS") -eq 0 ]; then
       printf "World not found, unable to enable world '$2'.\n"
       exit 1
     fi
