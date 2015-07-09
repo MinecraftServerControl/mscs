@@ -1631,6 +1631,8 @@ worldStatus() {
       printf "running.\n"
     fi
     printf "    Process ID: %d.\n" $(getJavaPID "$1")
+  elif [ "$(getMSCSValue $1 'mscs-enabled')" = "false" ]; then
+    printf "disabled.\n"
   else
     printf "not running.\n"
   fi
@@ -1895,7 +1897,7 @@ case "$1" in
   status|show)
     checkPermission
     # Figure out which worlds to show the status for.
-    WORLDS=$(getEnabledWorlds)
+    WORLDS="$(getEnabledWorlds) $(getDisabledWorlds)"
     if [ -n "$2" ] && [ $(listContains "$2" "$WORLDS") -eq 1 ]; then
       WORLDS="$2"
     elif [ -n "$2" ]; then
