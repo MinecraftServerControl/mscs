@@ -518,7 +518,7 @@ getDisabledWorlds() {
   WORLDS=""
   for WORLD in $(ls $WORLDS_LOCATION); do
     if [ -d $WORLDS_LOCATION/$WORLD ]; then
-      if [ "$(getMSCSValue $WORLD 'mscs-enabled')" = "false" ]; then
+      if [ "$(getMSCSValue $WORLD 'mscs-enabled' 'true')" != "true" ]; then
         WORLDS="$WORLDS $WORLD"
       fi
     fi
@@ -543,7 +543,24 @@ getAvailableWorlds() {
 # ---------------------------------------------------------------------------
 isWorldEnabled() {
   local WORLDS
-  WORLDS=$(getEnabledWorlds)
+  # WORLDS=$(getEnabledWorlds)
+  # if [ -n "$1" ] && [ $(listContains "$1" "$WORLDS") -eq 1 ]; then
+  if [ "$(getMSCSValue $WORLD 'mscs-enabled' 'true')" = "true" ]; then
+    echo 1
+  else
+    echo 0
+  fi
+}
+
+# ---------------------------------------------------------------------------
+# Check to see if the world is available (exists).
+#
+# @param 1 The world of interest.
+# @return A 1 if the world is available, a 0 otherwise.
+# ---------------------------------------------------------------------------
+isWorldAvailable() {
+  local WORLDS
+  WORLDS=$(getAvailableWorlds)
   if [ -n "$1" ] && [ $(listContains "$1" "$WORLDS") -eq 1 ]; then
     echo 1
   else
@@ -1840,7 +1857,7 @@ case "$1" in
   delete|remove)
     checkPermission
     # Get list of enabled worlds.
-    WORLDS=$(getEnabledWorlds)
+    WORLDS=$(getAvailableWorlds)
     if [ ! -n "$2" ] || [ $(listContains "$2" "$WORLDS") -eq 0 ]; then
       printf "World not found, unable to delete world '$2'.\n"
       exit 1
@@ -1942,12 +1959,12 @@ case "$1" in
       ls)
         # Simple list
         for WORLD in $WORLDS; do
-          WPORT=$(getPropertiesValue "$WORLD" server-port "")
+          WPORT=$(getServerPropertiesValue "$WORLD" server-port "")
           printf "  $WORLD: $WPORT"
-          if [ $(isWorldEnabled "$WORLD") -eq 0 ]; then
-            printf ' (disabled)\n'
-          else
+          if [ $(isWorldEnabled "$WORLD") -eq 1 ]; then
             printf '\n'
+          else
+            printf ' (disabled)\n'
           fi
         done
       ;;
@@ -1955,14 +1972,14 @@ case "$1" in
         # Detailed list
         for WORLD in $WORLDS; do
           printf "  $WORLD:"
-          if [ $(isWorldEnabled "$WORLD") -eq 0 ]; then
-            printf ' (disabled)\n'
-          else
+          if [ $(isWorldEnabled "$WORLD") -eq 1 ]; then
             printf '\n'
+          else
+            printf ' (disabled)\n'
           fi
           for PROP in $DETAILED_LISTING_PROPERTIES; do
             printf "    $PROP="
-            getPropertiesValue "$WORLD" "$PROP" ""
+            getServerPropertiesValue "$WORLD" "$PROP" ""
           done
         done
       ;;
@@ -1971,10 +1988,11 @@ case "$1" in
   status|show)
     checkPermission
     # Figure out which worlds to show the status for.
-    WORLDS="$(getEnabledWorlds) $(getDisabledWorlds)"
-    if [ -n "$2" ] && [ $(listContains "$2" "$WORLDS") -eq 1 ]; then
+    if [ -z "$2" ]; then
+      WORLDS="$(getAvailableWorlds)"
+    elif [ $(isWorldAvailable "$2") -eq 1 ]; then
       WORLDS="$2"
-    elif [ -n "$2" ]; then
+    else
       printf "World '$2' not recognized.\n"
       printf "  Usage:  $0 $1 <world>\n"
       exit 1
