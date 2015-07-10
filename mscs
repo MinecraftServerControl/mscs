@@ -658,11 +658,7 @@ setMSCSValue() {
 # ---------------------------------------------------------------------------
 getServerPropertiesValue() {
   local PROPERTY_FILE
-  if [ -f "$WORLDS_LOCATION/$1/server.properties" ]; then
-    PROPERTY_FILE="$WORLDS_LOCATION/$1/server.properties"
-  else
-    PROPERTY_FILE="$DISABLED_WORLDS_LOCATION/$1/server.properties"
-  fi
+  PROPERTY_FILE="$WORLDS_LOCATION/$1/server.properties"
   getValue "$PROPERTY_FILE" "$2" "$3"
 }
 
