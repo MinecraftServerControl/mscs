@@ -90,7 +90,7 @@ Options:
       disabled  Display a list of disabled worlds.
       running   Display a list of running worlds.
       stopped   Display a list of stopped worlds.
-    If no option, 'enabled' is assumed.
+    If no option, all available worlds are listed.
 
   list <option>
     Same as 'ls' but more detailed.
