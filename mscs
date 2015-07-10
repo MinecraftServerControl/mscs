@@ -258,6 +258,9 @@ DEFAULT_SERVER_COMMAND='$JAVA -Xms$INITIAL_MEMORY -Xmx$MAXIMUM_MEMORY -jar $SERV
 # The location to store files for each world server.
 WORLDS_LOCATION="$LOCATION/worlds"
 
+# The location old disabled worlds were stored in previous versions
+OLD_DISABLED_WORLDS_LOCATION="$LOCATION/worlds-disabled"
+
 # The location to store the versions.json file.
 VERSIONS_JSON="$DEFAULT_SERVER_LOCATION/versions.json"
 
@@ -1691,8 +1694,73 @@ worldStatus() {
 }
 
 # ---------------------------------------------------------------------------
+# Migrate world from old-style MSCS configuration if necessary.
+#
+# @param 1 The world to be migrated.
+# ---------------------------------------------------------------------------
+migrateOldMSCSConfig() {
+  local SERVER_PROPERTY_FILE MSCS_PROPERTY_FILE TMP_PROPERTY_FILE
+  if [ -n "$1" ] && [ $(listContains "$1" "$(getAvailableWorlds)") -eq 1 ]; then
+    SERVER_PROPERTY_FILE="$WORLDS_LOCATION/$1/server.properties"
+    MSCS_PROPERTY_FILE="$WORLDS_LOCATION/$1/mscs.properties"
+    TMP_PROPERTY_FILE="$WORLDS_LOCATION/$1/tmp.properties"
+    if [ ! -f "$MSCS_PROPERTY_FILE" ]; then
+      execute "grep ^mscs $SERVER_PROPERTY_FILE > $MSCS_PROPERTY_FILE" $USER_NAME
+      execute "grep -v ^mscs $SERVER_PROPERTY_FILE > $TMP_PROPERTY_FILE" $USER_NAME
+      execute "mv $TMP_PROPERTY_FILE $SERVER_PROPERTY_FILE" $USER_NAME
+    fi
+  else
+     echo "World $1 not found."
+  fi
+}
+
+# ---------------------------------------------------------------------------
+# Migrate old disabled worlds if any.
+# ---------------------------------------------------------------------------
+migrateOldDisabledWorlds() {
+  local WORLD WORLDS
+  if [ -d "$OLD_DISABLED_WORLDS_LOCATION" ]; then
+    # Be sure worlds directory exists
+    execute "mkdir -p '$WORLDS_LOCATION'" $USER_NAME
+
+    for WORLD in $(ls "$OLD_DISABLED_WORLDS_LOCATION"); do
+      if [ -d "$OLD_DISABLED_WORLDS_LOCATION/$WORLD" ]; then
+        echo "Migrating old version's disabled world: $WORLD"
+        execute "mv '$OLD_DISABLED_WORLDS_LOCATION/$WORLD' \
+        '$WORLDS_LOCATION'" $USER_NAME
+        migrateOldMSCSConfig "$WORLD"
+        setMSCSValue "$WORLD" mscs-enabled false
+      fi
+    done
+    # Try to remove old disabled worlds dir if empty
+    if ! execute "rmdir '$OLD_DISABLED_WORLDS_LOCATION' > /dev/null 2>&1" \
+    $USER_NAME; then
+      echo "Warning: old version's disabled world dir not emty after migration"
+      echo "    Dir: $OLD_DISABLED_WORLDS_LOCATION"
+    fi
+  fi
+}
+
+# ---------------------------------------------------------------------------
 # Begin.
 # ---------------------------------------------------------------------------
+
+# Only root or $USER_NAME should execute this script
+checkPermission
+
+# Migrate old version's disabled worlds if any
+migrateOldDisabledWorlds
+
+# Migrate config of not already migrated worlds
+if [ ! -f "$WORLDS_LOCATION/mscs-worlds-config-migrated" ]; then
+  echo "Migrating worlds to new mscs.properties config file if needed"
+  for WORLD in $(getAvailableWorlds); do
+    migrateOldMSCSConfig "$WORLD"
+  done
+  execute "touch '$WORLDS_LOCATION/mscs-worlds-config-migrated'" $USER_NAME
+  echo "Remove file '$WORLDS_LOCATION/mscs-worlds-config-migrated' to repeat"
+  echo "the migration process in the next execution."
+fi
 
 # Make sure that Java, Perl, Python, Wget, Rdiff-backup, and Socat are installed.
 if [ ! -e "$JAVA" ]; then
@@ -1731,6 +1799,8 @@ if [ ! -e "$SOCAT" ]; then
   printf "sudo apt-get install socat\n"
   exit 1
 fi
+
+
 
 
 # Respond to the command line arguments.
