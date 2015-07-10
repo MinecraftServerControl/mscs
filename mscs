@@ -543,9 +543,8 @@ getAvailableWorlds() {
 # ---------------------------------------------------------------------------
 isWorldEnabled() {
   local WORLDS
-  # WORLDS=$(getEnabledWorlds)
-  # if [ -n "$1" ] && [ $(listContains "$1" "$WORLDS") -eq 1 ]; then
-  if [ "$(getMSCSValue $WORLD 'mscs-enabled' 'true')" = "true" ]; then
+  WORLDS=$(getEnabledWorlds)
+  if [ -n "$1" ] && [ $(listContains "$1" "$WORLDS") -eq 1 ]; then
     echo 1
   else
     echo 0
