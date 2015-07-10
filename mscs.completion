@@ -30,9 +30,13 @@ _mscs() {
         WORLDS=$(list_worlds running)
         COMPREPLY=($(compgen -W "$WORLDS" -- ${COMP_WORDS[COMP_CWORD]}))
       ;;
-      delete|remove|disable|status|show|sync|send|watch|logrotate| \
-      backup|map|overviewer|list-backups|restore-backup)
+      disable|sync|send|watch|logrotate|backup|map|overviewer|\
+      list-backups|restore-backup)
         WORLDS=$(list_worlds enabled)
+        COMPREPLY=($(compgen -W "$WORLDS" -- ${COMP_WORDS[COMP_CWORD]}))
+      ;;
+      status|show|remove|delete)
+        WORLDS=$(list_worlds)
         COMPREPLY=($(compgen -W "$WORLDS" -- ${COMP_WORDS[COMP_CWORD]}))
       ;;
       enable)
