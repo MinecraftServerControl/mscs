@@ -181,7 +181,7 @@ MINECRAFT_VERSIONS_URL=https://s3.amazonaws.com/Minecraft.Download/versions/vers
 
 # Minecraft Server Settings
 # ---------------------------------------------------------------------------
-# Default settings if not provided in the world's server.properties file.
+# Default settings if not provided in the world's mscs.properties file.
 
 DEFAULT_WORLD='world'
 DEFAULT_PORT='25565'
@@ -201,9 +201,10 @@ DEFAULT_SERVER_LOCATION=$LOCATION'/server'
 DEFAULT_SERVER_COMMAND='$JAVA -Xms$INITIAL_MEMORY -Xmx$MAXIMUM_MEMORY -jar $SERVER_LOCATION/$SERVER_JAR $SERVER_ARGS'
 
 # The server settings for each world can be customized by adding certain
-# key/value pairs to the world's server.properties file.
+# key/value pairs to the world's mscs.properties file.
 #
 # The following keys are available:
+#   mscs-enabled         - Enable or disable the world server.
 #   mscs-version-type    - Assign the version type (release or snapshot).
 #   mscs-client-version  - Assign the version of the client software.
 #   mscs-client-jar      - Assign the .jar file for the client software.
@@ -231,6 +232,7 @@ DEFAULT_SERVER_COMMAND='$JAVA -Xms$INITIAL_MEMORY -Xmx$MAXIMUM_MEMORY -jar $SERV
 #   $SERVER_LOCATION     - The location of the server .jar file.
 #
 # The following example key/value pairs are equivalent to the default values:
+#   mscs-enabled=true
 #   mscs-version-type=release
 #   mscs-client-version=$CURRENT_VERSION
 #   mscs-client-jar=$CLIENT_VERSION.jar
@@ -251,9 +253,6 @@ DEFAULT_SERVER_COMMAND='$JAVA -Xms$INITIAL_MEMORY -Xmx$MAXIMUM_MEMORY -jar $SERV
 
 # The location to store files for each world server.
 WORLDS_LOCATION="$LOCATION/worlds"
-
-# The location to store disabled world server files.
-DISABLED_WORLDS_LOCATION="$LOCATION/worlds-disabled"
 
 # The location to store the versions.json file.
 VERSIONS_JSON="$DEFAULT_SERVER_LOCATION/versions.json"
@@ -441,11 +440,12 @@ createWorld() {
   # Create a basic server.properties file.  Values not supplied here
   # will use default values when the world server is first started.
   execute "mkdir -p $WORLDS_LOCATION/$1" $USER_NAME
-  setPropertiesValue "$1" "level-name" "$1"
-  setPropertiesValue "$1" "server-port" "$2"
-  setPropertiesValue "$1" "server-ip" "$3"
-  setPropertiesValue "$1" "enable-query" "true"
-  setPropertiesValue "$1" "query.port" "$2"
+  setServerPropertiesValue "$1" "level-name" "$1"
+  setServerPropertiesValue "$1" "server-port" "$2"
+  setServerPropertiesValue "$1" "server-ip" "$3"
+  setServerPropertiesValue "$1" "enable-query" "true"
+  setServerPropertiesValue "$1" "query.port" "$2"
+  setMSCSValue "$1" "mscs-enabled" "true"
 }
 
 # ---------------------------------------------------------------------------
@@ -464,10 +464,8 @@ deleteWorld() {
 # @param 1 The world server to disable.
 # ---------------------------------------------------------------------------
 disableWorld() {
-  # Make sure the disabled world location exists.
-  execute "mkdir -p $DISABLED_WORLDS_LOCATION" $USER_NAME
   # Disable the world.
-  execute "mv $WORLDS_LOCATION/$1 $DISABLED_WORLDS_LOCATION/$1" $USER_NAME
+  setMSCSValue "$1" "mscs-enabled" "false"
 }
 
 # ---------------------------------------------------------------------------
@@ -477,7 +475,7 @@ disableWorld() {
 # ---------------------------------------------------------------------------
 enableWorld() {
   # Enable the world.
-  execute "mv $DISABLED_WORLDS_LOCATION/$1 $WORLDS_LOCATION/$1" $USER_NAME
+  setMSCSValue "$1" "mscs-enabled" "true"
 }
 
 # ---------------------------------------------------------------------------
@@ -490,8 +488,10 @@ getEnabledWorlds() {
   execute "mkdir -p $WORLDS_LOCATION" $USER_NAME
   WORLDS=""
   for WORLD in $(ls $WORLDS_LOCATION); do
-    if [ -f $WORLDS_LOCATION/$WORLD/server.properties ]; then
-      WORLDS="$WORLDS $WORLD"
+    if [ -d $WORLDS_LOCATION/$WORLD ]; then
+      if [ "$(getMSCSValue $WORLD 'mscs-enabled' 'true')" = "true" ]; then
+        WORLDS="$WORLDS $WORLD"
+      fi
     fi
   done
   echo $WORLDS
@@ -505,9 +505,11 @@ getEnabledWorlds() {
 getDisabledWorlds() {
   local WORLD WORLDS
   WORLDS=""
-  for WORLD in $(ls $DISABLED_WORLDS_LOCATION); do
-    if [ -f $DISABLED_WORLDS_LOCATION/$WORLD/server.properties ]; then
-      WORLDS="$WORLDS $WORLD"
+  for WORLD in $(ls $WORLDS_LOCATION); do
+    if [ -d $WORLDS_LOCATION/$WORLD ]; then
+      if [ "$(getMSCSValue $WORLD 'mscs-enabled')" = "false" ]; then
+        WORLDS="$WORLDS $WORLD"
+      fi
     fi
   done
   echo $WORLDS
@@ -569,26 +571,52 @@ getEULAValue() {
 }
 
 # ---------------------------------------------------------------------------
-# Get the value of a key in a world properties file.
+# Get the value of a key in a mscs.properties file.
 #
 # @param 1 The world server of interest.
 # @param 2 The key to get.
 # @param 3 The default value.
 # ---------------------------------------------------------------------------
-getPropertiesValue() {
+getMSCSValue() {
+  local PROPERTY_FILE
+  PROPERTY_FILE=$WORLDS_LOCATION/$1/mscs.properties
+  getValue "$PROPERTY_FILE" "$2" "$3"
+}
+
+# ---------------------------------------------------------------------------
+# Modify the value of a key/value combo in a mscs.properties file.
+#
+# @param 1 The world server of interest.
+# @param 2 The key to modify.
+# @param 3 The value to assign to the key.
+# ---------------------------------------------------------------------------
+setMSCSValue() {
+  local PROPERTY_FILE
+  PROPERTY_FILE=$WORLDS_LOCATION/$1/mscs.properties
+  setValue "$PROPERTY_FILE" "$2" "$3"
+}
+
+# ---------------------------------------------------------------------------
+# Get the value of a key in a server.properties file.
+#
+# @param 1 The world server of interest.
+# @param 2 The key to get.
+# @param 3 The default value.
+# ---------------------------------------------------------------------------
+getServerPropertiesValue() {
   local PROPERTY_FILE
   PROPERTY_FILE=$WORLDS_LOCATION/$1/server.properties
   getValue "$PROPERTY_FILE" "$2" "$3"
 }
 
 # ---------------------------------------------------------------------------
-# Modify the value of a key/value combo in a world properties file.
+# Modify the value of a key/value combo in a server.properties file.
 #
 # @param 1 The world server of interest.
 # @param 2 The key to modify.
 # @param 3 The value to assign to the key.
 # ---------------------------------------------------------------------------
-setPropertiesValue() {
+setServerPropertiesValue() {
   local PROPERTY_FILE
   PROPERTY_FILE=$WORLDS_LOCATION/$1/server.properties
   setValue "$PROPERTY_FILE" "$2" "$3"
@@ -605,7 +633,7 @@ getCurrentMinecraftVersion() {
   # Make sure the server software directory exists.
   execute "mkdir -p $DEFAULT_SERVER_LOCATION" $USER_NAME
   # Determine the version type for the current world.
-  TYPE=$(getPropertiesValue "$1" "mscs-version-type" "$DEFAULT_VERSION_TYPE")
+  TYPE=$(getMSCSValue "$1" "mscs-version-type" "$DEFAULT_VERSION_TYPE")
   if [ -s $VERSIONS_JSON ]; then
     # Make a backup copy of the versions.json file.
     execute "cp -p $VERSIONS_JSON $VERSIONS_JSON.bak" $USER_NAME
@@ -672,7 +700,7 @@ getClientVersion() {
     exit 1
   fi
   # Get the client version, use the default version if not provided.
-  getPropertiesValue "$1" "mscs-client-version" "$DEFAULT_CLIENT_VERSION" |
+  getMSCSValue "$1" "mscs-client-version" "$DEFAULT_CLIENT_VERSION" |
   $PERL -ne '
     $current_version="'$CURRENT_VERSION'";
     $_ =~ s/\$CURRENT_VERSION/$current_version/g;
@@ -699,7 +727,7 @@ getClientJar() {
     exit 1
   fi
   # Get the client jar, use the default value if not provided.
-  getPropertiesValue "$1" "mscs-client-jar" "$DEFAULT_CLIENT_JAR" |
+  getMSCSValue "$1" "mscs-client-jar" "$DEFAULT_CLIENT_JAR" |
   $PERL -ne '
     $current_version="'$CURRENT_VERSION'";
     $client_version="'$CLIENT_VERSION'";
@@ -728,7 +756,7 @@ getClientLocation() {
     exit 1
   fi
   # Get the client location, use the default value if not provided.
-  getPropertiesValue "$1" "mscs-client-location" "$DEFAULT_CLIENT_LOCATION" |
+  getMSCSValue "$1" "mscs-client-location" "$DEFAULT_CLIENT_LOCATION" |
   $PERL -ne '
     $current_version="'$CURRENT_VERSION'";
     $client_version="'$CLIENT_VERSION'";
@@ -757,7 +785,7 @@ getClientURL() {
     exit 1
   fi
   # Get the client download URL, use the default value if not provided.
-  getPropertiesValue "$1" "mscs-client-url" "$DEFAULT_CLIENT_URL" |
+  getMSCSValue "$1" "mscs-client-url" "$DEFAULT_CLIENT_URL" |
   $PERL -ne '
     $current_version="'$CURRENT_VERSION'";
     $client_version="'$CLIENT_VERSION'";
@@ -782,7 +810,7 @@ getServerVersion() {
     exit 1
   fi
   # Get the server version, use the default version if not provided.
-  getPropertiesValue "$1" "mscs-server-version" "$DEFAULT_SERVER_VERSION" |
+  getMSCSValue "$1" "mscs-server-version" "$DEFAULT_SERVER_VERSION" |
   $PERL -ne '
     $current_version="'$CURRENT_VERSION'";
     $_ =~ s/\$CURRENT_VERSION/$current_version/g;
@@ -809,7 +837,7 @@ getServerJar() {
     exit 1
   fi
   # Get the server jar, use the default value if not provided.
-  getPropertiesValue "$1" "mscs-server-jar" "$DEFAULT_SERVER_JAR" |
+  getMSCSValue "$1" "mscs-server-jar" "$DEFAULT_SERVER_JAR" |
   $PERL -ne '
     $current_version="'$CURRENT_VERSION'";
     $server_version="'$SERVER_VERSION'";
@@ -838,7 +866,7 @@ getServerLocation() {
     exit 1
   fi
   # Get the server location, use the default value if not provided.
-  getPropertiesValue "$1" "mscs-server-location" "$DEFAULT_SERVER_LOCATION" |
+  getMSCSValue "$1" "mscs-server-location" "$DEFAULT_SERVER_LOCATION" |
   $PERL -ne '
     $current_version="'$CURRENT_VERSION'";
     $server_version="'$SERVER_VERSION'";
@@ -867,7 +895,7 @@ getServerURL() {
     exit 1
   fi
   # Get the server download URL, use the default value if not provided.
-  getPropertiesValue "$1" "mscs-server-url" "$DEFAULT_SERVER_URL" |
+  getMSCSValue "$1" "mscs-server-url" "$DEFAULT_SERVER_URL" |
   $PERL -ne '
     $current_version="'$CURRENT_VERSION'";
     $server_version="'$SERVER_VERSION'";
@@ -909,18 +937,18 @@ getServerCommand() {
   fi
   # Get the server arguments, use the default value if not provided.
   SERVER_ARGS=$(
-    getPropertiesValue "$1" "mscs-server-args" "$DEFAULT_SERVER_ARGS"
+    getMSCSValue "$1" "mscs-server-args" "$DEFAULT_SERVER_ARGS"
   )
   # Get the initial memory, use the default value if not provided.
   INITIAL_MEMORY=$(
-    getPropertiesValue "$1" "mscs-initial-memory" "$DEFAULT_INITIAL_MEMORY"
+    getMSCSValue "$1" "mscs-initial-memory" "$DEFAULT_INITIAL_MEMORY"
   )
   # Get the maximum memory, use the default value if not provided.
   MAXIMUM_MEMORY=$(
-    getPropertiesValue "$1" "mscs-maximum-memory" "$DEFAULT_MAXIMUM_MEMORY"
+    getMSCSValue "$1" "mscs-maximum-memory" "$DEFAULT_MAXIMUM_MEMORY"
   )
   # Get the server command, use the default value if not provided.
-  getPropertiesValue "$1" "mscs-server-command" "$DEFAULT_SERVER_COMMAND" |
+  getMSCSValue "$1" "mscs-server-command" "$DEFAULT_SERVER_COMMAND" |
   $PERL -ne '
     $java = "'$JAVA'";
     $current_version="'$CURRENT_VERSION'";
@@ -1123,7 +1151,7 @@ start() {
     exit 1
   fi
   # Start the Query handler if enabled.
-  if [ "$(getPropertiesValue $1 'enable-query')" = "true" ]; then
+  if [ "$(getServerPropertiesValue $1 'enable-query')" = "true" ]; then
     queryStart "$1" &
   fi
   # Create a PID file for the world server.
@@ -1398,8 +1426,8 @@ queryStart() {
   # Grab the location of the world's directory.
   WORLD_DIR="$WORLDS_LOCATION/$1"
   # Determine the IP address and port used by the query server.
-  SERVER_IP=$(getPropertiesValue $1 'server-ip' '127.0.0.1')
-  QUERY_PORT=$(getPropertiesValue $1 'query.port')
+  SERVER_IP=$(getServerPropertiesValue $1 'server-ip' '127.0.0.1')
+  QUERY_PORT=$(getServerPropertiesValue $1 'query.port')
   # Delete any old query.in or query.out buffer files.
   execute "rm -Rf $WORLD_DIR/query.in $WORLD_DIR/query.out" $USER_NAME
   # Give the server a moment to start before initializing the
@@ -1505,7 +1533,7 @@ querySendChallengePacket() {
 # ---------------------------------------------------------------------------
 queryStatus() {
   local PACKET RESPONSE TOKEN
-  if [ "$(getPropertiesValue $1 'enable-query')" = "true" ]; then
+  if [ "$(getServerPropertiesValue $1 'enable-query')" = "true" ]; then
     # Send a challenge packet to the Minecraft query server.
     TOKEN=$(querySendChallengePacket $1 | cut -f 3)
     if [ -n "$TOKEN" ]; then
@@ -1557,7 +1585,7 @@ queryStatus() {
 # ---------------------------------------------------------------------------
 queryDetailedStatus() {
   local CHALLENGE ID PACKET RESPONSE TOKEN
-  if [ "$(getPropertiesValue $1 'enable-query')" = "true" ]; then
+  if [ "$(getServerPropertiesValue $1 'enable-query')" = "true" ]; then
     # Send a challenge packet to the Minecraft query server.
     CHALLENGE=$(querySendChallengePacket $1)
     ID=$(echo "$CHALLENGE" | cut -f 2)
@@ -1597,12 +1625,14 @@ worldStatus() {
         done
         printf "    Players: %s.\n" "$PLAYERS"
       fi
-    elif [ "$(getPropertiesValue $1 'enable-query')" = "true" ]; then
+    elif [ "$(getServerPropertiesValue $1 'enable-query')" = "true" ]; then
       printf "running (query server offline).\n"
     else
       printf "running.\n"
     fi
     printf "    Process ID: %d.\n" $(getJavaPID "$1")
+  elif [ "$(getMSCSValue $1 'mscs-enabled')" = "false" ]; then
+    printf "disabled.\n"
   else
     printf "not running.\n"
   fi
@@ -1821,7 +1851,9 @@ case "$1" in
   ;;
   enable)
     checkPermission
-    if [ ! -n "$2" ] || [ ! -f "$DISABLED_WORLDS_LOCATION/$2/server.properties" ]; then
+    # Get list of disabled worlds.
+    WORLDS=$(getDisabledWorlds)
+    if [ ! -n "$2" ] || [ $(listContains "$2" "$WORLDS") -eq 0 ]; then
       printf "World not found, unable to enable world '$2'.\n"
       exit 1
     fi
@@ -1865,7 +1897,7 @@ case "$1" in
   status|show)
     checkPermission
     # Figure out which worlds to show the status for.
-    WORLDS=$(getEnabledWorlds)
+    WORLDS="$(getEnabledWorlds) $(getDisabledWorlds)"
     if [ -n "$2" ] && [ $(listContains "$2" "$WORLDS") -eq 1 ]; then
       WORLDS="$2"
     elif [ -n "$2" ]; then

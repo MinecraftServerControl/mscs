@@ -316,9 +316,10 @@ to the file:
     MAPS_URL="http://server.com/minecraft/maps"
 
 The server settings for each world can be customized by adding certain
-key/value pairs to the world's `server.properties` file.
+key/value pairs to the world's `mscs.properties` file.
 
 The following keys are available:
+* mscs-enabled - Enable or disable the world server.
 * mscs-version-type - Assign the version type (release or snapshot).
 * mscs-client-version - Assign the version of the client software.
 * mscs-client-jar - Assign the .jar file for the client software.
@@ -348,6 +349,7 @@ The following variables may be used in some of the values of the above keys:
 
 Equivalent to the default values:
 
+    mscs-enabled=true
     mscs-version-type=release
     mscs-client-version=$CURRENT_VERSION
     mscs-client-jar=$CLIENT_VERSION.jar
