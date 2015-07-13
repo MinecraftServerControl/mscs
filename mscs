@@ -83,13 +83,17 @@ Options:
   enable <world>
     Enable a disabled world server.
 
-  list <option>
+  ls <option>
     Display a list of worlds.
     Options:
       enabled   Display a list of enabled worlds, default.
       disabled  Display a list of disabled worlds.
       running   Display a list of running worlds.
       stopped   Display a list of stopped worlds.
+    If no option, all available worlds are listed.
+
+  list <option>
+    Same as 'ls' but more detailed.
 
   status <world>
     Display the status of the Minecraft world server.  Display the status of
@@ -254,6 +258,9 @@ DEFAULT_SERVER_COMMAND='$JAVA -Xms$INITIAL_MEMORY -Xmx$MAXIMUM_MEMORY -jar $SERV
 # The location to store files for each world server.
 WORLDS_LOCATION="$LOCATION/worlds"
 
+# The location old disabled worlds were stored in previous versions
+OLD_DISABLED_WORLDS_LOCATION="$LOCATION/worlds-disabled"
+
 # The location to store the versions.json file.
 VERSIONS_JSON="$DEFAULT_SERVER_LOCATION/versions.json"
 
@@ -279,6 +286,13 @@ BACKUP_DURATION=15
 
 # Length in days that logs survive.
 LOG_DURATION=15
+
+
+# Listing options
+# ---------------------------------------------------------------------------
+
+# Server properties for detailed listing (list).
+DETAILED_LISTING_PROPERTIES="motd server-ip server-port max-players level-type online-mode"
 
 
 # Mirror Image Options
@@ -507,12 +521,53 @@ getDisabledWorlds() {
   WORLDS=""
   for WORLD in $(ls $WORLDS_LOCATION); do
     if [ -d $WORLDS_LOCATION/$WORLD ]; then
-      if [ "$(getMSCSValue $WORLD 'mscs-enabled')" = "false" ]; then
+      if [ "$(getMSCSValue $WORLD 'mscs-enabled' 'true')" != "true" ]; then
         WORLDS="$WORLDS $WORLD"
       fi
     fi
   done
   echo $WORLDS
+}
+
+# ---------------------------------------------------------------------------
+# Grab the list of all available worlds.
+#
+# @return The list of all available worlds.
+# ---------------------------------------------------------------------------
+getAvailableWorlds() {
+  echo $(getEnabledWorlds) $(getDisabledWorlds)
+}
+
+# ---------------------------------------------------------------------------
+# Check to see if the world is enabled.
+#
+# @param 1 The world of interest.
+# @return A 1 if the world is enabled, a 0 otherwise.
+# ---------------------------------------------------------------------------
+isWorldEnabled() {
+  local WORLDS
+  WORLDS=$(getEnabledWorlds)
+  if [ -n "$1" ] && [ $(listContains "$1" "$WORLDS") -eq 1 ]; then
+    echo 1
+  else
+    echo 0
+  fi
+}
+
+# ---------------------------------------------------------------------------
+# Check to see if the world is available (exists).
+#
+# @param 1 The world of interest.
+# @return A 1 if the world is available, a 0 otherwise.
+# ---------------------------------------------------------------------------
+isWorldAvailable() {
+  local WORLDS
+  WORLDS=$(getAvailableWorlds)
+  if [ -n "$1" ] && [ $(listContains "$1" "$WORLDS") -eq 1 ]; then
+    echo 1
+  else
+    echo 0
+  fi
 }
 
 # ---------------------------------------------------------------------------
@@ -605,7 +660,7 @@ setMSCSValue() {
 # ---------------------------------------------------------------------------
 getServerPropertiesValue() {
   local PROPERTY_FILE
-  PROPERTY_FILE=$WORLDS_LOCATION/$1/server.properties
+  PROPERTY_FILE="$WORLDS_LOCATION/$1/server.properties"
   getValue "$PROPERTY_FILE" "$2" "$3"
 }
 
@@ -1639,8 +1694,73 @@ worldStatus() {
 }
 
 # ---------------------------------------------------------------------------
+# Migrate world from old-style MSCS configuration if necessary.
+#
+# @param 1 The world to be migrated.
+# ---------------------------------------------------------------------------
+migrateOldMSCSConfig() {
+  local SERVER_PROPERTY_FILE MSCS_PROPERTY_FILE TMP_PROPERTY_FILE
+  if [ -n "$1" ] && [ $(listContains "$1" "$(getAvailableWorlds)") -eq 1 ]; then
+    SERVER_PROPERTY_FILE="$WORLDS_LOCATION/$1/server.properties"
+    MSCS_PROPERTY_FILE="$WORLDS_LOCATION/$1/mscs.properties"
+    TMP_PROPERTY_FILE="$WORLDS_LOCATION/$1/tmp.properties"
+    if [ ! -f "$MSCS_PROPERTY_FILE" ]; then
+      execute "grep ^mscs $SERVER_PROPERTY_FILE > $MSCS_PROPERTY_FILE" $USER_NAME
+      execute "grep -v ^mscs $SERVER_PROPERTY_FILE > $TMP_PROPERTY_FILE" $USER_NAME
+      execute "mv $TMP_PROPERTY_FILE $SERVER_PROPERTY_FILE" $USER_NAME
+    fi
+  else
+     echo "World $1 not found."
+  fi
+}
+
+# ---------------------------------------------------------------------------
+# Migrate old disabled worlds if any.
+# ---------------------------------------------------------------------------
+migrateOldDisabledWorlds() {
+  local WORLD WORLDS
+  if [ -d "$OLD_DISABLED_WORLDS_LOCATION" ]; then
+    # Be sure worlds directory exists
+    execute "mkdir -p '$WORLDS_LOCATION'" $USER_NAME
+
+    for WORLD in $(ls "$OLD_DISABLED_WORLDS_LOCATION"); do
+      if [ -d "$OLD_DISABLED_WORLDS_LOCATION/$WORLD" ]; then
+        echo "Migrating old version's disabled world: $WORLD"
+        execute "mv '$OLD_DISABLED_WORLDS_LOCATION/$WORLD' \
+        '$WORLDS_LOCATION'" $USER_NAME
+        migrateOldMSCSConfig "$WORLD"
+        setMSCSValue "$WORLD" mscs-enabled false
+      fi
+    done
+    # Try to remove old disabled worlds dir if empty
+    if ! execute "rmdir '$OLD_DISABLED_WORLDS_LOCATION' > /dev/null 2>&1" \
+    $USER_NAME; then
+      echo "Warning: old version's disabled world dir not emty after migration"
+      echo "    Dir: $OLD_DISABLED_WORLDS_LOCATION"
+    fi
+  fi
+}
+
+# ---------------------------------------------------------------------------
 # Begin.
 # ---------------------------------------------------------------------------
+
+# Only root or $USER_NAME should execute this script
+checkPermission
+
+# Migrate old version's disabled worlds if any
+migrateOldDisabledWorlds
+
+# Migrate config of not already migrated worlds
+if [ ! -f "$WORLDS_LOCATION/mscs-worlds-config-migrated" ]; then
+  echo "Migrating worlds to new mscs.properties config file if needed"
+  for WORLD in $(getAvailableWorlds); do
+    migrateOldMSCSConfig "$WORLD"
+  done
+  execute "touch '$WORLDS_LOCATION/mscs-worlds-config-migrated'" $USER_NAME
+  echo "Remove file '$WORLDS_LOCATION/mscs-worlds-config-migrated' to repeat"
+  echo "the migration process in the next execution."
+fi
 
 # Make sure that Java, Perl, Python, Wget, Rdiff-backup, and Socat are installed.
 if [ ! -e "$JAVA" ]; then
@@ -1679,6 +1799,8 @@ if [ ! -e "$SOCAT" ]; then
   printf "sudo apt-get install socat\n"
   exit 1
 fi
+
+
 
 
 # Respond to the command line arguments.
@@ -1800,7 +1922,7 @@ case "$1" in
   delete|remove)
     checkPermission
     # Get list of enabled worlds.
-    WORLDS=$(getEnabledWorlds)
+    WORLDS=$(getAvailableWorlds)
     if [ ! -n "$2" ] || [ $(listContains "$2" "$WORLDS") -eq 0 ]; then
       printf "World not found, unable to delete world '$2'.\n"
       exit 1
@@ -1888,19 +2010,54 @@ case "$1" in
           fi
         done
       ;;
+      "")
+        WORLDS=$(getAvailableWorlds)
+      ;;
       *)
-        WORLDS=$(getEnabledWorlds)
+        echo "Unknown list option: $2."
+        echo "  Try '$0 help' for help."
+        exit 1
       ;;
     esac
-    echo $WORLDS
+
+    case "$1" in
+      ls)
+        # Simple list
+        for WORLD in $WORLDS; do
+          WPORT=$(getServerPropertiesValue "$WORLD" server-port "")
+          printf "  $WORLD: $WPORT"
+          if [ $(isWorldEnabled "$WORLD") -eq 1 ]; then
+            printf '\n'
+          else
+            printf ' (disabled)\n'
+          fi
+        done
+      ;;
+      list)
+        # Detailed list
+        for WORLD in $WORLDS; do
+          printf "  $WORLD:"
+          if [ $(isWorldEnabled "$WORLD") -eq 1 ]; then
+            printf '\n'
+          else
+            printf ' (disabled)\n'
+          fi
+          for PROP in $DETAILED_LISTING_PROPERTIES; do
+            printf "    $PROP="
+            getServerPropertiesValue "$WORLD" "$PROP" ""
+          done
+        done
+      ;;
+    esac
   ;;
   status|show)
     checkPermission
     # Figure out which worlds to show the status for.
-    WORLDS="$(getEnabledWorlds) $(getDisabledWorlds)"
-    if [ -n "$2" ] && [ $(listContains "$2" "$WORLDS") -eq 1 ]; then
+    if [ -z "$2" ]; then
+      WORLDS="$(getAvailableWorlds)"
+    elif [ $(isWorldAvailable "$2") -eq 1 ]; then
       WORLDS="$2"
-    elif [ -n "$2" ]; then
+    else
       printf "World '$2' not recognized.\n"
       printf "  Usage:  $0 $1 <world>\n"
       exit 1
