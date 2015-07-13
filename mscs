@@ -1715,6 +1715,21 @@ migrateOldMSCSConfig() {
 }
 
 # ---------------------------------------------------------------------------
+# Migrate all worlds from old-style MSCS configuration if necessary.
+# ---------------------------------------------------------------------------
+migrateWorldsConfig() {
+	if [ ! -f "$WORLDS_LOCATION/mscs-worlds-config-migrated" ]; then
+		echo "Migrating worlds to new mscs.properties config file if needed"
+		for WORLD in $(getAvailableWorlds); do
+		  migrateOldMSCSConfig "$WORLD"
+		done
+		execute "touch '$WORLDS_LOCATION/mscs-worlds-config-migrated'" $USER_NAME
+		echo "Remove file '$WORLDS_LOCATION/mscs-worlds-config-migrated' to repeat"
+		echo "the migration process in the next execution."
+	fi
+}
+
+# ---------------------------------------------------------------------------
 # Migrate old disabled worlds if any.
 # ---------------------------------------------------------------------------
 migrateOldDisabledWorlds() {
@@ -1748,19 +1763,11 @@ migrateOldDisabledWorlds() {
 # Only root or $USER_NAME should execute this script
 checkPermission
 
+# Migrate config of not already migrated worlds
+migrateWorldsConfig
+
 # Migrate old version's disabled worlds if any
 migrateOldDisabledWorlds
-
-# Migrate config of not already migrated worlds
-if [ ! -f "$WORLDS_LOCATION/mscs-worlds-config-migrated" ]; then
-  echo "Migrating worlds to new mscs.properties config file if needed"
-  for WORLD in $(getAvailableWorlds); do
-    migrateOldMSCSConfig "$WORLD"
-  done
-  execute "touch '$WORLDS_LOCATION/mscs-worlds-config-migrated'" $USER_NAME
-  echo "Remove file '$WORLDS_LOCATION/mscs-worlds-config-migrated' to repeat"
-  echo "the migration process in the next execution."
-fi
 
 # Make sure that Java, Perl, Python, Wget, Rdiff-backup, and Socat are installed.
 if [ ! -e "$JAVA" ]; then
@@ -1799,8 +1806,6 @@ if [ ! -e "$SOCAT" ]; then
   printf "sudo apt-get install socat\n"
   exit 1
 fi
-
-
 
 
 # Respond to the command line arguments.
