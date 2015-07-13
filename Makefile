@@ -16,6 +16,8 @@ install:
 
 update:
 	install -m 0755 mscs $(MSCS)
+	install -m 0644 mscs.service $(MSCS_SERVICE)
+	install -m 0644 mscs.completion $(MSCS_COMPLETION)
 
 clean:
 	systemctl -f disable mscs.service
