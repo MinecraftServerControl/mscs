@@ -383,7 +383,7 @@ Use the latest BungeeCord successful build (requires additional setup):
 
 ### Additional documentation
 
-More examples and documentation on server customization can be found on the [wiki](https://github.com/sandain/MinecraftServerControlScript/wiki/Server.properties-Examples) page.
+More examples and documentation on server customization can be found on the [wiki](https://github.com/sandain/MinecraftServerControlScript/wiki/Server-Customization-Examples) page.
 
 
 ## License
