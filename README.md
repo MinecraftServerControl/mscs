@@ -381,6 +381,10 @@ Use the latest BungeeCord successful build (requires additional setup):
     mscs-server-jar=BungeeCord.jar
     mscs-server-url=http://ci.md-5.net/job/BungeeCord/lastSuccessfulBuild/artifact/bootstrap/target/BungeeCord.jar
 
+### Additional documentation
+
+More examples and documentation on server customization can be found on the [wiki](https://github.com/sandain/MinecraftServerControlScript/wiki/Server.properties-Examples) page.
+
 
 ## License
 
