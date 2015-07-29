@@ -2239,16 +2239,20 @@ case "$1" in
     fi
   ;;
   restore-backup)
-    if [ -n "$2" ] && [ $(listContains "$2" "$(getEnabledWorlds)") -eq 1 ]; then
-      worldBackupRestore "$2" "$3"
-    elif [ -n "$2" ]; then
-      printf "World '$2' not recognized.\n"
-      printf "  Usage:  $0 $1 <world>\n"
-      exit 1
-    else
+    if [ -z $2 ]; then
       printf "World not supplied.\n"
       printf "  Usage:  $0 $1 <world>\n"
       exit 1
+    elif [ $(isWorldAvailable "$2") -eq 0 ]; then
+      printf "World '$2' not recognized.\n"
+      printf "  Usage:  $0 $1 <world>\n"
+      exit 1
+    elif [ $(serverRunning "$2") -eq 1 ]; then
+      printf "World '$2' is running. Stop it first\n"
+      printf "  $0 stop $2\n"
+      exit 1
+    else
+      worldBackupRestore "$2" "$3"
     fi
   ;;
   update)
