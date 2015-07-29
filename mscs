@@ -1277,7 +1277,7 @@ worldBackupList() {
     # Grab the list of backups for the world server.
     $RDIFF_BACKUP --parsable-output -l $BACKUP_LOCATION/$1 |
     while read SEC TYPE; do
-      date --date=\@$SEC -Iseconds
+      date --date=\@$SEC --rfc-3339=seconds | tr ' ' T
     done
   fi
 }
@@ -1291,7 +1291,7 @@ worldBackupList() {
 worldBackupRestore() {
   if [ -d $BACKUP_LOCATION/$1 ]; then
     worldBackup "$1"
-    execute "$RDIFF_BACKUP -r $2 $BACKUP_LOCATION/$1 $WORLDS_LOCATION/$1" $USER_NAME
+    execute "$RDIFF_BACKUP --force -r $2 $BACKUP_LOCATION/$1 $WORLDS_LOCATION/$1" $USER_NAME
   fi
 }
 
