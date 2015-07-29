@@ -543,7 +543,7 @@ getAvailableWorlds() {
 # Check to see if the world is enabled.
 #
 # @param 1 The world of interest.
-# @return A 0 if the world is enabled, a 0 otherwise.
+# @return A 0 if the world exists and is enabled, a 1 otherwise.
 # ---------------------------------------------------------------------------
 isWorldEnabled() {
   local WORLDS
@@ -559,7 +559,7 @@ isWorldEnabled() {
 # Check to see if the world is available (exists).
 #
 # @param 1 The world of interest.
-# @return A 0 if the world is available, a 1 otherwise.
+# @return A 0 if the world exists and is available, a 1 otherwise.
 # ---------------------------------------------------------------------------
 isWorldAvailable() {
   local WORLDS
@@ -1289,7 +1289,7 @@ worldBackupList() {
     # Grab the list of backups for the world server.
     $RDIFF_BACKUP --parsable-output -l $BACKUP_LOCATION/$1 |
     while read SEC TYPE; do
-      date --date=\@$SEC -Iseconds
+      date --date=\@$SEC --rfc-3339=seconds | tr ' ' T
     done
   fi
 }
@@ -1303,7 +1303,7 @@ worldBackupList() {
 worldBackupRestore() {
   if [ -d $BACKUP_LOCATION/$1 ]; then
     worldBackup "$1"
-    execute "$RDIFF_BACKUP -r $2 $BACKUP_LOCATION/$1 $WORLDS_LOCATION/$1" $USER_NAME
+    execute "$RDIFF_BACKUP --force -r $2 $BACKUP_LOCATION/$1 $WORLDS_LOCATION/$1" $USER_NAME
   fi
 }
 
@@ -2255,16 +2255,20 @@ case "$1" in
     fi
   ;;
   restore-backup)
-    if [ -n "$2" ] && listContains "$2" "$(getEnabledWorlds)"; then
-      worldBackupRestore "$2" "$3"
-    elif [ -n "$2" ]; then
-      printf "World '$2' not recognized.\n"
-      printf "  Usage:  $0 $1 <world>\n"
-      exit 1
-    else
+    if [ -z $2 ]; then
       printf "World not supplied.\n"
       printf "  Usage:  $0 $1 <world>\n"
       exit 1
+    elif ! isWorldAvailable "$2"; then
+      printf "World '$2' not recognized.\n"
+      printf "  Usage:  $0 $1 <world>\n"
+      exit 1
+    elif serverRunning "$2"; then
+      printf "World '$2' is running. Stop it first\n"
+      printf "  $0 stop $2\n"
+      exit 1
+    else
+      worldBackupRestore "$2" "$3"
     fi
   ;;
   update)
