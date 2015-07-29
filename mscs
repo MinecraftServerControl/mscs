@@ -359,7 +359,7 @@ execute() {
 # Get the PID of the Java process for the world server.
 #
 # @param 1 The world server of interest.
-# @return The Java PID.
+# @stdout The Java PID.
 # ---------------------------------------------------------------------------
 getJavaPID() {
   local PID
@@ -374,14 +374,14 @@ getJavaPID() {
 # Check to see if the world server is running.
 #
 # @param 1 The world server of interest.
-# @return A 1 if the server is thought to be running, a 0 otherwise.
+# @return A 0 if the server is thought to be running, a 1 otherwise.
 # ---------------------------------------------------------------------------
 serverRunning() {
   # Try to determine if the world is running.
   if [ $(getJavaPID "$1") -gt 0 ]; then
-    echo 1
+    return 0
   else
-    echo 0
+    return 1
   fi
 }
 
@@ -402,17 +402,17 @@ sendCommand() {
 #
 # @param 1 The item being searched for.
 # @param 2 The list being searched.
-# @return A 1 if the list contains the item, a 0 otherwise.
+# @return A 0 if the list contains the item, a 1 otherwise.
 # ---------------------------------------------------------------------------
 listContains() {
   local MATCH ITEM
-  MATCH=0
+  MATCH=1
   for ITEM in $2; do
     if [ "$ITEM" = "$1" ]; then
-      MATCH=1
+      MATCH=0
     fi
   done
-  echo $MATCH
+  return $MATCH
 }
 
 # ---------------------------------------------------------------------------
@@ -420,7 +420,7 @@ listContains() {
 #
 # @param 1 The first datetime string.
 # @param 2 The second datetime string.
-# @return The result of the comparison: -1, 0, 1.
+# @stdout The result of the comparison: -1, 0, 1.
 # ---------------------------------------------------------------------------
 compareTime() {
   local T1 T2
@@ -434,7 +434,7 @@ compareTime() {
 #
 # @param 1 The first Minecraft version number.
 # @param 2 The second Minecraft version number.
-# @return The result of the comparison: -1, 0, 1.
+# @stdout The result of the comparison: -1, 0, 1.
 # ---------------------------------------------------------------------------
 compareMinecraftVersions() {
   local T1 T2
@@ -495,7 +495,7 @@ enableWorld() {
 # ---------------------------------------------------------------------------
 # Grab the list of enabled worlds.
 #
-# @return The list of enabled worlds.
+# @stdout The list of enabled worlds.
 # ---------------------------------------------------------------------------
 getEnabledWorlds() {
   local WORLD WORLDS
@@ -514,7 +514,7 @@ getEnabledWorlds() {
 # ---------------------------------------------------------------------------
 # Grab the list of disabled worlds.
 #
-# @return The list of disabled worlds.
+# @stdout The list of disabled worlds.
 # ---------------------------------------------------------------------------
 getDisabledWorlds() {
   local WORLD WORLDS
@@ -532,7 +532,7 @@ getDisabledWorlds() {
 # ---------------------------------------------------------------------------
 # Grab the list of all available worlds.
 #
-# @return The list of all available worlds.
+# @stdout The list of all available worlds.
 # ---------------------------------------------------------------------------
 getAvailableWorlds() {
   echo $(getEnabledWorlds) $(getDisabledWorlds)
@@ -542,15 +542,15 @@ getAvailableWorlds() {
 # Check to see if the world is enabled.
 #
 # @param 1 The world of interest.
-# @return A 1 if the world is enabled, a 0 otherwise.
+# @return A 0 if the world is enabled, a 0 otherwise.
 # ---------------------------------------------------------------------------
 isWorldEnabled() {
   local WORLDS
   WORLDS=$(getEnabledWorlds)
-  if [ -n "$1" ] && [ $(listContains "$1" "$WORLDS") -eq 1 ]; then
-    echo 1
+  if [ -n "$1" ] && listContains "$1" "$WORLDS"; then
+    return 0
   else
-    echo 0
+    return 1
   fi
 }
 
@@ -558,15 +558,15 @@ isWorldEnabled() {
 # Check to see if the world is available (exists).
 #
 # @param 1 The world of interest.
-# @return A 1 if the world is available, a 0 otherwise.
+# @return A 0 if the world is available, a 1 otherwise.
 # ---------------------------------------------------------------------------
 isWorldAvailable() {
   local WORLDS
   WORLDS=$(getAvailableWorlds)
-  if [ -n "$1" ] && [ $(listContains "$1" "$WORLDS") -eq 1 ]; then
-    echo 1
+  if [ -n "$1" ] && listContains "$1" "$WORLDS"; then
+    return 0
   else
-    echo 0
+    return 1
   fi
 }
 
@@ -681,7 +681,7 @@ setServerPropertiesValue() {
 # Get the current Minecraft version number.
 #
 # @param 1 The world server.
-# @return The current Minecraft version number.
+# @stdout The current Minecraft version number.
 # ---------------------------------------------------------------------------
 getCurrentMinecraftVersion() {
   local VERSION TYPE
@@ -724,7 +724,7 @@ getCurrentMinecraftVersion() {
 # Get the release time of the Minecraft version number.
 #
 # @param 1 The Minecraft version number.
-# @return The release time of the Minecraft version number.
+# @stdout The release time of the Minecraft version number.
 # ---------------------------------------------------------------------------
 getMinecraftVersionReleaseTime() {
   cat $VERSIONS_JSON | $PERL -e '
@@ -745,7 +745,7 @@ getMinecraftVersionReleaseTime() {
 # Retrieve the version of the client for the world.
 #
 # @param 1 The world server.
-# @return CLIENT_VERSION
+# @stdout CLIENT_VERSION
 # ---------------------------------------------------------------------------
 getClientVersion() {
   local CURRENT_VERSION
@@ -767,7 +767,7 @@ getClientVersion() {
 # Retrieve the .jar file name for the client for the world.
 #
 # @param 1 The world server.
-# @return CLIENT_JAR
+# @stdout CLIENT_JAR
 # ---------------------------------------------------------------------------
 getClientJar() {
   local CURRENT_VERSION CLIENT_VERSION
@@ -796,7 +796,7 @@ getClientJar() {
 # Retrieve the location of the client files for the world.
 #
 # @param 1 The world server.
-# @return CLIENT_LOCATION
+# @stdout CLIENT_LOCATION
 # ---------------------------------------------------------------------------
 getClientLocation() {
   local CURRENT_VERSION CLIENT_VERSION
@@ -825,7 +825,7 @@ getClientLocation() {
 # Retrieve the URL to download the client for the world.
 #
 # @param 1 The world server.
-# @return CLIENT_URL
+# @stdout CLIENT_URL
 # ---------------------------------------------------------------------------
 getClientURL() {
   local CURRENT_VERSION CLIENT_VERSION
@@ -855,7 +855,7 @@ getClientURL() {
 # Retrieve the version of the server running the world.
 #
 # @param 1 The world server.
-# @return SERVER_VERSION
+# @stdout SERVER_VERSION
 # ---------------------------------------------------------------------------
 getServerVersion() {
   local CURRENT_VERSION
@@ -877,7 +877,7 @@ getServerVersion() {
 # Retrieve the .jar file name for the server running the world.
 #
 # @param 1 The world server.
-# @return SERVER_JAR
+# @stdout SERVER_JAR
 # ---------------------------------------------------------------------------
 getServerJar() {
   local CURRENT_VERSION SERVER_VERSION SERVER_JAR
@@ -906,7 +906,7 @@ getServerJar() {
 # Retrieve the location of the server files for the server running the world.
 #
 # @param 1 The world server.
-# @return SERVER_LOCATION
+# @stdout SERVER_LOCATION
 # ---------------------------------------------------------------------------
 getServerLocation() {
   local CURRENT_VERSION SERVER_VERSION
@@ -935,7 +935,7 @@ getServerLocation() {
 # Retrieve the URL to download the server running the world.
 #
 # @param 1 The world server.
-# @return SERVER_URL
+# @stdout SERVER_URL
 # ---------------------------------------------------------------------------
 getServerURL() {
   local CURRENT_VERSION SERVER_VERSION
@@ -965,7 +965,7 @@ getServerURL() {
 # Retrieve the command to start the server running the world.
 #
 # @param 1 The world server.
-# @return SERVER_COMMAND
+# @stdout SERVER_COMMAND
 # ---------------------------------------------------------------------------
 getServerCommand() {
   local CURRENT_VERSION SERVER_VERSION SERVER_JAR SERVER_LOCATION
@@ -1375,7 +1375,11 @@ updateServerSoftware() {
 # ---------------------------------------------------------------------------
 overviewer() {
   local CLIENT_JAR CLIENT_LOCATION SERVER_RUNNING
-  SERVER_RUNNING=$(serverRunning $1)
+  if serverRunning $1; then
+    SERVER_RUNNING=1
+  else
+    SERVER_RUNNING=0
+  fi
   # Announce the mapping of the world to players.
   if [ $SERVER_RUNNING -eq 1 ]; then
     if [ $(compareMinecraftVersions $(getServerVersion $1) 1.7) -ge 0 ]; then
@@ -1513,7 +1517,7 @@ queryStart() {
 # @param 2 The packet type.
 # @param 3 The packet payload.
 # @param 4 The response format.
-# @return The response from the Query server in the requested format.
+# @stdout The response from the Query server in the requested format.
 # ---------------------------------------------------------------------------
 querySendPacket() {
   local ID PACKET RESPONSE WORLD_DIR
@@ -1556,7 +1560,7 @@ querySendPacket() {
 # Send a challenge packet to the Minecraft query server.
 #
 # @param 1 The world server of interest.
-# @return Tab separated values:
+# @stdout Tab separated values:
 #           type       - The packet type.
 #           id         - The packet identifier.
 #           token      - The token.
@@ -1575,7 +1579,7 @@ querySendChallengePacket() {
 # Send a status query to the Minecraft query server.
 #
 # @param 1 The world server of interest.
-# @return Tab separated values:
+# @stdout Tab separated values:
 #           type       - The packet type.
 #           id         - The packet identifier.
 #           MOTD       - The world's message of the day.
@@ -1606,7 +1610,7 @@ queryStatus() {
 # Send a detailed status query to the Minecraft query server.
 #
 # @param 1 The world server of interest.
-# @return Tab separated values:
+# @stdout Tab separated values:
 #           type       - The packet type.
 #           id         - The packet identifier.
 #           *          - The string 'splitnum'.
@@ -1664,7 +1668,7 @@ queryDetailedStatus() {
 # ---------------------------------------------------------------------------
 worldStatus() {
   local STATUS NUM MAX PLAYERS COUNTER VERSION
-  if [ $(serverRunning $1) -eq 1 ]; then
+  if serverRunning $1; then
     STATUS=$(queryDetailedStatus $1)
     if [ -n "$STATUS" ]; then
       NUM=$(echo "$STATUS" | cut -f 19)
@@ -1700,7 +1704,7 @@ worldStatus() {
 # ---------------------------------------------------------------------------
 migrateOldMSCSConfig() {
   local SERVER_PROPERTY_FILE MSCS_PROPERTY_FILE TMP_PROPERTY_FILE
-  if [ -n "$1" ] && [ $(listContains "$1" "$(getAvailableWorlds)") -eq 1 ]; then
+  if isWorldAvailable "$1"; then
     SERVER_PROPERTY_FILE="$WORLDS_LOCATION/$1/server.properties"
     MSCS_PROPERTY_FILE="$WORLDS_LOCATION/$1/mscs.properties"
     TMP_PROPERTY_FILE="$WORLDS_LOCATION/$1/tmp.properties"
@@ -1820,7 +1824,7 @@ case "$1" in
       createWorld "$DEFAULT_WORLD" "$DEFAULT_PORT" "$DEFAULT_IP"
     fi
     # If an optional argument was supplied, verify it is a valid world.
-    if [ -n "$2" ] && [ $(listContains "$2" "$WORLDS") -eq 1 ]; then
+    if [ -n "$2" ] && listContains "$2" "$WORLDS"; then
       WORLDS="$2"
     elif [ -n "$2" ]; then
       printf "World '$2' not recognized.\n"
@@ -1830,7 +1834,7 @@ case "$1" in
     # Start each world requested, if not already running.
     printf "Starting Minecraft Server:"
     for WORLD in $WORLDS; do
-      if [ $(serverRunning $WORLD) -eq 0 ]; then
+      if ! serverRunning $WORLD; then
         printf " $WORLD"
         start $WORLD
       fi
@@ -1841,7 +1845,7 @@ case "$1" in
     checkPermission
     # Figure out which worlds to stop.
     WORLDS=$(getEnabledWorlds)
-    if [ -n "$2" ] && [ $(listContains "$2" "$WORLDS") -eq 1 ]; then
+    if [ -n "$2" ] && listContains "$2" "$WORLDS"; then
       WORLDS="$2"
     elif [ -n "$2" ]; then
       printf "World '$2' not recognized.\n"
@@ -1852,7 +1856,7 @@ case "$1" in
     printf "Stopping Minecraft Server:"
     for WORLD in $WORLDS; do
       # Try to stop the world cleanly.
-      if [ $(serverRunning $WORLD) -eq 1 ]; then
+      if serverRunning $WORLD; then
         printf " $WORLD"
         if [ $(printf "%d" $(queryStatus $WORLD | cut -f6)) -gt 0 ]; then
           sendCommand $WORLD "say The server admin has initiated a server shut down."
@@ -1878,7 +1882,7 @@ case "$1" in
     checkPermission
     # Figure out which worlds to restart.
     WORLDS=$(getEnabledWorlds)
-    if [ -n "$2" ] && [ $(listContains "$2" "$WORLDS") -eq 1 ]; then
+    if [ -n "$2" ] && listContains "$2" "$WORLDS"; then
       WORLDS="$2"
     elif [ -n "$2" ]; then
       printf "World '$2' not recognized.\n"
@@ -1890,7 +1894,7 @@ case "$1" in
     printf "Restarting Minecraft Server:"
     for WORLD in $WORLDS; do
       printf " $WORLD"
-      if [ $(serverRunning $WORLD) -eq 1 ]; then
+      if serverRunning $WORLD; then
         if [ $(printf "%d" $(queryStatus $WORLD | cut -f6)) -gt 0 ]; then
           sendCommand $WORLD "say The server admin has initiated a server restart."
           sendCommand $WORLD "say The server will restart in 1 minute..."
@@ -1928,12 +1932,12 @@ case "$1" in
     checkPermission
     # Get list of enabled worlds.
     WORLDS=$(getAvailableWorlds)
-    if [ ! -n "$2" ] || [ $(listContains "$2" "$WORLDS") -eq 0 ]; then
+    if [ -z "$2" ] || ! listContains "$2" "$WORLDS"; then
       printf "World not found, unable to delete world '$2'.\n"
       exit 1
     fi
     printf "Deleting Minecraft world: $2"
-    if [ $(serverRunning "$2") -eq 1 ]; then
+    if serverRunning "$2"; then
       # If the world server has users logged in, announce that the world is
       # being deleted.
       if [ $(printf "%d" $(queryStatus $2 | cut -f6)) -gt 0 ]; then
@@ -1954,12 +1958,12 @@ case "$1" in
     checkPermission
     # Get list of enabled worlds.
     WORLDS=$(getEnabledWorlds)
-    if [ ! -n "$2" ] || [ $(listContains "$2" "$WORLDS") -eq 0 ]; then
+    if [ ! -n "$2" ] || ! listContains "$2" "$WORLDS"; then
       printf "World not found, unable to disable world '$2'.\n"
       exit 1
     fi
     printf "Disabling Minecraft world: $2"
-    if [ $(serverRunning "$2") -eq 1 ]; then
+    if serverRunning "$2"; then
       # If the world server has users logged in, announce that the world is
       # being disabled.
       if [ $(printf "%d" $(queryStatus $2 | cut -f6)) -gt 0 ]; then
@@ -1980,7 +1984,7 @@ case "$1" in
     checkPermission
     # Get list of disabled worlds.
     WORLDS=$(getDisabledWorlds)
-    if [ ! -n "$2" ] || [ $(listContains "$2" "$WORLDS") -eq 0 ]; then
+    if [ -z "$2" ] || ! listContains "$2" "$WORLDS"; then
       printf "World not found, unable to enable world '$2'.\n"
       exit 1
     fi
@@ -2003,14 +2007,14 @@ case "$1" in
       ;;
       running)
         for WORLD in $(getEnabledWorlds); do
-          if [ $(serverRunning $WORLD) -eq 1 ]; then
+          if serverRunning $WORLD; then
             WORLDS="$WORLDS $WORLD"
           fi
         done
       ;;
       stopped)
         for WORLD in $(getEnabledWorlds); do
-          if [ $(serverRunning $WORLD) -eq 0 ]; then
+          if ! serverRunning $WORLD; then
             WORLDS="$WORLDS $WORLD"
           fi
         done
@@ -2031,7 +2035,7 @@ case "$1" in
         for WORLD in $WORLDS; do
           WPORT=$(getServerPropertiesValue "$WORLD" server-port "")
           printf "  $WORLD: $WPORT"
-          if [ $(isWorldEnabled "$WORLD") -eq 1 ]; then
+          if isWorldEnabled "$WORLD"; then
             printf '\n'
           else
             printf ' (disabled)\n'
@@ -2042,7 +2046,7 @@ case "$1" in
         # Detailed list
         for WORLD in $WORLDS; do
           printf "  $WORLD:"
-          if [ $(isWorldEnabled "$WORLD") -eq 1 ]; then
+          if isWorldEnabled "$WORLD"; then
             printf '\n'
           else
             printf ' (disabled)\n'
@@ -2060,7 +2064,7 @@ case "$1" in
     # Figure out which worlds to show the status for.
     if [ -z "$2" ]; then
       WORLDS="$(getAvailableWorlds)"
-    elif [ $(isWorldAvailable "$2") -eq 1 ]; then
+    elif isWorldAvailable "$2"; then
       WORLDS="$2"
     else
       printf "World '$2' not recognized.\n"
@@ -2078,7 +2082,7 @@ case "$1" in
     checkPermission
     # Figure out which worlds to synchronize.
     WORLDS=$(getEnabledWorlds)
-    if [ -n "$2" ] && [ $(listContains "$2" "$WORLDS") -eq 1 ]; then
+    if [ -n "$2" ] && listContains "$2" "$WORLDS"; then
       WORLDS="$2"
     elif [ -n "$2" ]; then
       printf "World '$2' not recognized.\n"
@@ -2088,7 +2092,7 @@ case "$1" in
     # Synchronize the images for each world.
     printf "Synchronizing Minecraft Server:"
     for WORLD in $WORLDS; do
-      if [ $(serverRunning $WORLD) -eq 1 ]; then
+      if serverRunning $WORLD; then
         printf " $WORLD"
         sendCommand $WORLD "save-all"
         if [ $ENABLE_MIRROR -eq 1 ]; then
@@ -2111,7 +2115,7 @@ case "$1" in
       # Broadcast the message to all of the enabled worlds.
       printf "Broadcasting command to world:"
       for WORLD in $WORLDS; do
-        if [ $(serverRunning $WORLD) -eq 1 ]; then
+        if serverRunning $WORLD; then
           printf " $WORLD"
           sendCommand $WORLD "$*"
         fi
@@ -2128,7 +2132,7 @@ case "$1" in
     # Get list of enabled worlds.
     WORLDS=$(getEnabledWorlds)
     # Check for the world command line argument.
-    if [ -n "$2" ] && [ $(listContains $2 "$WORLDS") -eq 1 ] && [ -n "$3" ]; then
+    if [ -n "$2" ] && listContains $2 "$WORLDS" && [ -n "$3" ]; then
       WORLD=$2
       shift 2
       printf "Sending command to world: $WORLD - '$*'.\n"
@@ -2144,7 +2148,7 @@ case "$1" in
     # Get list of enabled worlds.
     WORLDS=$(getEnabledWorlds)
     # Check for the world command line argument.
-    if [ -n "$2" ] && [ $(listContains $2 "$WORLDS") -eq 1 ]; then
+    if [ -n "$2" ] && listContains $2 "$WORLDS"; then
       printf "Connecting to server console: $2.\n"
       printf "  Hit <Ctrl-D> to detach.\n"
       sleep 3
@@ -2164,7 +2168,7 @@ case "$1" in
     # Get list of enabled worlds.
     WORLDS=$(getEnabledWorlds)
     # Check for the world command line argument.
-    if [ -n "$2" ] && [ $(listContains $2 "$WORLDS") -eq 1 ]; then
+    if [ -n "$2" ] && listContains $2 "$WORLDS"; then
       printf "Monitoring Minecraft Server: $2.\n"
       watchLog $2
     else
@@ -2181,7 +2185,7 @@ case "$1" in
     checkPermission
     # Figure out which worlds to rotate the log.
     WORLDS=$(getEnabledWorlds)
-    if [ -n "$2" ] && [ $(listContains "$2" "$WORLDS") -eq 1 ]; then
+    if [ -n "$2" ] && listContains "$2" "$WORLDS"; then
       WORLDS="$2"
     elif [ -n "$2" ]; then
       printf "World '$2' not recognized.\n"
@@ -2200,7 +2204,7 @@ case "$1" in
     checkPermission
     # Figure out which worlds to backup.
     WORLDS=$(getEnabledWorlds)
-    if [ -n "$2" ] && [ $(listContains "$2" "$WORLDS") -eq 1 ]; then
+    if [ -n "$2" ] && listContains "$2" "$WORLDS"; then
       WORLDS="$2"
     elif [ -n "$2" ]; then
       printf "World '$2' not recognized.\n"
@@ -2211,7 +2215,7 @@ case "$1" in
     printf "Backing up Minecraft Server:"
     for WORLD in $WORLDS; do
       printf " $WORLD"
-      if [ $(serverRunning $WORLD) -eq 1 ]; then
+      if serverRunning $WORLD; then
         sendCommand $WORLD "say Backing up the world."
         sendCommand $WORLD "save-all"
         sendCommand $WORLD "save-off"
@@ -2226,7 +2230,7 @@ case "$1" in
     printf ".\n"
   ;;
   list-backups)
-    if [ -n "$2" ] && [ $(listContains "$2" "$(getEnabledWorlds)") -eq 1 ]; then
+    if [ -n "$2" ] && listContains "$2" "$(getEnabledWorlds)"; then
       worldBackupList "$2"
     elif [ -n "$2" ]; then
       printf "World '$2' not recognized.\n"
@@ -2239,7 +2243,7 @@ case "$1" in
     fi
   ;;
   restore-backup)
-    if [ -n "$2" ] && [ $(listContains "$2" "$(getEnabledWorlds)") -eq 1 ]; then
+    if [ -n "$2" ] && listContains "$2" "$(getEnabledWorlds)"; then
       worldBackupRestore "$2" "$3"
     elif [ -n "$2" ]; then
       printf "World '$2' not recognized.\n"
@@ -2255,7 +2259,7 @@ case "$1" in
     checkPermission
     # Figure out which worlds to update.
     WORLDS=$(getEnabledWorlds)
-    if [ -n "$2" ] && [ $(listContains "$2" "$WORLDS") -eq 1 ]; then
+    if [ -n "$2" ] && listContains "$2" "$WORLDS"; then
       WORLDS="$2"
     elif [ -n "$2" ]; then
       printf "World '$2' not recognized.\n"
@@ -2266,7 +2270,7 @@ case "$1" in
     RUNNING=
     printf "Stopping Minecraft Server:"
     for WORLD in $WORLDS; do
-      if [ $(serverRunning $WORLD) -eq 1 ]; then
+      if serverRunning $WORLD; then
         RUNNING="$RUNNING $WORLD"
         printf " $WORLD"
         if [ $(printf "%d" $(queryStatus $WORLD | cut -f6)) -gt 0 ]; then
@@ -2310,7 +2314,7 @@ case "$1" in
     fi
     # Figure out which worlds to map.
     WORLDS=$(getEnabledWorlds)
-    if [ -n "$2" ] && [ $(listContains "$2" "$WORLDS") -eq 1 ]; then
+    if [ -n "$2" ] && listContains "$2" "$WORLDS"; then
       WORLDS="$2"
     elif [ -n "$2" ]; then
       printf "World '$2' not recognized.\n"
