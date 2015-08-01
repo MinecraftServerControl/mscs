@@ -343,6 +343,7 @@ fi
 #
 # @param 1 The command to execute.
 # @param 2 The user name to execute the command with.
+# @return The return value of the executed command
 # ---------------------------------------------------------------------------
 execute() {
   if [ $(id -u) -eq 0 ]; then
@@ -1252,18 +1253,29 @@ forceStop() {
 # Backup the world server.
 #
 # @param 1 The world server to backup.
+# @return A 0 if backup successful, a 1 otherwise
 # ---------------------------------------------------------------------------
 worldBackup() {
   # Make sure that the backup location exists.
-  execute "mkdir -p $BACKUP_LOCATION" $USER_NAME
+  if ! execute "mkdir -p $BACKUP_LOCATION" $USER_NAME; then
+    echo "Error creating backup dir $BACKUP_LOCATION"
+    return 1
+  fi
   # Create the backup.
-  execute "$RDIFF_BACKUP -v5 --print-statistics $WORLDS_LOCATION/$1 $BACKUP_LOCATION/$1 >> $BACKUP_LOG" $USER_NAME
+  if ! execute "$RDIFF_BACKUP -v5 --print-statistics $WORLDS_LOCATION/$1 $BACKUP_LOCATION/$1 >> $BACKUP_LOG" $USER_NAME; then
+    echo "Error doing backup of world $1"
+    return 1
+  fi
   # Set the permissions for the backup location.
   execute "chmod a+rX -R $BACKUP_LOCATION" $USER_NAME
   # Cleanup old backups.
   if [ $BACKUP_DURATION -gt 0 ]; then
-    execute "$RDIFF_BACKUP --remove-older-than ${BACKUP_DURATION}D --force $BACKUP_LOCATION/$1 >> $BACKUP_LOG" $USER_NAME
+    if ! execute "$RDIFF_BACKUP --remove-older-than ${BACKUP_DURATION}D --force $BACKUP_LOCATION/$1 >> $BACKUP_LOG" $USER_NAME; then
+      echo "Error cleaning old backups of world $1"
+      return 1
+    fi
   fi
+  return 0
 }
 
 # ---------------------------------------------------------------------------
