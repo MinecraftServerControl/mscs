@@ -360,7 +360,7 @@ execute() {
 # Get the PID of the Java process for the world server.
 #
 # @param 1 The world server of interest.
-# @stdout The Java PID.
+# @return The Java PID.
 # ---------------------------------------------------------------------------
 getJavaPID() {
   local PID
@@ -421,7 +421,7 @@ listContains() {
 #
 # @param 1 The first datetime string.
 # @param 2 The second datetime string.
-# @stdout The result of the comparison: -1, 0, 1.
+# @return The result of the comparison: -1, 0, 1.
 # ---------------------------------------------------------------------------
 compareTime() {
   local T1 T2
@@ -435,7 +435,7 @@ compareTime() {
 #
 # @param 1 The first Minecraft version number.
 # @param 2 The second Minecraft version number.
-# @stdout The result of the comparison: -1, 0, 1.
+# @return The result of the comparison: -1, 0, 1.
 # ---------------------------------------------------------------------------
 compareMinecraftVersions() {
   local T1 T2
@@ -496,7 +496,7 @@ enableWorld() {
 # ---------------------------------------------------------------------------
 # Grab the list of enabled worlds.
 #
-# @stdout The list of enabled worlds.
+# @return The list of enabled worlds.
 # ---------------------------------------------------------------------------
 getEnabledWorlds() {
   local WORLD WORLDS
@@ -515,7 +515,7 @@ getEnabledWorlds() {
 # ---------------------------------------------------------------------------
 # Grab the list of disabled worlds.
 #
-# @stdout The list of disabled worlds.
+# @return The list of disabled worlds.
 # ---------------------------------------------------------------------------
 getDisabledWorlds() {
   local WORLD WORLDS
@@ -533,7 +533,7 @@ getDisabledWorlds() {
 # ---------------------------------------------------------------------------
 # Grab the list of all available worlds.
 #
-# @stdout The list of all available worlds.
+# @return The list of all available worlds.
 # ---------------------------------------------------------------------------
 getAvailableWorlds() {
   echo $(getEnabledWorlds) $(getDisabledWorlds)
@@ -682,7 +682,7 @@ setServerPropertiesValue() {
 # Get the current Minecraft version number.
 #
 # @param 1 The world server.
-# @stdout The current Minecraft version number.
+# @return The current Minecraft version number.
 # ---------------------------------------------------------------------------
 getCurrentMinecraftVersion() {
   local VERSION TYPE
@@ -725,7 +725,7 @@ getCurrentMinecraftVersion() {
 # Get the release time of the Minecraft version number.
 #
 # @param 1 The Minecraft version number.
-# @stdout The release time of the Minecraft version number.
+# @return The release time of the Minecraft version number.
 # ---------------------------------------------------------------------------
 getMinecraftVersionReleaseTime() {
   cat $VERSIONS_JSON | $PERL -e '
@@ -746,7 +746,7 @@ getMinecraftVersionReleaseTime() {
 # Retrieve the version of the client for the world.
 #
 # @param 1 The world server.
-# @stdout CLIENT_VERSION
+# @return CLIENT_VERSION
 # ---------------------------------------------------------------------------
 getClientVersion() {
   local CURRENT_VERSION
@@ -768,7 +768,7 @@ getClientVersion() {
 # Retrieve the .jar file name for the client for the world.
 #
 # @param 1 The world server.
-# @stdout CLIENT_JAR
+# @return CLIENT_JAR
 # ---------------------------------------------------------------------------
 getClientJar() {
   local CURRENT_VERSION CLIENT_VERSION
@@ -797,7 +797,7 @@ getClientJar() {
 # Retrieve the location of the client files for the world.
 #
 # @param 1 The world server.
-# @stdout CLIENT_LOCATION
+# @return CLIENT_LOCATION
 # ---------------------------------------------------------------------------
 getClientLocation() {
   local CURRENT_VERSION CLIENT_VERSION
@@ -826,7 +826,7 @@ getClientLocation() {
 # Retrieve the URL to download the client for the world.
 #
 # @param 1 The world server.
-# @stdout CLIENT_URL
+# @return CLIENT_URL
 # ---------------------------------------------------------------------------
 getClientURL() {
   local CURRENT_VERSION CLIENT_VERSION
@@ -856,7 +856,7 @@ getClientURL() {
 # Retrieve the version of the server running the world.
 #
 # @param 1 The world server.
-# @stdout SERVER_VERSION
+# @return SERVER_VERSION
 # ---------------------------------------------------------------------------
 getServerVersion() {
   local CURRENT_VERSION
@@ -878,7 +878,7 @@ getServerVersion() {
 # Retrieve the .jar file name for the server running the world.
 #
 # @param 1 The world server.
-# @stdout SERVER_JAR
+# @return SERVER_JAR
 # ---------------------------------------------------------------------------
 getServerJar() {
   local CURRENT_VERSION SERVER_VERSION SERVER_JAR
@@ -907,7 +907,7 @@ getServerJar() {
 # Retrieve the location of the server files for the server running the world.
 #
 # @param 1 The world server.
-# @stdout SERVER_LOCATION
+# @return SERVER_LOCATION
 # ---------------------------------------------------------------------------
 getServerLocation() {
   local CURRENT_VERSION SERVER_VERSION
@@ -936,7 +936,7 @@ getServerLocation() {
 # Retrieve the URL to download the server running the world.
 #
 # @param 1 The world server.
-# @stdout SERVER_URL
+# @return SERVER_URL
 # ---------------------------------------------------------------------------
 getServerURL() {
   local CURRENT_VERSION SERVER_VERSION
@@ -966,7 +966,7 @@ getServerURL() {
 # Retrieve the command to start the server running the world.
 #
 # @param 1 The world server.
-# @stdout SERVER_COMMAND
+# @return SERVER_COMMAND
 # ---------------------------------------------------------------------------
 getServerCommand() {
   local CURRENT_VERSION SERVER_VERSION SERVER_JAR SERVER_LOCATION
@@ -1529,7 +1529,7 @@ queryStart() {
 # @param 2 The packet type.
 # @param 3 The packet payload.
 # @param 4 The response format.
-# @stdout The response from the Query server in the requested format.
+# @return The response from the Query server in the requested format.
 # ---------------------------------------------------------------------------
 querySendPacket() {
   local ID PACKET RESPONSE WORLD_DIR
@@ -1572,7 +1572,7 @@ querySendPacket() {
 # Send a challenge packet to the Minecraft query server.
 #
 # @param 1 The world server of interest.
-# @stdout Tab separated values:
+# @return Tab separated values:
 #           type       - The packet type.
 #           id         - The packet identifier.
 #           token      - The token.
@@ -1591,7 +1591,7 @@ querySendChallengePacket() {
 # Send a status query to the Minecraft query server.
 #
 # @param 1 The world server of interest.
-# @stdout Tab separated values:
+# @return Tab separated values:
 #           type       - The packet type.
 #           id         - The packet identifier.
 #           MOTD       - The world's message of the day.
@@ -1622,7 +1622,7 @@ queryStatus() {
 # Send a detailed status query to the Minecraft query server.
 #
 # @param 1 The world server of interest.
-# @stdout Tab separated values:
+# @return Tab separated values:
 #           type       - The packet type.
 #           id         - The packet identifier.
 #           *          - The string 'splitnum'.
