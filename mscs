@@ -1266,8 +1266,6 @@ worldBackup() {
     echo "Error doing backup of world $1"
     return 1
   fi
-  # Set the permissions for the backup location.
-  execute "chmod a+rX -R $BACKUP_LOCATION" $USER_NAME
   # Cleanup old backups.
   if [ $BACKUP_DURATION -gt 0 ]; then
     if ! execute "$RDIFF_BACKUP --remove-older-than ${BACKUP_DURATION}D --force $BACKUP_LOCATION/$1 >> $BACKUP_LOG" $USER_NAME; then
