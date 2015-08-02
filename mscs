@@ -48,7 +48,8 @@
 # Script Usage
 # ---------------------------------------------------------------------------
 
-USAGE=$(cat <<EOF
+usage() {
+  cat <<EOF
 Usage:  $0 <option>
 
 Options:
@@ -136,9 +137,9 @@ Options:
   update <world>
     Update the server software for the Minecraft world server.  Update
     server software for all worlds by default.
-
 EOF
-)
+}
+
 
 # Override Global Variables
 # ---------------------------------------------------------------------------
@@ -2346,12 +2347,12 @@ case "$1" in
   usage|help)
     printf "Minecraft Server Control Script\n"
     printf "\n"
-    printf "$USAGE\n"
+    usage
   ;;
   *)
     printf "Error in command line usage.\n"
     printf "\n"
-    printf "$USAGE\n"
+    usage
     exit 1
   ;;
 esac
