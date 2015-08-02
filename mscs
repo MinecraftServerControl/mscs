@@ -1297,11 +1297,25 @@ worldBackupList() {
 #
 # @param 1 The world server of interest.
 # @param 2 The datetime of the backup to restore.
+# @return A 0 on success, a 1 otherwise.
 # ---------------------------------------------------------------------------
 worldBackupRestore() {
+  local TARGET TARGET_TMP
+  TARGET="$WORLDS_LOCATION/$1"
+  TARGET_TMP="${TARGET}_bktmp"
+  execute "rm -rf $TARGET_TMP" $USER_NAME
   if [ -d $BACKUP_LOCATION/$1 ]; then
-    worldBackup "$1"
-    execute "$RDIFF_BACKUP --force -r $2 $BACKUP_LOCATION/$1 $WORLDS_LOCATION/$1" $USER_NAME
+    if execute "$RDIFF_BACKUP -r $2 $BACKUP_LOCATION/$1 $TARGET_TMP" $USER_NAME; then
+      execute "rm -r $TARGET" $USER_NAME
+      execute "mv $TARGET_TMP $TARGET" $USER_NAME
+    else
+      echo "Restoring backup failed: $1 $2"
+      execute "rm -rf $TARGET_TMP" $USER_NAME
+      return 1
+    fi
+  else
+    echo "No backups found for world $1"
+    return 1
   fi
 }
 
@@ -2265,8 +2279,11 @@ case "$1" in
       printf "World '$2' is running. Stop it first\n"
       printf "  $0 stop $2\n"
       exit 1
-    else
+    elif worldBackup "$2"; then
       worldBackupRestore "$2" "$3"
+    else
+      echo "Current world's state backup failed. Restore cancelled."
+      exit 1
     fi
   ;;
   update)
