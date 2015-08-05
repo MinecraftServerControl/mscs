@@ -1032,7 +1032,7 @@ getServerCommand() {
 # ---------------------------------------------------------------------------
 checkPermission() {
   # Make sure that the minecraft user exists.
-  if [ ! -n "$(grep $USER_NAME /etc/passwd)" ]; then
+  if [ -z "$(grep $USER_NAME /etc/passwd)" ]; then
     printf "ERROR: This script requires that a user account named "
     printf "$USER_NAME exist on this system.\nEither modify the "
     printf "USER_NAME variable in this script, or try adding this "
@@ -1957,11 +1957,11 @@ case "$1" in
   ;;
   create|new)
     checkPermission
-    if [ ! -n "$2" ]; then
+    if [ -z "$2" ]; then
       printf "A name for the new world must be supplied.\n"
       exit 1
     fi
-    if [ ! -n "$3" ]; then
+    if [ -z "$3" ]; then
       printf "A port for the new world must be supplied.\n"
       exit 1
     fi
