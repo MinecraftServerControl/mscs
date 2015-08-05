@@ -1622,7 +1622,7 @@ queryStatus() {
     TOKEN=$(querySendChallengePacket $1 | cut -f 3)
     if [ -n "$TOKEN" ]; then
       # Use the challenge token for the packet.
-      PACKET=$(printf "%.8x" $TOKEN)
+      PACKET=$(printf "%08x" $TOKEN)
       # Send the information request packet to the Minecraft query server.
       RESPONSE=$(querySendPacket "$1" "00" "$PACKET" "Cl>Z*Z*Z*Z*Z*s<Z*")
     fi
@@ -1676,7 +1676,7 @@ queryDetailedStatus() {
     TOKEN=$(echo "$CHALLENGE" | cut -f 3)
     if [ -n "$ID" ] && [ -n "$TOKEN" ]; then
       # Use the challenge token for the packet, with the ID on the end.
-      PACKET=$(printf "%.8x%.8x" $TOKEN $ID)
+      PACKET=$(printf "%08x%08x" $TOKEN $ID)
       # Send the information request packet to the Minecraft query server.
       RESPONSE=$(querySendPacket "$1" "00" "$PACKET" \
         "Cl>Z*CCZ*Z*Z*Z*Z*Z*Z*Z*Z*Z*Z*Z*Z*Z*Z*Z*Z*Z*Z*Z*CCZ*C(Z*)*")
