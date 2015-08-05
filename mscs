@@ -1622,7 +1622,7 @@ queryStatus() {
     TOKEN=$(querySendChallengePacket $1 | cut -f 3)
     if [ -n "$TOKEN" ]; then
       # Use the challenge token for the packet.
-      PACKET=$(printf "%.8x" $TOKEN)
+      PACKET=$(printf "%08x" $TOKEN)
       # Send the information request packet to the Minecraft query server.
       RESPONSE=$(querySendPacket "$1" "00" "$PACKET" "Cl>Z*Z*Z*Z*Z*s<Z*")
     fi
@@ -1676,7 +1676,7 @@ queryDetailedStatus() {
     TOKEN=$(echo "$CHALLENGE" | cut -f 3)
     if [ -n "$ID" ] && [ -n "$TOKEN" ]; then
       # Use the challenge token for the packet, with the ID on the end.
-      PACKET=$(printf "%.8x%.8x" $TOKEN $ID)
+      PACKET=$(printf "%08x%08x" $TOKEN $ID)
       # Send the information request packet to the Minecraft query server.
       RESPONSE=$(querySendPacket "$1" "00" "$PACKET" \
         "Cl>Z*CCZ*Z*Z*Z*Z*Z*Z*Z*Z*Z*Z*Z*Z*Z*Z*Z*Z*Z*Z*Z*CCZ*C(Z*)*")
@@ -1684,6 +1684,20 @@ queryDetailedStatus() {
   fi
   # Return the response.
   printf "$RESPONSE\n"
+}
+
+# ---------------------------------------------------------------------------
+# Query the number of active users from the query server.
+#
+# @param 1 The world server of interest.
+# @return Number of active users.
+# ---------------------------------------------------------------------------
+queryNumUsers() {
+  local NUM_USERS
+  NUM_USERS=$(queryStatus $1 | cut -f6)
+  # Return 0 if query server not available
+  [ -z "$NUM_USERS" ] && NUM_USERS=0
+  echo "$NUM_USERS"
 }
 
 # ---------------------------------------------------------------------------
@@ -1883,7 +1897,7 @@ case "$1" in
       # Try to stop the world cleanly.
       if serverRunning $WORLD; then
         printf " $WORLD"
-        if [ $(printf "%d" $(queryStatus $WORLD | cut -f6)) -gt 0 ]; then
+        if [ $(queryNumUsers $WORLD) -gt 0 ]; then
           sendCommand $WORLD "say The server admin has initiated a server shut down."
           sendCommand $WORLD "say The server will shut down in 1 minute..."
           sleep 60
@@ -1920,7 +1934,7 @@ case "$1" in
     for WORLD in $WORLDS; do
       printf " $WORLD"
       if serverRunning $WORLD; then
-        if [ $(printf "%d" $(queryStatus $WORLD | cut -f6)) -gt 0 ]; then
+        if [ $(queryNumUsers $WORLD) -gt 0 ]; then
           sendCommand $WORLD "say The server admin has initiated a server restart."
           sendCommand $WORLD "say The server will restart in 1 minute..."
           sleep 60
@@ -1965,7 +1979,7 @@ case "$1" in
     if serverRunning "$2"; then
       # If the world server has users logged in, announce that the world is
       # being deleted.
-      if [ $(printf "%d" $(queryStatus $2 | cut -f6)) -gt 0 ]; then
+      if [ $(queryNumUsers $WORLD) -gt 0 ]; then
         sendCommand "$2" "say The server admin is deleting this world."
         sendCommand "$2" "say The server will be deleted in 1 minute..."
         sleep 60
@@ -1991,7 +2005,7 @@ case "$1" in
     if serverRunning "$2"; then
       # If the world server has users logged in, announce that the world is
       # being disabled.
-      if [ $(printf "%d" $(queryStatus $2 | cut -f6)) -gt 0 ]; then
+      if [ $(queryNumUsers $WORLD) -gt 0 ]; then
         sendCommand "$2" "say The server admin is disabling this world."
         sendCommand "$2" "say The server will be disabled in 1 minute..."
         sleep 60
@@ -2305,7 +2319,7 @@ case "$1" in
       if serverRunning $WORLD; then
         RUNNING="$RUNNING $WORLD"
         printf " $WORLD"
-        if [ $(printf "%d" $(queryStatus $WORLD | cut -f6)) -gt 0 ]; then
+        if [ $(queryNumUsers $WORLD) -gt 0 ]; then
           sendCommand $WORLD "say The server admin has initiated a software update."
           sendCommand $WORLD "say The server will restart and update in 1 minute..."
           sleep 60
