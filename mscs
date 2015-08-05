@@ -1980,7 +1980,7 @@ case "$1" in
     if serverRunning "$2"; then
       # If the world server has users logged in, announce that the world is
       # being deleted.
-      if [ $(queryNumUsers $WORLD) -gt 0 ]; then
+      if [ $(queryNumUsers "$2") -gt 0 ]; then
         sendCommand "$2" "say The server admin is deleting this world."
         sendCommand "$2" "say The server will be deleted in 1 minute..."
         sleep 60
@@ -2005,7 +2005,7 @@ case "$1" in
     if serverRunning "$2"; then
       # If the world server has users logged in, announce that the world is
       # being disabled.
-      if [ $(queryNumUsers $WORLD) -gt 0 ]; then
+      if [ $(queryNumUsers "$2") -gt 0 ]; then
         sendCommand "$2" "say The server admin is disabling this world."
         sendCommand "$2" "say The server will be disabled in 1 minute..."
         sleep 60
