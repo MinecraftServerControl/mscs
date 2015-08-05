@@ -1858,12 +1858,12 @@ case "$1" in
     # Figure out which worlds to start.
     WORLDS=$(getEnabledWorlds)
     # If there are no worlds in the list, then use the default world.
-    if [ ! -n "$WORLDS" ]; then
+    if [ -z "$WORLDS" ]; then
       WORLDS="$DEFAULT_WORLD"
       createWorld "$DEFAULT_WORLD" "$DEFAULT_PORT" "$DEFAULT_IP"
     fi
     # If an optional argument was supplied, verify it is a valid world.
-    if [ -n "$2" ] && listContains "$2" "$WORLDS"; then
+    if isWorldEnabled "$2"; then
       WORLDS="$2"
     elif [ -n "$2" ]; then
       printf "World '$2' not recognized.\n"
@@ -1883,13 +1883,14 @@ case "$1" in
   stop|force-stop)
     checkPermission
     # Figure out which worlds to stop.
-    WORLDS=$(getEnabledWorlds)
-    if [ -n "$2" ] && listContains "$2" "$WORLDS"; then
+    if isWorldEnabled "$2"; then
       WORLDS="$2"
     elif [ -n "$2" ]; then
       printf "World '$2' not recognized.\n"
       printf "  Usage:  $0 $1 <world>\n"
       exit 1
+    else
+      WORLDS=$(getEnabledWorlds)
     fi
     # Stop each world requested, if running.
     printf "Stopping Minecraft Server:"
@@ -1920,13 +1921,14 @@ case "$1" in
   restart|reload|force-restart|force-reload)
     checkPermission
     # Figure out which worlds to restart.
-    WORLDS=$(getEnabledWorlds)
-    if [ -n "$2" ] && listContains "$2" "$WORLDS"; then
+    if isWorldEnabled "$2"; then
       WORLDS="$2"
     elif [ -n "$2" ]; then
       printf "World '$2' not recognized.\n"
       printf "  Usage:  $0 $1 <world>\n"
       exit 1
+    else
+      WORLDS=$(getEnabledWorlds)
     fi
     # Restart each world requested, start those not already
     # running.
@@ -1970,8 +1972,7 @@ case "$1" in
   delete|remove)
     checkPermission
     # Get list of enabled worlds.
-    WORLDS=$(getAvailableWorlds)
-    if [ -z "$2" ] || ! listContains "$2" "$WORLDS"; then
+    if ! isWorldAvailable "$2"; then
       printf "World not found, unable to delete world '$2'.\n"
       exit 1
     fi
@@ -1996,8 +1997,7 @@ case "$1" in
   disable)
     checkPermission
     # Get list of enabled worlds.
-    WORLDS=$(getEnabledWorlds)
-    if [ ! -n "$2" ] || ! listContains "$2" "$WORLDS"; then
+    if ! isWorldEnabled "$2"; then
       printf "World not found, unable to disable world '$2'.\n"
       exit 1
     fi
@@ -2022,9 +2022,11 @@ case "$1" in
   enable)
     checkPermission
     # Get list of disabled worlds.
-    WORLDS=$(getDisabledWorlds)
-    if [ -z "$2" ] || ! listContains "$2" "$WORLDS"; then
+    if ! isWorldAvailable "$2"; then
       printf "World not found, unable to enable world '$2'.\n"
+      exit 1
+    elif isWorldEnabled "$2"; then
+      printf "Unable to enable already enabled world '$2'.\n"
       exit 1
     fi
     printf "Enabling Minecraft world: $2"
@@ -2101,14 +2103,14 @@ case "$1" in
   status|show)
     checkPermission
     # Figure out which worlds to show the status for.
-    if [ -z "$2" ]; then
-      WORLDS="$(getAvailableWorlds)"
-    elif isWorldAvailable "$2"; then
+    if isWorldAvailable "$2"; then
       WORLDS="$2"
-    else
+    elif [ -n "$2" ]; then
       printf "World '$2' not recognized.\n"
       printf "  Usage:  $0 $1 <world>\n"
       exit 1
+    else
+      WORLDS=$(getAvailableWorlds)
     fi
     # Show the status of each world requested.
     printf "Minecraft Server Status:\n"
@@ -2120,13 +2122,14 @@ case "$1" in
   sync|synchronize)
     checkPermission
     # Figure out which worlds to synchronize.
-    WORLDS=$(getEnabledWorlds)
-    if [ -n "$2" ] && listContains "$2" "$WORLDS"; then
+    if isWorldEnabled "$2"; then
       WORLDS="$2"
     elif [ -n "$2" ]; then
       printf "World '$2' not recognized.\n"
       printf "  Usage:  $0 $1 <world>\n"
       exit 1
+    else
+      WORLDS=$(getEnabledWorlds)
     fi
     # Synchronize the images for each world.
     printf "Synchronizing Minecraft Server:"
@@ -2168,10 +2171,8 @@ case "$1" in
   ;;
   send)
     checkPermission
-    # Get list of enabled worlds.
-    WORLDS=$(getEnabledWorlds)
     # Check for the world command line argument.
-    if [ -n "$2" ] && listContains $2 "$WORLDS" && [ -n "$3" ]; then
+    if isWorldEnabled "$2" && [ -n "$3" ]; then
       WORLD=$2
       shift 2
       printf "Sending command to world: $WORLD - '$*'.\n"
@@ -2184,10 +2185,8 @@ case "$1" in
   ;;
   console)
     checkPermission
-    # Get list of enabled worlds.
-    WORLDS=$(getEnabledWorlds)
     # Check for the world command line argument.
-    if [ -n "$2" ] && listContains $2 "$WORLDS"; then
+    if isWorldEnabled "$2"; then
       printf "Connecting to server console: $2.\n"
       printf "  Hit <Ctrl-D> to detach.\n"
       sleep 3
@@ -2204,10 +2203,8 @@ case "$1" in
   ;;
   watch)
     checkPermission
-    # Get list of enabled worlds.
-    WORLDS=$(getEnabledWorlds)
     # Check for the world command line argument.
-    if [ -n "$2" ] && listContains $2 "$WORLDS"; then
+    if isWorldEnabled "$2"; then
       printf "Monitoring Minecraft Server: $2.\n"
       watchLog $2
     else
@@ -2223,13 +2220,14 @@ case "$1" in
   logrotate)
     checkPermission
     # Figure out which worlds to rotate the log.
-    WORLDS=$(getEnabledWorlds)
-    if [ -n "$2" ] && listContains "$2" "$WORLDS"; then
+    if isWorldEnabled "$2"; then
       WORLDS="$2"
     elif [ -n "$2" ]; then
-      printf "World '$2' not recognized.\n"
+      printf "World '$2' does not exist or not enabled.\n"
       printf "  Usage:  $0 $1 <world>\n"
       exit 1
+    else
+      WORLDS=$(getEnabledWorlds)
     fi
     # Backup each world requested.
     printf "Rotating Minecraft Server Log:"
@@ -2242,13 +2240,14 @@ case "$1" in
   backup)
     checkPermission
     # Figure out which worlds to backup.
-    WORLDS=$(getEnabledWorlds)
-    if [ -n "$2" ] && listContains "$2" "$WORLDS"; then
+    if isWorldEnabled "$2"; then
       WORLDS="$2"
     elif [ -n "$2" ]; then
-      printf "World '$2' not recognized.\n"
+      printf "World '$2' does not exist or not enabled.\n"
       printf "  Usage:  $0 $1 <world>\n"
       exit 1
+    else
+      WORLDS=$(getEnabledWorlds)
     fi
     # Backup each world requested.
     printf "Backing up Minecraft Server:"
@@ -2269,10 +2268,10 @@ case "$1" in
     printf ".\n"
   ;;
   list-backups)
-    if [ -n "$2" ] && listContains "$2" "$(getEnabledWorlds)"; then
+    if isWorldEnabled "$2"; then
       worldBackupList "$2"
     elif [ -n "$2" ]; then
-      printf "World '$2' not recognized.\n"
+      printf "World '$2' does not exist or not enabled.\n"
       printf "  Usage:  $0 $1 <world>\n"
       exit 1
     else
@@ -2304,13 +2303,14 @@ case "$1" in
   update)
     checkPermission
     # Figure out which worlds to update.
-    WORLDS=$(getEnabledWorlds)
-    if [ -n "$2" ] && listContains "$2" "$WORLDS"; then
+    if isWorldEnabled "$2"; then
       WORLDS="$2"
     elif [ -n "$2" ]; then
-      printf "World '$2' not recognized.\n"
+      printf "World '$2' does not exist or not enabled.\n"
       printf "  Usage:  $0 $1 <world>\n"
       exit 1
+    else
+      WORLDS=$(getEnabledWorlds)
     fi
     # Stop all of the world servers and backup the worlds.
     RUNNING=
@@ -2359,13 +2359,14 @@ case "$1" in
       exit 1
     fi
     # Figure out which worlds to map.
-    WORLDS=$(getEnabledWorlds)
-    if [ -n "$2" ] && listContains "$2" "$WORLDS"; then
+    if isWorldEnabled "$2"; then
       WORLDS="$2"
     elif [ -n "$2" ]; then
-      printf "World '$2' not recognized.\n"
+      printf "World '$2' does not exist or not enabled.\n"
       printf "  Usage:  $0 $1 <world>\n"
       exit 1
+    else
+      WORLDS=$(getEnabledWorlds)
     fi
     # Run Minecraft Overviewer on each world requested.
     printf "Running Minecraft Overviewer mapping:"
