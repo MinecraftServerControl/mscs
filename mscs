@@ -1803,14 +1803,13 @@ migrateOldDisabledWorlds() {
 # Begin.
 # ---------------------------------------------------------------------------
 
-# Only root or $USER_NAME should execute this script
-checkPermission
-
-# Migrate config of not already migrated worlds
-migrateWorldsConfig
-
-# Migrate old version's disabled worlds if any
-migrateOldDisabledWorlds
+# Migrate old config (only if executed with privileges).
+if [ $(id -u) -eq 0 ] || [ "$(whoami)" = "$USER_NAME" ]; then
+  # Migrate config of not already migrated worlds
+  migrateWorldsConfig
+  # Migrate old version's disabled worlds if any
+  migrateOldDisabledWorlds
+fi
 
 # Make sure that Java, Perl, Python, Wget, Rdiff-backup, and Socat are installed.
 if [ ! -e "$JAVA" ]; then
@@ -2281,6 +2280,7 @@ case "$1" in
     fi
   ;;
   restore-backup)
+    checkPermission
     if [ -z $2 ]; then
       printf "World not supplied.\n"
       printf "  Usage:  $0 $1 <world>\n"
