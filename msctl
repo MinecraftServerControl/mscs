@@ -1009,31 +1009,6 @@ getServerCommand() {
 }
 
 # ---------------------------------------------------------------------------
-# Check to see if the user running this script has the correct permissions.
-# ---------------------------------------------------------------------------
-checkPermission() {
-  # Make sure that the minecraft user exists.
-  if [ -z "$(grep $USER_NAME /etc/passwd)" ]; then
-    printf "ERROR: This script requires that a user account named "
-    printf "$USER_NAME exist on this system.\nEither modify the "
-    printf "USER_NAME variable in this script, or try adding this "
-    printf "user:\n"
-    printf "sudo adduser $USER_NAME\n"
-    exit 1
-  fi
-  # Check to see if the user is root or is the minecraft user.
-  if [ $(id -u) -gt 0 ] && [ "$(whoami)" != "$USER_NAME" ]; then
-    # Script is running with the wrong user.
-    printf "WARNING: This script appears to have been started by the "
-    printf "wrong user.\n"
-    printf "Expected to find the user: $USER_NAME.  You can try to log "
-    printf "on to this user:\n"
-    printf "su $USER_NAME\n"
-    exit 1
-  fi
-}
-
-# ---------------------------------------------------------------------------
 # Remove old world log files and rotate log files from old servers (v < 1.7).
 #
 # @param 1 The world server generating the log to rotate.
@@ -1826,7 +1801,6 @@ fi
 # Respond to the command line arguments.
 case "$1" in
   start)
-    checkPermission
     # Figure out which worlds to start.
     WORLDS=$(getEnabledWorlds)
     # If there are no worlds in the list, then use the default world.
@@ -1853,7 +1827,6 @@ case "$1" in
     printf ".\n"
   ;;
   stop|force-stop)
-    checkPermission
     # Figure out which worlds to stop.
     if isWorldEnabled "$2"; then
       WORLDS="$2"
@@ -1891,7 +1864,6 @@ case "$1" in
     printf ".\n"
   ;;
   restart|reload|force-restart|force-reload)
-    checkPermission
     # Figure out which worlds to restart.
     if isWorldEnabled "$2"; then
       WORLDS="$2"
@@ -1928,7 +1900,6 @@ case "$1" in
     printf ".\n"
   ;;
   create|new)
-    checkPermission
     if [ -z "$2" ]; then
       printf "A name for the new world must be supplied.\n"
       exit 1
@@ -1942,7 +1913,6 @@ case "$1" in
     printf ".\n"
   ;;
   delete|remove)
-    checkPermission
     # Get list of enabled worlds.
     if ! isWorldAvailable "$2"; then
       printf "World not found, unable to delete world '$2'.\n"
@@ -1967,7 +1937,6 @@ case "$1" in
     printf ".\n"
   ;;
   disable)
-    checkPermission
     # Get list of enabled worlds.
     if ! isWorldEnabled "$2"; then
       printf "World not found, unable to disable world '$2'.\n"
@@ -1992,7 +1961,6 @@ case "$1" in
     printf ".\n"
   ;;
   enable)
-    checkPermission
     # Get list of disabled worlds.
     if ! isWorldAvailable "$2"; then
       printf "World not found, unable to enable world '$2'.\n"
@@ -2073,7 +2041,6 @@ case "$1" in
     esac
   ;;
   status|show)
-    checkPermission
     # Figure out which worlds to show the status for.
     if isWorldAvailable "$2"; then
       WORLDS="$2"
@@ -2092,7 +2059,6 @@ case "$1" in
     done
   ;;
   sync|synchronize)
-    checkPermission
     # Figure out which worlds to synchronize.
     if isWorldEnabled "$2"; then
       WORLDS="$2"
@@ -2120,7 +2086,6 @@ case "$1" in
     printf ".\n"
   ;;
   broadcast)
-    checkPermission
     # Get list of enabled worlds.
     WORLDS=$(getEnabledWorlds)
     if [ -n "$2" ]; then
@@ -2142,7 +2107,6 @@ case "$1" in
     fi
   ;;
   send)
-    checkPermission
     # Check for the world command line argument.
     if isWorldEnabled "$2" && [ -n "$3" ]; then
       WORLD=$2
@@ -2156,7 +2120,6 @@ case "$1" in
     fi
   ;;
   console)
-    checkPermission
     # Check for the world command line argument.
     if isWorldEnabled "$2"; then
       printf "Connecting to server console: $2.\n"
@@ -2174,7 +2137,6 @@ case "$1" in
     fi
   ;;
   watch)
-    checkPermission
     # Check for the world command line argument.
     if isWorldEnabled "$2"; then
       printf "Monitoring Minecraft Server: $2.\n"
@@ -2190,7 +2152,6 @@ case "$1" in
     fi
   ;;
   logrotate)
-    checkPermission
     # Figure out which worlds to rotate the log.
     if isWorldEnabled "$2"; then
       WORLDS="$2"
@@ -2210,7 +2171,6 @@ case "$1" in
     printf ".\n"
   ;;
   backup)
-    checkPermission
     # Figure out which worlds to backup.
     if isWorldEnabled "$2"; then
       WORLDS="$2"
@@ -2253,7 +2213,6 @@ case "$1" in
     fi
   ;;
   restore-backup)
-    checkPermission
     if [ -z $2 ]; then
       printf "World not supplied.\n"
       printf "  Usage:  $0 $1 <world>\n"
@@ -2274,7 +2233,6 @@ case "$1" in
     fi
   ;;
   update)
-    checkPermission
     # Figure out which worlds to update.
     if isWorldEnabled "$2"; then
       WORLDS="$2"
@@ -2325,7 +2283,6 @@ case "$1" in
     printf ".\n"
   ;;
   map|overviewer)
-    checkPermission
     # Make sure that the Minecraft Overviewer software exists.
     if [ ! -e "$OVERVIEWER_BIN" ]; then
       printf "Minecraft Overviewer software not found.\n"
