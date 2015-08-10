@@ -1,14 +1,4 @@
 #!/bin/sh
-### BEGIN INIT INFO
-# Provides:       mscs
-# Required-Start: $remote_fs $syslog
-# Required-Stop:  $remote_fs $syslog
-# Default-Start:  2 3 4 5
-# Default-Stop:   0 1 6
-# chkconfig:      345 50 50
-# Description:    Minecraft Server Control Script
-### END INIT INFO
-
 
 # ---------------------------------------------------------------------------
 # Copyright (c) 2011-2015, Jason M. Wood <sandain@hotmail.com>
