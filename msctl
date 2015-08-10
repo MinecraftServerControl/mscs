@@ -338,25 +338,6 @@ fi
 # NOTE: Nothing below this point should need to be edited directly.
 # ---------------------------------------------------------------------------
 
-
-# ---------------------------------------------------------------------------
-# Execute the given command.
-#
-# @param 1 The command to execute.
-# @param 2 The user name to execute the command with.
-# @return The return value of the executed command
-# ---------------------------------------------------------------------------
-execute() {
-  if [ $(id -u) -eq 0 ]; then
-    # Script is running as root, switch user and execute
-    # the command.
-    su -s /bin/sh -c "$1" $2
-  else
-    # Script is running as a user, just execute the command.
-    sh -c "$1"
-  fi
-}
-
 # ---------------------------------------------------------------------------
 # Get the PID of the Java process for the world server.
 #
@@ -455,7 +436,7 @@ compareMinecraftVersions() {
 createWorld() {
   # Create a basic server.properties file.  Values not supplied here
   # will use default values when the world server is first started.
-  execute "mkdir -p $WORLDS_LOCATION/$1" $USER_NAME
+  mkdir -p "$WORLDS_LOCATION/$1"
   setServerPropertiesValue "$1" "level-name" "$1"
   setServerPropertiesValue "$1" "server-port" "$2"
   setServerPropertiesValue "$1" "server-ip" "$3"
@@ -471,7 +452,7 @@ createWorld() {
 # ---------------------------------------------------------------------------
 deleteWorld() {
   # Delete the world directory.
-  execute "rm -Rf $WORLDS_LOCATION/$1" $USER_NAME
+  rm -Rf "$WORLDS_LOCATION/$1"
 }
 
 # ---------------------------------------------------------------------------
@@ -501,7 +482,7 @@ enableWorld() {
 # ---------------------------------------------------------------------------
 getEnabledWorlds() {
   local WORLD WORLDS
-  execute "mkdir -p $WORLDS_LOCATION" $USER_NAME
+  mkdir -p "$WORLDS_LOCATION"
   WORLDS=""
   for WORLD in $(ls $WORLDS_LOCATION); do
     if [ -d $WORLDS_LOCATION/$WORLD ]; then
@@ -605,14 +586,14 @@ getValue() {
 setValue() {
   local KEY_VALUE
   # Make sure that the file exists.
-  execute "touch $1" $USER_NAME
+  touch "$1"
   # Replace the key/value combo if it already exists, otherwise just
   # append it to the end of the file.
   KEY_VALUE=$($PERL -ne 'if ($_ =~ /^('$2'=.*)$/) { print "$1"; }' $1)
   if [ -n "$KEY_VALUE" ]; then
-    execute "$PERL -i -ne 'if (\$_ =~ /^$2=.*$/) { print \"$2=$3\\n\"; } else { print; }' $1" $USER_NAME
+    $PERL -i -ne "if (\$_ =~ /^$2=.*$/) { print \"$2=$3\\n\"; } else { print; }" "$1"
   else
-    execute "printf \"$2=$3\\n\" >> $1" $USER_NAME
+    printf "$2=$3\n" >> "$1"
   fi
 }
 
@@ -688,22 +669,22 @@ setServerPropertiesValue() {
 getCurrentMinecraftVersion() {
   local VERSION TYPE
   # Make sure the server software directory exists.
-  execute "mkdir -p $DEFAULT_SERVER_LOCATION" $USER_NAME
+  mkdir -p "$DEFAULT_SERVER_LOCATION"
   # Determine the version type for the current world.
   TYPE=$(getMSCSValue "$1" "mscs-version-type" "$DEFAULT_VERSION_TYPE")
   if [ -s $VERSIONS_JSON ]; then
     # Make a backup copy of the versions.json file.
-    execute "cp -p $VERSIONS_JSON $VERSIONS_JSON.bak" $USER_NAME
+    cp -p "$VERSIONS_JSON" "$VERSIONS_JSON.bak"
     # Delete the versions.json file if it is old.
-    execute "find $VERSIONS_JSON -mmin +$VERSIONS_DURATION -delete" $USER_NAME
+    find "$VERSIONS_JSON" -mmin +"$VERSIONS_DURATION" -delete
   fi
   # Download the versions.json file if it does not exist.
   if [ ! -s $VERSIONS_JSON ]; then
-    execute "$WGET --no-use-server-timestamps -qO \"$VERSIONS_JSON\" \"$MINECRAFT_VERSIONS_URL\"" $USER_NAME
+    $WGET --no-use-server-timestamps -qO "$VERSIONS_JSON" "$MINECRAFT_VERSIONS_URL"
     if [ $? -ne 0 ]; then
       if [ -s $VERSIONS_JSON.bak ]; then
         printf "Error downloading the Minecraft versions.json file, using an old copy.\n"
-        execute "cp -p $VERSIONS_JSON.bak $VERSIONS_JSON" $USER_NAME
+        cp -p "$VERSIONS_JSON.bak" "$VERSIONS_JSON"
       else
         printf "Error downloading the Minecraft versions.json file.\n"
         exit 1
@@ -1061,26 +1042,24 @@ rotateLog() {
   local WORLD_DIR DATE LOG NUMBER
   WORLD_DIR="$WORLDS_LOCATION/$1"
   # Make sure the log directory exists.
-  execute "mkdir -p $WORLD_DIR/logs" $USER_NAME
+  mkdir -p "$WORLD_DIR/logs"
   # Delete old log files.
-  execute "
-    find $WORLD_DIR/logs -type f -mtime +$LOG_DURATION -delete
-  " $USER_NAME
+  find "$WORLD_DIR/logs" -type f -mtime +"$LOG_DURATION" -delete
   # Archive and rotate the log files for old Minecraft servers (Versions 1.7
   # and greater do this automatically).
-  if [ -e $WORLD_DIR/server.log ] &&
+  if [ -e "$WORLD_DIR/server.log" ] &&
     [ $(wc -l < $WORLD_DIR/server.log) -ge 1 ]; then
     # Make a copy of the log file in the world's logs directory.
     DATE=$(date +%F)
-    execute "cp $WORLD_DIR/server.log $WORLD_DIR/logs/$DATE-0.log" $USER_NAME
-    execute "gzip $WORLD_DIR/logs/$DATE-0.log" $USER_NAME
+    cp "$WORLD_DIR/server.log" "$WORLD_DIR/logs/$DATE-0.log"
+    gzip "$WORLD_DIR/logs/$DATE-0.log"
     # Empty the contents of the worlds log file.
-    execute "cp /dev/null $WORLD_DIR/server.log" $USER_NAME
+    cp /dev/null "$WORLD_DIR/server.log"
     # Rotate the files in the world's logs directory.
     for LOG in $(ls -r $WORLD_DIR/logs/$DATE-*.log.gz); do
       NUMBER=$(echo $LOG | cut -d "." -f 1 | cut -d "-" -f 4)
       NUMBER=$(($NUMBER+1))
-      execute "mv -f $LOG \"$WORLD_DIR/logs/$DATE-$NUMBER.log.gz\"" $USER_NAME
+      mv -f $LOG "$WORLD_DIR/logs/$DATE-$NUMBER.log.gz"
     done
   fi
 }
@@ -1110,7 +1089,7 @@ watchLog() {
 # ---------------------------------------------------------------------------
 syncMirrorImage() {
   # Sync the world server.
-  execute "cp -Ru $WORLDS_LOCATION/$1/$1/* $WORLDS_LOCATION/$1/$1-original" $USER_NAME
+  cp -Ru "$WORLDS_LOCATION/$1/$1/*" "$WORLDS_LOCATION/$1/$1-original"
   if [ $? -ne 0 ]; then
     printf "Error synchronizing mirror images for world $1.\n"
     exit 1
@@ -1127,7 +1106,7 @@ serverConsole() {
   # Make sure that the world's directory exists.
   WORLD_DIR="$WORLDS_LOCATION/$1"
   # Follow the console output buffer file.
-  tail --pid=$$ -f $WORLD_DIR/console.out &
+  sh -c "tail --pid=\$$ -f '$WORLD_DIR/console.out'" &
   # Copy user input to the console input buffer file.
   while read LINE; do
     echo "$LINE" >> $WORLD_DIR/console.in
@@ -1146,7 +1125,7 @@ start() {
   updateServerSoftware "$1"
   # Make sure that the world's directory exists.
   WORLD_DIR="$WORLDS_LOCATION/$1"
-  execute "mkdir -p $WORLD_DIR" $USER_NAME
+  mkdir -p "$WORLD_DIR"
   # Make sure the EULA has been set to true.
   EULA=$(getEULAValue "$1")
   if [ $EULA != "true" ]; then
@@ -1158,7 +1137,7 @@ start() {
   rotateLog "$1"
   # Make a mirror image of the world directory if requested.
   if [ $ENABLE_MIRROR -eq 1 ]; then
-    execute "mkdir -p $MIRROR_PATH/$1" $USER_NAME
+    mkdir -p "$MIRROR_PATH/$1"
     if [ $? -ne 0 ]; then
       printf "Error copying world data, path %s not found.\n" $MIRROR_PATH/$1
       exit 1
@@ -1167,23 +1146,23 @@ start() {
     # <world>-original directory within <world> we didn't stop cleanly.
     if [ -d "WORLDS_LOCATION/$1/$1-original" ]; then
       # Remove the symlink to the world-file mirror image.
-      execute "rm -r $WORLDS_LOCATION/$1/$1" $USER_NAME
+      rm -r "$WORLDS_LOCATION/$1/$1"
       # Move the world files back to their original path name.
-      execute "mv $WORLDS_LOCATION/$1/$1-original $WORLDS_LOCATION/$1/$1" $USER_NAME
+      mv "$WORLDS_LOCATION/$1/$1-original" "$WORLDS_LOCATION/$1/$1"
     fi
     # Copy the world files over to the mirror.
-    execute "cp -R $WORLDS_LOCATION/$1/$1/* $MIRROR_PATH/$1" $USER_NAME
+    cp -R "$WORLDS_LOCATION/$1/$1/*" "$MIRROR_PATH/$1"
     # Rename the original world file directory.
-    execute "mv $WORLDS_LOCATION/$1/$1 $WORLDS_LOCATION/$1/$1-original" $USER_NAME
+    mv "$WORLDS_LOCATION/$1/$1" "$WORLDS_LOCATION/$1/$1-original"
     # Create a symlink from the world file directory's original name to the mirrored files.
-    execute "ln -s $MIRROR_PATH/$1 $WORLDS_LOCATION/$1/$1" $USER_NAME
+    ln -s "$MIRROR_PATH/$1" "$WORLDS_LOCATION/$1/$1"
   fi
   # Change to the world's directory.
   cd $WORLD_DIR
   # Delete any old console.in or console.out buffer files.
-  execute "rm -f $WORLD_DIR/console.in $WORLD_DIR/console.out" $USER_NAME
+  rm -f "$WORLD_DIR/console.in" "$WORLD_DIR/console.out"
   # Initialize the console.in buffer file.
-  execute "printf '' > $WORLD_DIR/console.in" $USER_NAME
+  printf '' > $WORLD_DIR/console.in
   # Get the server command for this world.
   SERVER_COMMAND=$(getServerCommand "$1")
   if [ $? -ne 0 ]; then
@@ -1191,11 +1170,9 @@ start() {
     exit 1
   fi
   # Start the server.
-  execute "
-    tail -f --pid=\$$ $WORLD_DIR/console.in | {
-      $SERVER_COMMAND mscs-world=$1 > $WORLD_DIR/console.out 2>&1; kill \$$;
-    }
-  " $USER_NAME &
+  sh -c "tail -f --pid=\$$ '$WORLD_DIR/console.in' | {
+    $SERVER_COMMAND mscs-world='$1' > '$WORLD_DIR/console.out' 2>&1; kill \$$;
+    }" &
   # Verify the server is running.
   if [ $? -ne 0 ]; then
     printf "Error starting the server.\n"
@@ -1212,7 +1189,7 @@ start() {
     queryStart "$1" &
   fi
   # Create a PID file for the world server.
-  execute "echo $PID > $WORLDS_LOCATION/$1.pid" $USER_NAME
+  echo $PID > "$WORLDS_LOCATION/$1.pid"
 }
 
 # ---------------------------------------------------------------------------
@@ -1229,12 +1206,12 @@ stop() {
   if [ $ENABLE_MIRROR -eq 1 ] && [ -d $MIRROR_PATH ]; then
     syncMirrorImage $1
     # Remove the symlink to the world-file mirror image.
-    execute "rm -r $WORLDS_LOCATION/$1/$1" $USER_NAME
+    rm -r "$WORLDS_LOCATION/$1/$1"
     # Move the world files back to their original path name.
-    execute "mv $WORLDS_LOCATION/$1/$1-original $WORLDS_LOCATION/$1/$1" $USER_NAME
+    mv "$WORLDS_LOCATION/$1/$1-original" "$WORLDS_LOCATION/$1/$1"
   fi
   # Remove the PID file for the world server.
-  execute "rm -f $WORLDS_LOCATION/$1.pid" $USER_NAME
+  rm -f "$WORLDS_LOCATION/$1.pid"
 }
 
 # ---------------------------------------------------------------------------
@@ -1258,18 +1235,18 @@ forceStop() {
 # ---------------------------------------------------------------------------
 worldBackup() {
   # Make sure that the backup location exists.
-  if ! execute "mkdir -p $BACKUP_LOCATION" $USER_NAME; then
+  if ! mkdir -p "$BACKUP_LOCATION"; then
     echo "Error creating backup dir $BACKUP_LOCATION"
     return 1
   fi
   # Create the backup.
-  if ! execute "$RDIFF_BACKUP -v5 --print-statistics $WORLDS_LOCATION/$1 $BACKUP_LOCATION/$1 >> $BACKUP_LOG" $USER_NAME; then
+  if ! $RDIFF_BACKUP -v5 --print-statistics "$WORLDS_LOCATION/$1" "$BACKUP_LOCATION/$1" >> "$BACKUP_LOG"; then
     echo "Error doing backup of world $1"
     return 1
   fi
   # Cleanup old backups.
   if [ $BACKUP_DURATION -gt 0 ]; then
-    if ! execute "$RDIFF_BACKUP --remove-older-than ${BACKUP_DURATION}D --force $BACKUP_LOCATION/$1 >> $BACKUP_LOG" $USER_NAME; then
+    if ! $RDIFF_BACKUP --remove-older-than ${BACKUP_DURATION}D --force "$BACKUP_LOCATION/$1" >> "$BACKUP_LOG"; then
       echo "Error cleaning old backups of world $1"
       return 1
     fi
@@ -1304,14 +1281,14 @@ worldBackupRestore() {
   local TARGET TARGET_TMP
   TARGET="$WORLDS_LOCATION/$1"
   TARGET_TMP="${TARGET}_bktmp"
-  execute "rm -rf $TARGET_TMP" $USER_NAME
+  rm -rf "$TARGET_TMP"
   if [ -d $BACKUP_LOCATION/$1 ]; then
-    if execute "$RDIFF_BACKUP -r $2 $BACKUP_LOCATION/$1 $TARGET_TMP" $USER_NAME; then
-      execute "rm -r $TARGET" $USER_NAME
-      execute "mv $TARGET_TMP $TARGET" $USER_NAME
+    if $RDIFF_BACKUP -r $2 "$BACKUP_LOCATION/$1" "$TARGET_TMP"; then
+      rm -r "$TARGET"
+      mv "$TARGET_TMP" "$TARGET"
     else
       echo "Restoring backup failed: $1 $2"
-      execute "rm -rf $TARGET_TMP" $USER_NAME
+      rm -rf "$TARGET_TMP"
       return 1
     fi
   else
@@ -1343,11 +1320,11 @@ updateClientSoftware() {
     exit 1
   fi
   # Make sure the client software directory exists.
-  execute "mkdir -p $CLIENT_LOCATION" $USER_NAME
+  mkdir -p "$CLIENT_LOCATION"
   # Download the client jar if it is missing.
   if [ ! -s "$CLIENT_LOCATION/$CLIENT_JAR" ]; then
     # Download the Minecraft client software.
-    execute "$WGET -qO \"$CLIENT_LOCATION/$CLIENT_JAR\" \"$CLIENT_URL\"" $USER_NAME
+    $WGET -qO "$CLIENT_LOCATION/$CLIENT_JAR" "$CLIENT_URL"
     # Report any errors.
     if [ $? -ne 0 ]; then
       printf "Error updating the Minecraft client software.\n"
@@ -1379,11 +1356,11 @@ updateServerSoftware() {
     exit 1
   fi
   # Make sure the server software directory exists.
-  execute "mkdir -p $SERVER_LOCATION" $USER_NAME
+  mkdir -p "$SERVER_LOCATION"
   # Download the server jar if it is missing.
   if [ ! -s "$SERVER_LOCATION/$SERVER_JAR" ]; then
     # Download the Minecraft server software.
-    execute "$WGET -qO \"$SERVER_LOCATION/$SERVER_JAR\" \"$SERVER_URL\"" $USER_NAME
+    $WGET -qO "$SERVER_LOCATION/$SERVER_JAR" "$SERVER_URL"
     # Report any errors.
     if [ $? -ne 0 ]; then
       printf "Error updating the Minecraft server software.\n"
@@ -1437,7 +1414,7 @@ overviewer() {
   # Run a backup of the world.
   worldBackup $1
   # Make sure the maps directory exists.
-  execute "mkdir -p $MAPS_LOCATION/$1" $USER_NAME
+  mkdir -p "$MAPS_LOCATION/$1"
   # Make sure the Minecraft client is available.
   updateClientSoftware "$1"
   CLIENT_JAR=$(getClientJar "$1")
@@ -1446,7 +1423,7 @@ overviewer() {
   if [ -e "$WORLDS_LOCATION/$1/server.properties" ]; then
     # Check for Overviewer settings file.
     if [ ! -e "$WORLDS_LOCATION/$1/overviewer-settings.py" ]; then
-      execute "touch $WORLDS_LOCATION/$1/overviewer-settings.py" $USER_NAME
+      touch "$WORLDS_LOCATION/$1/overviewer-settings.py"
       printf "worlds['$1'] = \"$WORLDS_LOCATION/$1/$1\"\n" >> $WORLDS_LOCATION/$1/overviewer-settings.py
       printf "\n" >> $WORLDS_LOCATION/$1/overviewer-settings.py
       printf "renders['normalrender'] = {\n" >> $WORLDS_LOCATION/$1/overviewer-settings.py
@@ -1467,8 +1444,8 @@ overviewer() {
       printf "texturepath = \"$CLIENT_LOCATION/$CLIENT_JAR\"\n" >> $WORLDS_LOCATION/$1/overviewer-settings.py
     fi
     # Generate the map and POI.
-    execute "$OVERVIEWER_BIN --config=$WORLDS_LOCATION/$1/overviewer-settings.py" $USER_NAME >> $WORLDS_LOCATION/$1/logs/overviewer.log 2>&1
-    execute "$OVERVIEWER_BIN --config=$WORLDS_LOCATION/$1/overviewer-settings.py --genpoi" $USER_NAME >> $WORLDS_LOCATION/$1/logs/overviewer.log 2>&1
+    $OVERVIEWER_BIN --config="$WORLDS_LOCATION/$1/overviewer-settings.py" >> "$WORLDS_LOCATION/$1/logs/overviewer.log" 2>&1
+    $OVERVIEWER_BIN --config="$WORLDS_LOCATION/$1/overviewer-settings.py" --genpoi >> "$WORLDS_LOCATION/$1/logs/overviewer.log" 2>&1
   fi
   # Announce the location to access the world map to players.
   if [ $SERVER_RUNNING -eq 1 ]; then
@@ -1513,20 +1490,18 @@ queryStart() {
   SERVER_IP=$(getServerPropertiesValue $1 'server-ip' '127.0.0.1')
   QUERY_PORT=$(getServerPropertiesValue $1 'query.port')
   # Delete any old query.in or query.out buffer files.
-  execute "rm -Rf $WORLD_DIR/query.in $WORLD_DIR/query.out" $USER_NAME
+  rm -Rf "$WORLD_DIR/query.in" "$WORLD_DIR/query.out"
   # Give the server a moment to start before initializing the
   # Query handler.
   sleep 20
   # Initialize the query.in and query.out buffer files.
-  execute "printf '' > $WORLD_DIR/query.in" $USER_NAME
-  execute "printf '' > $WORLD_DIR/query.out" $USER_NAME
+  printf '' > "$WORLD_DIR/query.in"
+  printf '' > "$WORLD_DIR/query.out"
   # Start a tail process to watch for changes to the query.in file to pipe
   # to the Minecraft query server via socat.  The response from the query
   # server is piped into the query.out file.
-  execute "
-    tail -f --pid=$(getJavaPID $1) $WORLD_DIR/query.in | \
-    $SOCAT - UDP:$SERVER_IP:$QUERY_PORT > $WORLD_DIR/query.out
-  " $USER_NAME
+  tail -f --pid=$(getJavaPID $1) "$WORLD_DIR/query.in" | \
+    $SOCAT - UDP:$SERVER_IP:$QUERY_PORT > "$WORLD_DIR/query.out"
   # Verify the connection to the query server worked.
   if [ $? -ne 0 ]; then
     printf "Error connecting to the query server.\n"
@@ -1556,11 +1531,11 @@ querySendPacket() {
     # Add the magic bytes to the incoming packet.
     PACKET=$(printf "FEFD%s%s%s" "$2" "$ID" "$3")
     # Remove any old responses from the query.out buffer file.
-    execute "printf '' > $WORLD_DIR/query.out" $USER_NAME
+    printf '' > "$WORLD_DIR/query.out"
     # Pack the hex string packet and write it to the query.in buffer file.
-    execute "$PERL -e '
-      print map { pack (\"C\", hex(\$_)) } (\"'$PACKET'\" =~ /(..)/g);
-    ' >> $WORLD_DIR/query.in" $USER_NAME
+    $PERL -e "
+      print map { pack (\"C\", hex(\$_)) } (\"$PACKET\" =~ /(..)/g);
+    " >> "$WORLD_DIR/query.in"
     # Give the Query server a moment to respond.
     sleep 1
     # Unpack the token from the query.out buffer file.  There are a
@@ -1748,9 +1723,9 @@ migrateOldMSCSConfig() {
     MSCS_PROPERTY_FILE="$WORLDS_LOCATION/$1/mscs.properties"
     TMP_PROPERTY_FILE="$WORLDS_LOCATION/$1/tmp.properties"
     if [ ! -f "$MSCS_PROPERTY_FILE" ]; then
-      execute "grep ^mscs $SERVER_PROPERTY_FILE > $MSCS_PROPERTY_FILE" $USER_NAME
-      execute "grep -v ^mscs $SERVER_PROPERTY_FILE > $TMP_PROPERTY_FILE" $USER_NAME
-      execute "mv $TMP_PROPERTY_FILE $SERVER_PROPERTY_FILE" $USER_NAME
+      grep ^mscs "$SERVER_PROPERTY_FILE" > "$MSCS_PROPERTY_FILE"
+      grep -v ^mscs "$SERVER_PROPERTY_FILE" > "$TMP_PROPERTY_FILE"
+      mv "$TMP_PROPERTY_FILE" "$SERVER_PROPERTY_FILE"
     fi
   else
      echo "World $1 not found."
@@ -1766,7 +1741,7 @@ migrateWorldsConfig() {
 		for WORLD in $(getAvailableWorlds); do
 		  migrateOldMSCSConfig "$WORLD"
 		done
-		execute "touch '$WORLDS_LOCATION/mscs-worlds-config-migrated'" $USER_NAME
+		touch "$WORLDS_LOCATION/mscs-worlds-config-migrated"
 		echo "Remove file '$WORLDS_LOCATION/mscs-worlds-config-migrated' to repeat"
 		echo "the migration process in the next execution."
 	fi
@@ -1779,20 +1754,18 @@ migrateOldDisabledWorlds() {
   local WORLD WORLDS
   if [ -d "$OLD_DISABLED_WORLDS_LOCATION" ]; then
     # Be sure worlds directory exists
-    execute "mkdir -p '$WORLDS_LOCATION'" $USER_NAME
+    mkdir -p "$WORLDS_LOCATION"
 
     for WORLD in $(ls "$OLD_DISABLED_WORLDS_LOCATION"); do
       if [ -d "$OLD_DISABLED_WORLDS_LOCATION/$WORLD" ]; then
         echo "Migrating old version's disabled world: $WORLD"
-        execute "mv '$OLD_DISABLED_WORLDS_LOCATION/$WORLD' \
-        '$WORLDS_LOCATION'" $USER_NAME
+        mv "$OLD_DISABLED_WORLDS_LOCATION/$WORLD" "$WORLDS_LOCATION"
         migrateOldMSCSConfig "$WORLD"
         setMSCSValue "$WORLD" mscs-enabled false
       fi
     done
     # Try to remove old disabled worlds dir if empty
-    if ! execute "rmdir '$OLD_DISABLED_WORLDS_LOCATION' > /dev/null 2>&1" \
-    $USER_NAME; then
+    if ! rmdir "$OLD_DISABLED_WORLDS_LOCATION" > /dev/null 2>&1; then
       echo "Warning: old version's disabled world dir not emty after migration"
       echo "    Dir: $OLD_DISABLED_WORLDS_LOCATION"
     fi
