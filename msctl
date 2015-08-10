@@ -50,9 +50,9 @@
 
 usage() {
   cat <<EOF
-Usage:  $0 <option>
+Usage:  $0 [-c <config_file>] <action>
 
-Options:
+Actions:
 
   start <world>
     Start the Minecraft world server.  Start all world servers by default.
@@ -137,6 +137,11 @@ Options:
   update <world>
     Update the server software for the Minecraft world server.  Update
     server software for all worlds by default.
+
+Options:
+
+  -c <config_file>
+    Read configuration from <config_files> instead of default locations.
 EOF
 }
 
@@ -145,23 +150,33 @@ EOF
 # ---------------------------------------------------------------------------
 # Override global variables below by adding them to the specified file.  If
 # the file does not exist, the default values below will be used.
-MSCS_DEFAULTS="/etc/default/mscs"
+# Configuration files are checked in the following order. First file found is
+# sourced and the rest are discarded:
+#   MSCS_DEFAULTS_CL: command line option "-c".
+#   MSCS_DEFAULTS
+#   MSCS_DEFAULTS_ALT
+MSCS_DEFAULTS="$HOME/mscs.conf"
+MSCS_DEFAULTS_ALT="$HOME/.config/mscs/mscs.conf"
+if [ "$1" = "-c" ]; then
+  MSCS_DEFAULTS_CL="$2"
+  shift; shift
+else
+  MSCS_DEFAULTS_CL=""
+fi
 
-
-# User Account & Server Location
+# Server Location
 # ---------------------------------------------------------------------------
-# Who we run as and where we run from.
-
-# User name used to run all commands. Be sure to create this user if it
-# doesn't already exist (sudo adduser minecraft).
-USER_NAME="minecraft"
 
 # The location of server software and data.
-LOCATION="/opt/mscs"
+LOCATION="$HOME/mscs"
 
 # Override the default values if the default file exists.
-if [ -f "$MSCS_DEFAULTS" ]; then
+if [ -r "$MSCS_DEFAULTS_CL" ]; then
+  . $MSCS_DEFAULTS_CL
+elif [ -r "$MSCS_DEFAULTS" ]; then
   . $MSCS_DEFAULTS
+elif [ -r "$MSCS_DEFAULTS_ALT" ]; then
+  . $MSCS_DEFAULTS_ALT
 fi
 
 # Required Software
@@ -327,8 +342,13 @@ MAPS_URL="http://minecraft.server.com/maps"
 MAPS_LOCATION="$LOCATION/maps"
 
 # Do additional overrides if the default file exists.
-if [ -f "$MSCS_DEFAULTS" ]; then
+# Override the default values if the default file exists.
+if [ -r "$MSCS_DEFAULTS_CL" ]; then
+  . $MSCS_DEFAULTS_CL
+elif [ -r "$MSCS_DEFAULTS" ]; then
   . $MSCS_DEFAULTS
+elif [ -r "$MSCS_DEFAULTS_ALT" ]; then
+  . $MSCS_DEFAULTS_ALT
 fi
 
 # ---------------------------------------------------------------------------
@@ -345,9 +365,10 @@ fi
 # @return The Java PID.
 # ---------------------------------------------------------------------------
 getJavaPID() {
-  local PID
+  local PID MCUSER
+  MCUSER=$(whoami)
   PID=$(
-    ps -a -U $USER_NAME -o pid,comm,args -ww |
+    ps -a -U $MCUSER -o pid,comm,args -ww |
     $PERL -ne 'if ($_ =~ /^\s*(\d+)\s+java.+mscs-world='$1'$/) { print $1; }'
   )
   printf "%d\n" $PID
@@ -1751,13 +1772,11 @@ migrateOldDisabledWorlds() {
 # Begin.
 # ---------------------------------------------------------------------------
 
-# Migrate old config (only if executed with privileges).
-if [ $(id -u) -eq 0 ] || [ "$(whoami)" = "$USER_NAME" ]; then
-  # Migrate config of not already migrated worlds
-  migrateWorldsConfig
-  # Migrate old version's disabled worlds if any
-  migrateOldDisabledWorlds
-fi
+# Migrate old config.
+# Migrate config of not already migrated worlds
+migrateWorldsConfig
+# Migrate old version's disabled worlds if any
+migrateOldDisabledWorlds
 
 # Make sure that Java, Perl, Python, Wget, Rdiff-backup, and Socat are installed.
 if [ ! -e "$JAVA" ]; then
