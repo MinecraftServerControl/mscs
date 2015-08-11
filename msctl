@@ -34,13 +34,16 @@
 # A powerful command-line control script for Linux-powered Minecraft servers.
 # ---------------------------------------------------------------------------
 
+# Get executable name
+# ---------------------------------------------------------------------------
+PROG=$(basename $0)
 
 # Script Usage
 # ---------------------------------------------------------------------------
 
 usage() {
   cat <<EOF
-Usage:  $0 [-c <config_file>] <action>
+Usage:  $PROG [-c <config_file>] <action>
 
 Actions:
 
@@ -134,7 +137,6 @@ Options:
     Read configuration from <config_files> instead of default locations.
 EOF
 }
-
 
 # Override Global Variables
 # ---------------------------------------------------------------------------
@@ -1822,7 +1824,7 @@ case "$1" in
       WORLDS="$2"
     elif [ -n "$2" ]; then
       printf "World '$2' not recognized.\n"
-      printf "  Usage:  $0 $1 <world>\n"
+      printf "  Usage:  $PROG $1 <world>\n"
       exit 1
     fi
     # Start each world requested, if not already running.
@@ -1841,7 +1843,7 @@ case "$1" in
       WORLDS="$2"
     elif [ -n "$2" ]; then
       printf "World '$2' not recognized.\n"
-      printf "  Usage:  $0 $1 <world>\n"
+      printf "  Usage:  $PROG $1 <world>\n"
       exit 1
     else
       WORLDS=$(getEnabledWorlds)
@@ -1878,7 +1880,7 @@ case "$1" in
       WORLDS="$2"
     elif [ -n "$2" ]; then
       printf "World '$2' not recognized.\n"
-      printf "  Usage:  $0 $1 <world>\n"
+      printf "  Usage:  $PROG $1 <world>\n"
       exit 1
     else
       WORLDS=$(getEnabledWorlds)
@@ -2014,7 +2016,7 @@ case "$1" in
       ;;
       *)
         echo "Unknown list option: $2."
-        echo "  Try '$0 help' for help."
+        echo "  Try '$PROG help' for help."
         exit 1
       ;;
     esac
@@ -2055,7 +2057,7 @@ case "$1" in
       WORLDS="$2"
     elif [ -n "$2" ]; then
       printf "World '$2' not recognized.\n"
-      printf "  Usage:  $0 $1 <world>\n"
+      printf "  Usage:  $PROG $1 <world>\n"
       exit 1
     else
       WORLDS=$(getAvailableWorlds)
@@ -2073,7 +2075,7 @@ case "$1" in
       WORLDS="$2"
     elif [ -n "$2" ]; then
       printf "World '$2' not recognized.\n"
-      printf "  Usage:  $0 $1 <world>\n"
+      printf "  Usage:  $PROG $1 <world>\n"
       exit 1
     else
       WORLDS=$(getEnabledWorlds)
@@ -2110,8 +2112,8 @@ case "$1" in
       done
       printf ".\n"
     else
-      printf "Usage:  $0 $1 <command>\n"
-      printf "   ie:  $0 $1 say Hello World!\n"
+      printf "Usage:  $PROG $1 <command>\n"
+      printf "   ie:  $PROG $1 say Hello World!\n"
       exit 1
     fi
   ;;
@@ -2123,8 +2125,8 @@ case "$1" in
       printf "Sending command to world: $WORLD - '$*'.\n"
       sendCommand $WORLD "$*"
     else
-      printf "Usage:  $0 $1 <world> <command>\n"
-      printf "   ie:  $0 $1 world say Hello World!\n"
+      printf "Usage:  $PROG $1 <world> <command>\n"
+      printf "   ie:  $PROG $1 world say Hello World!\n"
       exit 1
     fi
   ;;
@@ -2141,7 +2143,7 @@ case "$1" in
       else
         printf "Minecraft world not provided!\n"
       fi
-      printf "  Usage:  $0 $1 <world>\n"
+      printf "  Usage:  $PROG $1 <world>\n"
       exit 1
     fi
   ;;
@@ -2156,7 +2158,7 @@ case "$1" in
       else
         printf "Minecraft world not provided!\n"
       fi
-      printf "  Usage:  $0 $1 <world>\n"
+      printf "  Usage:  $PROG $1 <world>\n"
       exit 1
     fi
   ;;
@@ -2166,7 +2168,7 @@ case "$1" in
       WORLDS="$2"
     elif [ -n "$2" ]; then
       printf "World '$2' does not exist or not enabled.\n"
-      printf "  Usage:  $0 $1 <world>\n"
+      printf "  Usage:  $PROG $1 <world>\n"
       exit 1
     else
       WORLDS=$(getEnabledWorlds)
@@ -2185,7 +2187,7 @@ case "$1" in
       WORLDS="$2"
     elif [ -n "$2" ]; then
       printf "World '$2' does not exist or not enabled.\n"
-      printf "  Usage:  $0 $1 <world>\n"
+      printf "  Usage:  $PROG $1 <world>\n"
       exit 1
     else
       WORLDS=$(getEnabledWorlds)
@@ -2213,26 +2215,26 @@ case "$1" in
       worldBackupList "$2"
     elif [ -n "$2" ]; then
       printf "World '$2' does not exist or not enabled.\n"
-      printf "  Usage:  $0 $1 <world>\n"
+      printf "  Usage:  $PROG $1 <world>\n"
       exit 1
     else
       printf "World not supplied.\n"
-      printf "  Usage:  $0 $1 <world>\n"
+      printf "  Usage:  $PROG $1 <world>\n"
       exit 1
     fi
   ;;
   restore-backup)
     if [ -z $2 ]; then
       printf "World not supplied.\n"
-      printf "  Usage:  $0 $1 <world>\n"
+      printf "  Usage:  $PROG $1 <world>\n"
       exit 1
     elif ! isWorldAvailable "$2"; then
       printf "World '$2' not recognized.\n"
-      printf "  Usage:  $0 $1 <world>\n"
+      printf "  Usage:  $PROG $1 <world>\n"
       exit 1
     elif serverRunning "$2"; then
       printf "World '$2' is running. Stop it first\n"
-      printf "  $0 stop $2\n"
+      printf "  $PROG stop $2\n"
       exit 1
     elif worldBackup "$2"; then
       worldBackupRestore "$2" "$3"
@@ -2247,7 +2249,7 @@ case "$1" in
       WORLDS="$2"
     elif [ -n "$2" ]; then
       printf "World '$2' does not exist or not enabled.\n"
-      printf "  Usage:  $0 $1 <world>\n"
+      printf "  Usage:  $PROG $1 <world>\n"
       exit 1
     else
       WORLDS=$(getEnabledWorlds)
@@ -2302,7 +2304,7 @@ case "$1" in
       WORLDS="$2"
     elif [ -n "$2" ]; then
       printf "World '$2' does not exist or not enabled.\n"
-      printf "  Usage:  $0 $1 <world>\n"
+      printf "  Usage:  $PROG $1 <world>\n"
       exit 1
     else
       WORLDS=$(getEnabledWorlds)
