@@ -139,38 +139,65 @@ Options:
 EOF
 }
 
+# Parse command-line options
+# ---------------------------------------------------------------------------
+while [ "$1" != "${1#-}" ]; do
+  case "$1" in
+    -c)
+      if [ -n "$2" ]; then
+        MSCS_DEFAULTS_CL="$2"
+        shift
+      else
+        echo "$PROG: '-c' needs a config file argument."
+        exit 1
+      fi
+    ;;
+    -l)
+      if [ -n "$2" ]; then
+        LOCATION_CL="$2"
+        shift
+      else
+        echo "$PROG: '-l' needs a location path argument."
+        exit 1
+      fi
+    ;;
+    *)
+      echo "$PROG: unknown option '$1'."
+      echo "Execute '$PROG' without arguments for usage instructions."
+      exit 1
+    ;;
+  esac
+  shift
+done
+
 # Override Global Variables
 # ---------------------------------------------------------------------------
 # Override global variables below by adding them to the specified file.  If
 # the file does not exist, the default values below will be used.
 # Configuration files are checked in the following order. First file found is
 # sourced and the rest are discarded:
-#   MSCS_DEFAULTS_CL: command line option "-c".
-#   MSCS_DEFAULTS
-#   MSCS_DEFAULTS_ALT
-MSCS_DEFAULTS="$HOME/mscs.conf"
-MSCS_DEFAULTS_ALT="$HOME/.config/mscs/mscs.conf"
-if [ "$1" = "-c" ]; then
-  MSCS_DEFAULTS_CL="$2"
-  shift; shift
-else
-  MSCS_DEFAULTS_CL=""
+#   command line option "-c".
+#   $HOME/mscs.conf
+#   $HOME/.config/mscs/mscs.conf
+if [ -r "$MSCS_DEFAULTS_CL" ]; then
+  MSCS_DEFAULTS="$MSCS_DEFAULTS_CL"
+elif [ -r "$HOME/mscs.conf" ]; then
+  MSCS_DEFAULTS="$HOME/mscs.conf"
+elif [ -r "$HOME/.config/mscs/mscs.conf" ]; then
+  MSCS_DEFAULTS="$HOME/.config/mscs/mscs.conf"
 fi
 
 # Server Location
 # ---------------------------------------------------------------------------
 
-# The location of server software and data.
+# The default location of server software and data.
 LOCATION="$HOME/mscs"
 
 # Override the default values if the default file exists.
-if [ -r "$MSCS_DEFAULTS_CL" ]; then
-  . $MSCS_DEFAULTS_CL
-elif [ -r "$MSCS_DEFAULTS" ]; then
-  . $MSCS_DEFAULTS
-elif [ -r "$MSCS_DEFAULTS_ALT" ]; then
-  . $MSCS_DEFAULTS_ALT
-fi
+[ -r "$MSCS_DEFAULTS" ] && . "$MSCS_DEFAULTS"
+
+# Override with command-line location option.
+[ -n "$LOCATION_CL" ] && LOCATION="$LOCATION_CL"
 
 # Required Software
 # ---------------------------------------------------------------------------
@@ -336,13 +363,11 @@ MAPS_LOCATION="$LOCATION/maps"
 
 # Do additional overrides if the default file exists.
 # Override the default values if the default file exists.
-if [ -r "$MSCS_DEFAULTS_CL" ]; then
-  . $MSCS_DEFAULTS_CL
-elif [ -r "$MSCS_DEFAULTS" ]; then
-  . $MSCS_DEFAULTS
-elif [ -r "$MSCS_DEFAULTS_ALT" ]; then
-  . $MSCS_DEFAULTS_ALT
-fi
+[ -r "$MSCS_DEFAULTS" ] && . "$MSCS_DEFAULTS"
+
+# Override with command-line location option.
+[ -n "$LOCATION_CL" ] && LOCATION="$LOCATION_CL"
+
 
 # ---------------------------------------------------------------------------
 # Internal Methods
