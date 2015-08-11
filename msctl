@@ -64,9 +64,10 @@ Actions:
     Forcibly restart the Minecraft world server.  Forcibly restart all world
     servers by default.
 
-  create <world> <port> <ip>
+  create <world> <port> [<ip>]
     Create a Minecraft world server.  The world name and port must be
-    provided, the IP addressis usually blank.
+    provided, the IP address is usually blank.  Without arguments, create a
+    a default world at the default port.
 
   delete <world>
     Delete a Minecraft world server.
@@ -1816,10 +1817,12 @@ case "$1" in
     WORLDS=$(getEnabledWorlds)
     if [ -z "$WORLDS" ]; then
       echo "There are no worlds to start."
-      echo "You may want to enable or create some worlds:"
+      echo "You may want to enable a world:"
       echo "  $PROG enable <world>"
-      echo "or"
-      echo "  $PROG create <world>"
+      echo "Or create a new world:"
+      echo "  $PROG create <world> <port>"
+      echo "Or create the default world at the default port:"
+      echo "  $PROG create"
       exit 1
     elif [ -n "$2" ]; then
       if isWorldEnabled "$2"; then
@@ -1914,17 +1917,24 @@ case "$1" in
     printf ".\n"
   ;;
   create|new)
-    if [ -z "$2" ]; then
-      printf "A name for the new world must be supplied.\n"
-      exit 1
+    if [ -n "$2" ]; then
+      if [ -z "$3" ]; then
+        printf "A name and port for the new world must be supplied.\n"
+        printf "An IP address is optional and usually not needed.\n"
+        printf "  Usage: $PROG create <world> <port> [<ip>]"
+        exit 1
+      else
+        printf "Creating Minecraft world: $2"
+        createWorld "$2" "$3" "$4"
+        printf ".\n"
+      fi
+    elif [ -z "$(getAvailableWorlds)" ]; then
+      printf 'Creating default world "%s" at default port %s' \
+        $DEFAULT_WORLD $DEFAULT_PORT
+      createWorld "$DEFAULT_WORLD" "$DEFAULT_PORT"
+      printf ".\n"
     fi
-    if [ -z "$3" ]; then
-      printf "A port for the new world must be supplied.\n"
-      exit 1
-    fi
-    printf "Creating Minecraft world: $2"
-    createWorld "$2" "$3" "$4"
-    printf ".\n"
+
   ;;
   delete|remove)
     # Get list of enabled worlds.
