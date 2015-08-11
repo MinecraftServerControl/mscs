@@ -1814,18 +1814,21 @@ case "$1" in
   start)
     # Figure out which worlds to start.
     WORLDS=$(getEnabledWorlds)
-    # If there are no worlds in the list, then use the default world.
     if [ -z "$WORLDS" ]; then
-      WORLDS="$DEFAULT_WORLD"
-      createWorld "$DEFAULT_WORLD" "$DEFAULT_PORT" "$DEFAULT_IP"
-    fi
-    # If an optional argument was supplied, verify it is a valid world.
-    if isWorldEnabled "$2"; then
-      WORLDS="$2"
-    elif [ -n "$2" ]; then
-      printf "World '$2' not recognized.\n"
-      printf "  Usage:  $PROG $1 <world>\n"
+      echo "There are no worlds to start."
+      echo "You may want to enable or create some worlds:"
+      echo "  $PROG enable <world>"
+      echo "or"
+      echo "  $PROG create <world>"
       exit 1
+    elif [ -n "$2" ]; then
+      if isWorldEnabled "$2"; then
+        WORLDS="$2"
+      elif [ -n "$2" ]; then
+        printf "World '$2' not recognized.\n"
+        printf "  Usage:  $PROG $1 <world>\n"
+        exit 1
+      fi
     fi
     # Start each world requested, if not already running.
     printf "Starting Minecraft Server:"
