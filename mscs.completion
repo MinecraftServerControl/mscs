@@ -1,11 +1,10 @@
-MSCS=mscs
-
 list_worlds() {
   $MSCS ls $1 | sed -n '/:/{s/^ *//;s/:.*$//;p}'
 }
 
 _mscs() {
   local OPTS WORLDS
+  MSCS="$1"
   COMPREPLY=()
 
   COMP_WORDBREAKS=${COMP_WORDBREAKS//:}
@@ -61,4 +60,4 @@ _mscs() {
   fi
   return 0
 }
-complete -F _mscs $MSCS
+complete -F _mscs msctl mscs
