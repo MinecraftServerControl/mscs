@@ -9,7 +9,11 @@
 # Description:    Minecraft Server Control Script
 ### END INIT INFO
 
+# This is a wrapper to msctl that imitates traditional mscs behaviour:
+# uses the same default user, config file and location.
+
 . /etc/default/mscs
 USER_NAME=${USER_NAME:-minecraft}
+LOCATION=${LOCATION:-"/opt/mscs"}
 
-sudo -u $USER_NAME msctl -c /etc/default/mscs "$@"
+sudo -u $USER_NAME msctl -c /etc/default/mscs -l "$LOCATION" "$@"
