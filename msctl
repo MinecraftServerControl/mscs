@@ -136,6 +136,10 @@ Options:
 
   -c <config_file>
     Read configuration from <config_files> instead of default locations.
+
+  -l <location>
+    Uses <location> as the base path for data.  Overrides configuration file
+    options.
 EOF
 }
 
