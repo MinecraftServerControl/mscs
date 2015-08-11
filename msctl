@@ -43,7 +43,7 @@ PROG=$(basename $0)
 
 usage() {
   cat <<EOF
-Usage:  $PROG [-c <config_file>] <action>
+Usage:  $PROG [<options>] <action>
 
 Actions:
 
