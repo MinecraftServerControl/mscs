@@ -1950,7 +1950,7 @@ case "$1" in
       if [ -z "$3" ]; then
         printf "A name and port for the new world must be supplied.\n"
         printf "An IP address is optional and usually not needed.\n"
-        printf "  Usage: $PROG create <world> <port> [<ip>]"
+        printf "  Usage: $PROG create <world> <port> [<ip>]\n"
         exit 1
       else
         printf "Creating Minecraft world: $2"
