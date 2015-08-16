@@ -5,9 +5,9 @@ Requires=network.target
 After=network.target
 
 [Service]
-ExecStart=/usr/bin/mscs start
-ExecStop=/usr/bin/mscs stop
-ExecReload=/usr/bin/mscs restart
+ExecStart=/usr/local/bin/mscs start
+ExecStop=/usr/local/bin/mscs stop
+ExecReload=/usr/local/bin/mscs restart
 Type=oneshot
 RemainAfterExit=yes
 
