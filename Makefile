@@ -2,7 +2,7 @@ MSCS_USER := minecraft
 MSCS_HOME := /opt/mscs
 
 MSCS := /usr/local/bin/mscs
-MSCS_SERVICE := /lib/systemd/system/mscs.service
+MSCS_SERVICE := /etc/systemd/system/mscs.service
 MSCS_COMPLETION := /etc/bash_completion.d/mscs
 
 .PHONY: install update clean
