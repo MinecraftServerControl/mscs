@@ -16,4 +16,8 @@
 USER_NAME=${USER_NAME:-minecraft}
 LOCATION=${LOCATION:-"/opt/mscs"}
 
-sudo -u $USER_NAME msctl -c /etc/default/mscs -l "$LOCATION" "$@"
+if [ "$USER_NAME" = "$(whoami)" ]; then
+  msctl -c /etc/default/mscs -l "$LOCATION" "$@"
+else
+  sudo -u $USER_NAME msctl -c /etc/default/mscs -l "$LOCATION" "$@"
+fi
