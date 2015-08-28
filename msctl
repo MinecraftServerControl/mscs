@@ -608,8 +608,14 @@ getValue() {
   # Make sure the file exists.
   if [ -e "$1" ]; then
     # Find the key/value combo.
-    KEY=$($PERL -ne 'if ($_ =~ /^('$2')=.*$/i) { print lc $1; }' $1)
-    VALUE=$($PERL -ne 'if ($_ =~ /^'$2'=(.*)$/i) { print $1; }' $1)
+    KEY=$($PERL -ne '
+      $_ =~ s/[\r]//;
+      if ($_ =~ /^('$2')=.*$/i) { print lc $1; }
+    ' $1)
+    VALUE=$($PERL -ne '
+      $_ =~ s/[\r]//;
+      if ($_ =~ /^'$2'=(.*)$/i) { print $1; }
+    ' $1)
   fi
   # Return the value if found, the default value if not.
   if [ -n "$KEY" ] && [ -n "$VALUE" ]; then
@@ -632,9 +638,15 @@ setValue() {
   touch "$1"
   # Replace the key/value combo if it already exists, otherwise just
   # append it to the end of the file.
-  KEY_VALUE=$($PERL -ne 'if ($_ =~ /^('$2'=.*)$/) { print "$1"; }' $1)
+  KEY_VALUE=$($PERL -ne '
+    $_ =~ s/[\r]//;
+    if ($_ =~ /^('$2'=.*)$/) { print "$1"; }
+  ' $1)
   if [ -n "$KEY_VALUE" ]; then
-    $PERL -i -ne "if (\$_ =~ /^$2=.*$/) { print \"$2=$3\\n\"; } else { print; }" "$1"
+    $PERL -i -ne '
+      $_ =~ s/[\r]//;
+      if ($_ =~ /^'$2'=.*$/) { print "'$2'='$3'\n"; } else { print; }
+    ' $1
   else
     printf "$2=$3\n" >> "$1"
   fi
