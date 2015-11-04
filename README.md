@@ -61,18 +61,18 @@ You can manually add the `minecraft` user and install the script with the
 following commands:
 
     sudo adduser --system --group --home /opt/mscs --quiet minecraft
-    sudo install -m 0755 mscs /usr/bin/mscs
+    sudo install -m 0755 mscs /usr/local/bin/mscs
 
 To manually link the script to your server's startup and shutdown sequences
 when using systemd (ie. Ubuntu 15.04+):
 
-    sudo install -m 0644 mscs.service /lib/systemd/system/mscs.service
+    sudo install -m 0644 mscs.service /etc/systemd/system/mscs.service
     sudo systemctl -f enable mscs.service
 
 To manually link the script to a server using a SysV-style init system (or something
 compatible like Upstart in Ubuntu 14.10):
 
-    sudo ln -s /usr/bin/mscs /etc/init.d/mscs
+    sudo ln -s /usr/local/bin/mscs /etc/init.d/mscs
     sudo update-rc.d mscs defaults
 
 To manually add Bash Completion support:
