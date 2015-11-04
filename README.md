@@ -61,6 +61,7 @@ You can manually add the `minecraft` user and install the script with the
 following commands:
 
     sudo adduser --system --group --home /opt/mscs --quiet minecraft
+    sudo install -m 0755 msctl /usr/local/bin/msctl
     sudo install -m 0755 mscs /usr/local/bin/mscs
 
 To manually link the script to your server's startup and shutdown sequences
