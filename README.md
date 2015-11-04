@@ -44,11 +44,11 @@ You can download the script from the following locations:
 
 ### Configuration
 To get your server to run the script on startup, and cleanly down the server
-on shutdown, the `mscs` script must be copied to `/usr/bin`,
+on shutdown, the `mscs` script must be copied to `/usr/local/bin/`,
 have its execute permissions set, and the system must be instructed to use
 the script on startup and shutdown.  For Bash programmable completion
 support, the `mscs.completion` script must be copied to
-`/etc/bash_completion.d`.  For security reasons, the script uses a user
+`/etc/bash_completion.d/`.  For security reasons, the script uses a user
 account named `minecraft` rather than `root` and the account must be created
 before the script is used.
 
