@@ -27,4 +27,4 @@ clean:
 		systemctl -f disable mscs.service; \
 		rm -f $(MSCS_SERVICE); \
 	fi
-	rm -f $(MSCTL) $(MSCS) $(MSCS_SERVICE) $(MSCS_COMPLETION)
+	rm -f $(MSCTL) $(MSCS) $(MSCS_COMPLETION)
