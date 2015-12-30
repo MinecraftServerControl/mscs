@@ -1068,7 +1068,7 @@ rotateLog() {
   " $USER_NAME
   # Archive and rotate the log files for old Minecraft servers (Versions 1.7
   # and greater do this automatically).
-  if [ -e $WORLD_DIR/server.log ] &&
+  if [ -e "$WORLD_DIR/server.log" ] &&
     [ $(wc -l < $WORLD_DIR/server.log) -ge 1 ]; then
     # Make a copy of the log file in the world's logs directory.
     DATE=$(date +%F)
@@ -1097,7 +1097,7 @@ watchLog() {
   if [ -e "$WORLD_DIR/logs/latest.log" ]; then
     # Watch the log file of worlds running Minecraft 1.7 +.
     tail -n0 -f --pid=$(getJavaPID "$1") $WORLD_DIR/logs/latest.log
-  elif [ -e $WORLD_DIR/server.log ]; then
+  elif [ -e "$WORLD_DIR/server.log" ]; then
     # Watch the log file of worlds running older Minecraft servers.
     tail -n0 -f --pid=$(getJavaPID "$1") $WORLD_DIR/server.log
   fi
@@ -1552,7 +1552,7 @@ querySendPacket() {
   WORLD_DIR="$WORLDS_LOCATION/$1"
   # Make sure the query.in and query.out buffer files exist before
   # preparing and sending the packet to the Query server.
-  if [ -e $WORLD_DIR/query.in ] && [ -e $WORLD_DIR/query.out ]; then
+  if [ -e "$WORLD_DIR/query.in" ] && [ -e "$WORLD_DIR/query.out" ]; then
     # Add the magic bytes to the incoming packet.
     PACKET=$(printf "FEFD%s%s%s" "$2" "$ID" "$3")
     # Remove any old responses from the query.out buffer file.
