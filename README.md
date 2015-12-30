@@ -34,7 +34,11 @@ See the [Usage](#usage) section below for a description on how to use these feat
 ### Download
 You can download the script from the following locations:
 
-* Get a [zip file](https://github.com/sandain/MinecraftServerControlScript/archive/master.zip):
+* Get the latest stable version as a [zip file](https://github.com/sandain/MinecraftServerControlScript/archive/version-15.12.zip):
+ 
+        wget https://github.com/sandain/MinecraftServerControlScript/archive/version-15.12.zip
+
+* Get the development version as a [zip file](https://github.com/sandain/MinecraftServerControlScript/archive/master.zip):
 
         wget https://github.com/sandain/MinecraftServerControlScript/archive/master.zip
 
