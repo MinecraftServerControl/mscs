@@ -12,6 +12,9 @@
 # This is a wrapper to msctl that imitates traditional mscs behaviour:
 # uses the same default user, config file and location.
 
+# Get executable name
+PROG=$(basename $0)
+
 # Load the mscs default file if it exists.
 MSCS_DEFAULTS="/etc/default/mscs"
 if [ -r $MSCS_DEFAULTS ]; then
@@ -26,7 +29,7 @@ USER_NAME=${USER_NAME:-minecraft}
 LOCATION=${LOCATION:-"/opt/mscs"}
 
 # Setup the arguments to the msctl script.
-MSCS_ARGS="$MSCS_ARGS-l $LOCATION $@"
+MSCS_ARGS="-p $PROG -l $LOCATION $MSCS_ARGS $@"
 
 # Run the msctl script.
 if [ "$USER_NAME" = "$(whoami)" ]; then
