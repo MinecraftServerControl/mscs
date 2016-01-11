@@ -147,6 +147,15 @@ EOF
 # ---------------------------------------------------------------------------
 while [ "$1" != "${1#-}" ]; do
   case "$1" in
+    -p)
+      if [ -n "$2" ]; then
+        PROG="$2"
+        shift
+      else
+        echo "$PROG: '-p' needs a program name argument."
+        exit 1
+      fi
+    ;;
     -c)
       if [ -n "$2" ]; then
         MSCS_DEFAULTS_CL="$2"
