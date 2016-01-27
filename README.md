@@ -6,7 +6,9 @@ A powerful command-line control script for UNIX and Linux powered Minecraft serv
 
 ## Index
 * [Features](#features)
+* [Prerequisites](#prerequisites)
 * [Installation](#installation)
+* [Configuration](#configuration)
 * [Usage](#usage)
 * [Server Customization](#server-customization)
 * [License](LICENSE)
@@ -29,10 +31,69 @@ A powerful command-line control script for UNIX and Linux powered Minecraft serv
 See the [Usage](#usage) section below for a description on how to use these features.
 
 
-## Installation
+## Prerequisites
+Ensure that you have done the following before installing MSCS:
 
-### Download
-You can download the script from the following locations:
+### Required Programs
+We've made an attempt to utilize only features that are normally installed in
+most Linux and UNIX environments in this script. However, there may be a few
+requirements that this script has that may not already be in place:
+* Java JRE     - The Minecraft server software requires this.
+* Perl         - Most, if not all, Unix and Linux like systems have this
+                 preinstalled.
+* Python       - Required by the Minecraft Overviewer mapping software.
+* GNU Wget     - Allows the script to download software updates via the
+                 internet.
+* rdiff-backup - Allows the script to efficiently run backups.
+* Socat        - Allows the script to communicate with the Minecraft server.
+* Iptables     - Although not explicitly required, a good firewall should be
+                 installed.
+
+If you are running Debian or Ubuntu, you can make sure that these are
+installed by running:
+
+    sudo apt-get install default-jre perl python wget rdiff-backup socat iptables
+    
+### Configuring the Firewall / NAT
+If you have a firewall installed on your computer, or a router using NAT
+installed in your network, you will need to route some ports to your server.
+Instructions on how to accomplish this are beyond the scope of this post, but
+here are some things you will need to know:
+* The default port for the Minecraft server is: `25565`.
+* If you wish to run multiple world servers using this script, you will
+  want to open a range of ports (for example `25565 - 25575`).
+
+See the [iptables.rules](iptables.rules)
+file for a very basic set of rules that you can use with the Iptables firewall.
+
+### Mapping Software (Optional)
+The script uses the [Minecraft Overviewer](http://overviewer.org) mapping
+software to generate maps of your worlds.  Minecraft Overviewer is a
+command-line tool for rendering high-resolution maps of Minecraft worlds. It
+generates a set of static html and image files and uses the Google Maps API to
+display a nice interactive map.
+
+If you wish to use the mapping software, you can [download](http://overviewer.org/downloads) premade binaries for
+supported systems, or build your own binary from source if needed.
+
+Repositories for automatic installation are also available:
+* [Debian/Ubuntu](http://overviewer.org/debian/info)
+* [RHEL/CentOS/Fedora](http://overviewer.org/rpms/info)
+
+## Installation
+### Downloading the script
+The easiest way to download the script is to make a clone of the [git
+repository](https://github.com/sandain/MinecraftServerControlScript.git). You must have git installed first. To install git:
+
+        sudo apt-get install git
+        
+Then:
+
+        git clone https://github.com/sandain/MinecraftServerControlScript.git
+        
+Note that it will be downloaded into the current directory which you are working in. 
+
+##### Other ways to download
 
 * Get the latest stable [release](https://github.com/sandain/MinecraftServerControlScript/releases).
 
@@ -40,11 +101,18 @@ You can download the script from the following locations:
 
         wget https://github.com/sandain/MinecraftServerControlScript/archive/master.zip
 
-* Make a clone of the [git repository](https://github.com/sandain/MinecraftServerControlScript.git):
 
-        git clone https://github.com/sandain/MinecraftServerControlScript.git
 
 ### Configuration
+
+Navigate to the `MinecraftServerControlScript` directory that you just downloaded. Configuration can be done with the included Makefile in Debian and
+Ubuntu like environments by running:
+
+    sudo make install
+
+That's it!
+#### Manual Configuration 
+**Manuel configuration should only be done when the above configuration fails**. 
 To get your server to run the script on startup, and cleanly down the server
 on shutdown, the `mscs` script must be copied to `/usr/local/bin/`,
 have its execute permissions set, and the system must be instructed to use
@@ -53,11 +121,6 @@ support, the `mscs.completion` script must be copied to
 `/etc/bash_completion.d/`.  For security reasons, the script uses a user
 account named `minecraft` rather than `root` and the account must be created
 before the script is used.
-
-This can all be done automatically with the included Makefile in Debian and
-Ubuntu like environments by running:
-
-    sudo make install
 
 You can manually add the `minecraft` user and install the script with the
 following commands:
@@ -87,57 +150,11 @@ following location on the first run:
 
     /opt/mscs/server/
 
-### EULA
+#### EULA
 As of Minecraft version 1.7.10, Mojang requires that users of their software read and agree to their [EULA](https://account.mojang.com/documents/minecraft_eula).  After you have read through the document, you need to modify the `eula.txt` file in your world's folder, changing the value of the `eula` variable from `false` to `true`.
 
     #By changing the setting below to TRUE you are indicating your agreement to our EULA (https://account.mojang.com/documents/minecraft_eula).
     eula=true
-
-### Requirements
-We've made an attempt to utilize only features that are normally installed in
-most Linux and UNIX environments in this script, but there are a few
-requirements that this script has that may not already be in place:
-* Java JRE     - The Minecraft server software requires this.
-* Perl         - Most, if not all, Unix and Linux like systems have this
-                 preinstalled.
-* Python       - Required by the Minecraft Overviewer mapping software.
-* GNU Wget     - Allows the script to download software updates via the
-                 internet.
-* rdiff-backup - Allows the script to efficiently run backups.
-* Socat        - Allows the script to communicate with the Minecraft server.
-* Iptables     - Although not explicitly required, a good firewall should be
-                 installed.
-
-If you are running Debian or Ubuntu, you can make sure that these are
-installed by running:
-
-    sudo apt-get install default-jre perl python wget rdiff-backup socat iptables
-
-### Mapping Software
-The script uses the [Minecraft Overviewer](http://overviewer.org) mapping
-software to generate maps of your worlds.  Minecraft Overviewer is a
-command-line tool for rendering high-resolution maps of Minecraft worlds. It
-generates a set of static html and image files and uses the Google Maps API to
-display a nice interactive map.
-
-You can [download](http://overviewer.org/downloads) premade binaries for
-supported systems, or build your own binary from source if needed.
-
-Repositories for automatic installation are also available:
-* [Debian/Ubuntu](http://overviewer.org/debian/info)
-* [RHEL/CentOS/Fedora](http://overviewer.org/rpms/info)
-
-### Firewall / NAT
-If you have a firewall installed on your computer, or a router using NAT
-installed in your network, you will need to route some ports to your server.
-Instructions on how to accomplish this are beyond the scope of this post, but
-here are some things you will need to know:
-* The default port for the Minecraft server is: `25565`.
-* If you wish to run multiple world servers using this script, you will
-  want to open a range of ports (for example `25565 - 25575`).
-
-See the [iptables.rules](iptables.rules)
-file for a very basic set of rules that you can use with the Iptables firewall.
 
 
 ## Usage
@@ -387,7 +404,6 @@ Use the latest BungeeCord successful build (requires additional setup):
 ### Additional documentation
 
 More examples and documentation on server customization can be found on the [wiki](https://github.com/sandain/MinecraftServerControlScript/wiki/Server-Customization-Examples) page.
-
 
 ## License
 
