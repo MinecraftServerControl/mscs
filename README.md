@@ -8,8 +8,7 @@ A powerful command-line control script for UNIX and Linux powered Minecraft serv
 * [Features](#features)
 * [Prerequisites](#prerequisites)
 * [Installation](#installation)
-* [Configuration](#configuration)
-* [Usage](#usage)
+* [First-time Usage](#first-time usage)
 * [Server Customization](#server-customization)
 * [License](LICENSE)
 * [Issues](#issues)
@@ -149,6 +148,8 @@ The Minecraft server software will be automatically downloaded to the
 following location on the first run:
 
     /opt/mscs/server/
+
+##First-time Usage
 
 #### EULA
 As of Minecraft version 1.7.10, Mojang requires that users of their software read and agree to their [EULA](https://account.mojang.com/documents/minecraft_eula).  After you have read through the document, you need to modify the `eula.txt` file in your world's folder, changing the value of the `eula` variable from `false` to `true`.
