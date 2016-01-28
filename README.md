@@ -4,7 +4,7 @@ Minecraft Server Control Script
 A powerful command-line control script for UNIX and Linux powered Minecraft servers.
 
 
-## Index
+# Index
 * [Features](#features)
 * [Prerequisites](#prerequisites)
 * [Installation](#installation)
@@ -20,7 +20,7 @@ A powerful command-line control script for UNIX and Linux powered Minecraft serv
 * Create, delete, disable, and enable worlds.
 * Includes support for additional server types: [Forge](http://www.minecraftforge.net/), [BungeeCord](http://www.spigotmc.org/wiki/bungeecord/), [SpigotMC](http://www.spigotmc.org/wiki/spigot/), etc.
 * Users automatically notified of important server events.
-* Uses the Minecraft [Query protocol](http://wiki.vg/Query) to keep track of current server conditions.
+* Uses the Minecraft [Query protocol](http:b //wiki.vg/Query) to keep track of current server conditions.
 * LSB and systemd compatible init script, allows for seamless integration with your server's startup and shutdown sequences.
 * Map worlds using the [Minecraft Overviewer](http://overviewer.org/) mapping software.
 * Backup worlds, and remove backups older than X days.
