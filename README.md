@@ -146,10 +146,7 @@ After accepting the EULA simply start the server using the same command above, a
 ### Import existing world
 Suppose you want to import a world folder named `world` into MSCS, and that you want MSCS to recognize this world by the name "vanillaMC".
 1. First, if you don't have one already, create a `worlds` folder in /opt/mscs/.
-
-2. Create a new folder **within the `/opt/mscs/worlds/` directory that is the name you want MSCS to recongize for the
-world.**. For this example, I chose "vanillaMC". So for instance, I created a new directory `vanillaMC` within the `/opt/mscs/worlds` directory, so the path would be `/opt/mscs/worlds/vanillaMC`. 
-
+2. Create a new folder **within the `/opt/mscs/worlds/` directory that is the name you want MSCS to recongize for the world.**. For this example, I chose "vanillaMC". So for instance, I created a new directory `vanillaMC` within the `/opt/mscs/worlds` directory, so the path would be `/opt/mscs/worlds/vanillaMC`. 
 3. Drag the folder of the world you wish to move into the folder you just created. So I would drag the world `world` into the `vanillaMC` folder. The path of `world` (the actual world folder) would now be `/opt/mscs/worlds/vanillaMC/myWorld/`.
 
 The finished file structure should be as follows with a world named `world` and a containing folder name "vanillaMC":
@@ -187,7 +184,7 @@ There are two ways of adjusting the options through MSCS: changing values in the
 ### The mscs.properties file
 The `mscs.properties` file can be found in every world folder (for instance, if you had a world called `myWorld`, the path would be `/opt/mscs/worlds/myWorld/mscs.properties`).
 
-By default, the file only has one line in it: `mscs-enabled=true`. You can add a variety of flags to this file and set them as true/false to your liking.
+By default, the file only has one line in it: `mscs-enabled=true`. You can add a variety of flags to this file and set them as to a true/false boolean or a variable to your liking.
 
 The following flags are available:
 * mscs-enabled - Enable or disable the world server.
@@ -215,8 +212,43 @@ The following variables may be used in some of the values of the above keys:
 * $INITIAL_MEMORY - The initial amount of memory for the server.
 * $MAXIMUM_MEMORY - The maximum amount of memory for the server.
 * $SERVER_LOCATION - The location of the server .jar file.
-### The msctl file
 
+#### Example key/value pairs
+
+    mscs-enabled=true
+    mscs-version-type=release
+    mscs-client-version=$CURRENT_VERSION
+    mscs-client-jar=$CLIENT_VERSION.jar
+    mscs-client-url=https://s3.amazonaws.com/Minecraft.Download/versions/$CLIENT_VERSION/$CLIENT_VERSION.jar
+    mscs-client-location=/opt/mscs/client/$CLIENT_VERSION
+    mscs-server-version=$CURRENT_VERSION
+    mscs-server-jar=minecraft_server.$SERVER_VERSION.jar
+    mscs-server-url=https://s3.amazonaws.com/Minecraft.Download/versions/$SERVER_VERSION/minecraft_server.$SERVER_VERSION.jar
+    mscs-server-args=nogui
+    mscs-initial-memory=128M
+    mscs-maximum-memory=2048M
+    mscs-server-location=/opt/mscs/server
+    mscs-server-command=$JAVA -Xms$INITIAL_MEMORY -Xmx$MAXIMUM_MEMORY -jar $SERVER_LOCATION/$SERVER_JAR $SERVER_ARGS
+
+Run a Minecraft version 1.6.4 server:
+
+    mscs-client-version=1.6.4
+    mscs-server-version=1.6.4
+
+Use Forge to run a 1.8.4 server (requires additional setup):
+
+    mscs-client-version=1.8.4
+    mscs-server-version=1.8.4
+    mscs-server-jar=forge-1.8-11.14.1.1419-universal.jar
+    mscs-server-url=http://files.minecraftforge.net/maven/net/minecraftforge/forge/1.8-11.14.1.1419/forge-1.8-11.14.1.1419-universal.jar
+
+Use the latest BungeeCord successful build (requires additional setup):
+
+    mscs-server-jar=BungeeCord.jar
+    mscs-server-url=http://ci.md-5.net/job/BungeeCord/lastSuccessfulBuild/artifact/bootstrap/target/BungeeCord.jar
+
+### The msctl file
+The `msctl` file is an additional
 
 ## Scheduling Backups
 
