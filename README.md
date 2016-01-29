@@ -146,7 +146,10 @@ After accepting the EULA simply start the server using the same command above, a
 ### Import existing world
 Suppose you want to import a world folder named `world` into MSCS, and that you want MSCS to recognize this world by the name "vanillaMC".
 1. First, if you don't have one already, create a `worlds` folder in /opt/mscs/.
-2. Create a new folder **within the `/opt/mscs/worlds/` directory that is the name you want MSCS to recongize for the world.**. For this example, I chose "vanillaMC". So for instance, I created a new directory `vanillaMC` within the `/opt/mscs/worlds` directory, so the path would be `/opt/mscs/worlds/vanillaMC`. 
+
+2. Create a new folder **within the `/opt/mscs/worlds/` directory that is the name you want MSCS to recongize for the
+world.**. For this example, I chose "vanillaMC". So for instance, I created a new directory `vanillaMC` within the `/opt/mscs/worlds` directory, so the path would be `/opt/mscs/worlds/vanillaMC`. 
+
 3. Drag the folder of the world you wish to move into the folder you just created. So I would drag the world `world` into the `vanillaMC` folder. The path of `world` (the actual world folder) would now be `/opt/mscs/worlds/vanillaMC/myWorld/`.
 
 The finished file structure should be as follows with a world named `world` and a containing folder name "vanillaMC":
