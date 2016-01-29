@@ -314,7 +314,7 @@ You can schedule restarts for the server following the same method as outlined i
 ## Mapping the world
 Minecraft Server Control Script uses [overviewer](http://docs.overviewer.org/en/latest/) to generate minecraft maps. First, follow the [instructions](http://docs.overviewer.org/en/latest/installing/) on their site to install overviewer. 
 
-Then, once you have it installed, modify the settings found in `/usr/local/bin/msctl`. The settings can be found starting on line 370 of the document:
+Then, once you have it installed, modify the settings (if necessary) found in `/usr/local/bin/msctl`. The settings can be found starting on line 370 of the document:
 
  ````
  OVERVIEWER_BIN=$(which overviewer.py)
@@ -322,11 +322,11 @@ Then, once you have it installed, modify the settings found in `/usr/local/bin/m
  MAPS_URL="my.minecraftserver.com"
  MAPS_LOCATION="$LOCATION/maps"
  ````
-At the very least, change the `MAPS_URL` value to reflect the domain of your website/server that you wish to use to view the map.
 
 After you've tinkered the settings to your liking, run
 `mscs map <world>`
 where `world` is the name of the world you would like to get mapped. Omit the world name to map all worlds.
+By default maps are saved into `/opt/mscs/maps`.
 
 
 ## Command Reference
