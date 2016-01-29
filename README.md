@@ -51,7 +51,7 @@ requirements that this script has that may not already be in place:
 If you are running Debian or Ubuntu, you can make sure that these are
 installed by running:
 
-    sudo apt-get install default-jre perl python wget rdiff-backup socat iptables
+        sudo apt-get install default-jre perl python wget rdiff-backup socat iptables
     
 ### Configuring the Firewall / NAT
 If you have a firewall installed on your computer, or a router using NAT
@@ -107,13 +107,40 @@ Note that it will be downloaded into the current directory which you are working
 Navigate to the `MinecraftServerControlScript` directory that you just downloaded. Configuration can be done with the included Makefile in Debian and
 Ubuntu like environments by running:
 
-    sudo make install
+        sudo make install
 
 That's it!
-If you wish to configure the script manually, please visit the wiki page.
+If you wish to configure the script manually, please visit the [wiki page](https://github.com/Roflicide/MinecraftServerControlScript/wiki/Manual-Configuration).
 
 
-##First-time Usage
+## First-time Usage
+So you successfully installed the script--great! 
+There are a few important locations that you should know when using MinecraftServerControlScript:
+
+* `/usr/local/bin` -- This contains the `MSCS` and `MSCTL` scripts used to power MinecraftServerControlScript. When modifying the script, you're going to want to modify one of these files (more in the adjusting options section).
+* `/opt/mscs` -- All of your worlds and backups are stored in here.
+
+From here, you probably want to [create a new world](#create new world)or import an existing world into the script. Then, you should adjust the amount of RAM and other settings for the server.
+
+### Create new world
+The command to create a new world is:
+
+        mscs create [world] [port] <ip>
+  
+Where `world` is the name of the world you specify, and `port` is the server port (by default, use 25565).
+`ip` is optional and will be used if you wish to create multiple worlds across different servers. For now, leave it blank.
+
+**If you get a permission error, such as `mkdir: cannot create directory` then type the following:**
+
+        chmod -R u+w /opt/mscs
+        chown -R minecraft:minecraft /opt/mscs
+This will give the user you created in the config (by default, the user `minecraft`) access to write in the `/opt/mscs` folder. If you configured MSCS manually when you installed the script, then replace `minecraft` with the name of the user you made.
+
+### Import existing world
+
+### Adjusting server version, RAM, and other options
+
+## Scheduling Backups
 
 #### EULA
 As of Minecraft version 1.7.10, Mojang requires that users of their software read and agree to their [EULA](https://account.mojang.com/documents/minecraft_eula).  After you have read through the document, you need to modify the `eula.txt` file in your world's folder, changing the value of the `eula` variable from `false` to `true`.
