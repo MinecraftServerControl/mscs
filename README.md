@@ -9,7 +9,7 @@ A powerful command-line control script for UNIX and Linux powered Minecraft serv
 * [Prerequisites for installation](#prerequisites-for-installation)
   * [Required programs](#required-programs)
   * [Configuring the Firewall / NAT](#configuring-the-firewall--nat)
-  * [Mapping Software (Optional)](#mapping-software-optional)
+  * [Mapping software (Optional)](#mapping-software-optional)
 * [Installation](#installation)
   * [Downloading the script](#downloading-the-script)
   * [Configuration](#configuration)
@@ -68,7 +68,7 @@ installed by running:
 
         sudo apt-get install default-jre perl python wget rdiff-backup socat iptables
     
-### Configuring the Firewall / NAT
+### Configuring the firewall / NAT
 If you have a firewall installed on your computer, or a router using NAT
 installed in your network, you will need to route some ports to your server.
 Instructions on how to accomplish this are beyond the scope of this post, but
@@ -80,7 +80,7 @@ here are some things you will need to know:
 See the [iptables.rules](iptables.rules)
 file for a very basic set of rules that you can use with the Iptables firewall.
 
-### Mapping Software (Optional)
+### Mapping software (Optional)
 The script uses the [Minecraft Overviewer](http://overviewer.org) mapping
 software to generate maps of your worlds.  Minecraft Overviewer is a
 command-line tool for rendering high-resolution maps of Minecraft worlds. It
