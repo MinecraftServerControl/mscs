@@ -1,5 +1,4 @@
 Minecraft Server Control Script
-=============================
 
 A powerful command-line control script for UNIX and Linux powered Minecraft servers.
 
