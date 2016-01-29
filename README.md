@@ -19,7 +19,7 @@ A powerful command-line control script for UNIX and Linux powered Minecraft serv
 * [Adjusting server options](#adjusting-server-options)
   * [The mscs.properties file](#the-mscs.properties-file)
   * [The msctl file](#the-msctl-file)
-* [Automated backups and restarts](#scheduling-backups-and-restarts)
+* [Automated backups and restarts](#automated-backups-and-restarts)
   * [Scheduling backups](#scheduling-backups)
   * [Removing backups after X days](#removing-backups-after-x-days)
   * [Scheduling restarts](#scheduling-restarts)
