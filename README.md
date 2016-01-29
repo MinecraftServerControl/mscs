@@ -259,7 +259,39 @@ You can set the default settings of **mscs.properties** in this file, as well as
 * Line 370 is the beginning of the **minecraft overviewer** settings
 
 ## Scheduling Backups
+MSCS uses [**cron**](https://en.wikipedia.org/wiki/Cron), a scheduler software that can run programs on a set interval of time. Below is an example of one way how you could setup backups via cron to backup a world every 2 hours:
 
+Type the following (in any directory): 
+
+  ````
+  export EDITOR=vim
+  crontab -e
+  ````
+  Page down until you get to an empty line. Then paste the following:
+  
+  ````
+  0 */2 * * *  PATH-TO-MSCS backup myWorld
+  ````
+  * `0 */2 * * *` is the time interval to backup. This particular expression means backup every 2 hours. You can change this to 3, 4, 5 or whatever amount of hours to backup X amount of hours. You can also backup according to days, minutes, seconds, the time of the day, and more. See [the wiki page](https://github.com/sandain/MinecraftServerControlScript/wiki/Backup-and-Restore)for more information.
+  * `PATH-TO-MSCS` is the path of where the `mscs` file is (which will be inside the `MinecraftServerControlScript` folder that you downloaded)
+  * `myWorld` is the name of the world you wish to backup. Omitting this will backup all worlds.
+
+  For instance, if the `mscs` script is located in `/home/MinecraftServerControlScript/mscs`, and I want to backup the world "vanillaMC" every 2 hours, it would look like this:
+  
+  ````
+  0 */2 * * *  //home/MinecraftServerControlScript/mscs backup vanillaMC
+  ````
+  
+  Finally, type
+  `:wq`
+  to save and quit.
+  
+  The backups will be saved in `/opt/mscs/backups`. 
+  
+### Removing backups after X days
+You can specify how long to keep backups by changing the `BACKUP_DURATION` in the `/usr/local/bin/msctl` file, on line 331.
+  
+  
 ## Command Reference
 
 All commands below assume that you are running them as either the `minecraft`
