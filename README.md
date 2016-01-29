@@ -24,6 +24,7 @@ A powerful command-line control script for UNIX and Linux powered Minecraft serv
   * [Scheduling restarts](#scheduling-restarts)
 * [Mapping the world](#mapping-the-world)
 * [Command reference](#command-reference)
+  * [Examples](#examples)
 * [License](LICENSE)
 * [Issues](#issues)
 
