@@ -273,7 +273,9 @@ You can set the default settings of **mscs.properties** in this file, as well as
 * Line 348 is the beginning of the **mirror image** settings.
 * Line 370 is the beginning of the **minecraft overviewer** settings
 
-## Scheduling backups
+## Automated backups and restarts
+
+### Scheduling backups
 MSCS uses [**cron**](https://en.wikipedia.org/wiki/Cron), a scheduler software that can run programs on a set interval of time. Below is an example of one way how you could setup backups via cron to backup a world every 2 hours:
 
 Type the following (in any directory): 
@@ -303,10 +305,10 @@ Type the following (in any directory):
   
   The backups will be saved in `/opt/mscs/backups`. 
   
-## Removing backups after X days
+### Removing backups after X days
 You can specify how long to keep backups by changing the `BACKUP_DURATION` in the `/usr/local/bin/msctl` file, on line 331.
 
-## Scheduling restarts
+### Scheduling restarts
 You can schedule restarts for the server following the same method as outlined in [scheduling backups](#scheduling-backups).   Simply change the scheduled command from `backup <myWorld>` to `restart <myWorld>`. `myWorld` is the name of world you wish to restart; omit if you wish to restart all worlds.
 
 ## Command Reference
