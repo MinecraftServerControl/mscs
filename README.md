@@ -272,7 +272,7 @@ Type the following (in any directory):
   ````
   0 */2 * * *  PATH-TO-MSCS backup myWorld
   ````
-  * `0 */2 * * *` is the time interval to backup. This particular expression means backup every 2 hours. You can change this to 3, 4, 5 or whatever amount of hours to backup X amount of hours. You can also backup according to days, minutes, seconds, the time of the day, and more. See [the wiki page](https://github.com/sandain/MinecraftServerControlScript/wiki/Backup-and-Restore)for more information.
+  * `0 */2 * * *` is the time interval to backup. This particular expression means backup every 2 hours. You can change this to 3, 4, 5 or whatever amount of hours to backup X amount of hours. You can also backup according to days, minutes, seconds, the time of the day, and more. See [the wiki page](https://github.com/sandain/MinecraftServerControlScript/wiki/Backup-and-Restore) for more information.
   * `PATH-TO-MSCS` is the path of where the `mscs` file is (which will be inside the `MinecraftServerControlScript` folder that you downloaded)
   * `myWorld` is the name of the world you wish to backup. Omitting this will backup all worlds.
 
@@ -282,7 +282,7 @@ Type the following (in any directory):
   0 */2 * * *  //home/MinecraftServerControlScript/mscs backup vanillaMC
   ````
   
-  Finally, type
+  Finally, press escape, then type
   `:wq`
   to save and quit.
   
