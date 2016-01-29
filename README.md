@@ -13,7 +13,7 @@ A powerful command-line control script for UNIX and Linux powered Minecraft serv
 * [Issues](#issues)
 
 ## Overview
-**M**inecraft**S**erver**C**ontrol**S**cript (**MSCS**) is a server-management script for UNIX and Linux powered Minecraft servers. 
+**M**inecraft **S**erver **C**ontrol **S**cript (**MSCS**) is a server-management script for UNIX and Linux powered Minecraft servers. 
 Features include:
 
 * Run multiple Minecraft worlds.
