@@ -23,6 +23,7 @@ A powerful command-line control script for UNIX and Linux powered Minecraft serv
   * [Scheduling backups](#scheduling-backups)
   * [Removing backups after X days](#removing-backups-after-x-days)
   * [Scheduling restarts](#scheduling-restarts)
+* [Mapping the world](#mapping-the-world)
 * [Command reference](#command-reference)
 * [License](LICENSE)
 * [Issues](#issues)
@@ -310,6 +311,24 @@ You can specify how long to keep backups by changing the `BACKUP_DURATION` in th
 
 ### Scheduling restarts
 You can schedule restarts for the server following the same method as outlined in [scheduling backups](#scheduling-backups).   Simply change the scheduled command from `backup <myWorld>` to `restart <myWorld>`. `myWorld` is the name of world you wish to restart; omit if you wish to restart all worlds.
+
+## Mapping the world
+Minecraft Server Control Script uses [overviewer](http://docs.overviewer.org/en/latest/) to generate minecraft maps. First, follow the [instructions](http://docs.overviewer.org/en/latest/installing/) on their site to install overviewer. 
+
+Then, once you have it installed, modify the settings found in `/usr/local/bin/msctl`. The settings can be found starting on line 370 of the document:
+
+ ````
+ OVERVIEWER_BIN=$(which overviewer.py)
+ OVERVIEWER_URL="http://overviewer.org"
+ MAPS_URL="my.minecraftserver.com"
+ MAPS_LOCATION="$LOCATION/maps"
+ ````
+At the very least, change the `MAPS_URL` value to reflect the domain of your website/server that you wish to use to view the map.
+
+After you've tinkered the settings to your liking, run
+`mscs map <world>`
+where `world` is the name of the world you would like to get mapped. Omit the world name to map all worlds.
+
 
 ## Command Reference
 
