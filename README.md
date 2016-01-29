@@ -120,7 +120,7 @@ There are a few important locations that you should know when using MinecraftSer
 * `/usr/local/bin` -- This contains the `MSCS` and `MSCTL` scripts used to power MinecraftServerControlScript. When modifying the script, you're going to want to modify one of these files (more in the adjusting options section).
 * `/opt/mscs` -- All of your worlds and backups are stored in here.
 
-From here, you probably want to [create a new world](#create new world)or import an existing world into the script. Then, you should adjust the amount of RAM and other settings for the server.
+From here, you probably want to [create a new world](#Create new world) or [import an existing world](#Import existing world) into the script. Then, you should adjust the [amount of RAM and other settings for the server](#Adjusting-server-options).
 
 ### Create new world
 The command to create a new world is:
@@ -138,7 +138,7 @@ This will give the user you created in the config (by default, the user `minecra
 
 ### Import existing world
 
-### Adjusting server version, RAM, and other options
+### Adjusting server options
 
 ## Scheduling Backups
 
