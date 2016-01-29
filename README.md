@@ -9,7 +9,7 @@ A powerful command-line control script for UNIX and Linux powered Minecraft serv
 * [Prerequisites for installation](#prerequisites-for-installation)
   * [Required programs](#required-programs)
   * [Configuring the Firewall / NAT](#configuring-the-firewall-/-nat)
-  * [Mapping Software (Optional)](#mapping-software-(optional)
+  * [Mapping Software (Optional)](#mapping-software-(optional))
 * [Installation](#installation)
   * [Downloading the script](#downloading-the-script)
   * [Configuration](#configuration)
