@@ -109,6 +109,7 @@ Ubuntu like environments by running:
 
         sudo make install
 Then, type
+
         chmod -R u+w /opt/mscs
         chown -R minecraft:minecraft /opt/mscs
 This will give the user you created in the config (by default, the user `minecraft`) access to write in the `/opt/mscs` folder. If you configured MSCS manually when you installed the script, then replace `minecraft` with the name of the user you made.
@@ -121,7 +122,7 @@ If you wish to configure the script manually, please visit the [wiki page](https
 So you successfully installed the script--great! 
 There are a few important locations that you should know when using MinecraftServerControlScript:
 
-* `/usr/local/bin` -- This contains the `MSCS` and `MSCTL` scripts used to power MinecraftServerControlScript. When modifying the script, you're going to want to modify one of these files (more in the adjusting options section).
+* `/usr/local/bin` -- This contains the `MSCS` and `MSCTL` scripts [adjusting server options section](#adjusting-server-options).
 * `/opt/mscs/worlds` -- All of your worlds are stored in here. 
 
 From here, you probably want to [create a new world](#create-new-world) or [import an existing world](#import-existing-world) into the script. Then, you should adjust the [amount of RAM and other settings for the server](#adjusting-server-options).
@@ -247,21 +248,27 @@ Use the latest BungeeCord successful build (requires additional setup):
     mscs-server-jar=BungeeCord.jar
     mscs-server-url=http://ci.md-5.net/job/BungeeCord/lastSuccessfulBuild/artifact/bootstrap/target/BungeeCord.jar
 
+##### Additional documentation
+
+More examples and documentation on server customization can be found on the [wiki](https://github.com/sandain/MinecraftServerControlScript/wiki/Server-Customization-Examples) page.
+
 ### The msctl file
-The `msctl` file is an additional
+The `msctl` file can be found at `/usr/local/bin`.
+
+The `msctl` file is an additional file for adjusting the properties of your server that are not found in `mscs.properties`. Starting at line 236 and ending at line 385 is where the settings are in this file.
+
+You can set the default settings of **mscs.properties** in this file, as well as some other useful settings:
+* Line 305 is the beginning of the **server instance configuration** settings.
+* Line 321 is the beginning of the **backup configuration** settings.
+* Line 334 is the beginning of the **server log configuration** settings.
+* Line 341 is the beginning of the **listing option** settings.
+* Line 348 is the beginning of the **mirror image** settings.
+* Line 370 is the beginning of the **minecraft overviewer** settings
 
 ## Scheduling Backups
 
-#### EULA
-As of Minecraft version 1.7.10, Mojang requires that users of their software read and agree to their [EULA](https://account.mojang.com/documents/minecraft_eula).  After you have read through the document, you need to modify the `eula.txt` file in your world's folder, changing the value of the `eula` variable from `false` to `true`.
+## Command Reference
 
-    #By changing the setting below to TRUE you are indicating your agreement to our EULA (https://account.mojang.com/documents/minecraft_eula).
-    eula=true
-
-
-## Usage
-
-### Permissions
 All commands below assume that you are running them as either the `minecraft`
 user or as `root` (through sudo).
 
@@ -270,7 +277,7 @@ will be started using the `minecraft` user instead for security purposes.
 
     sudo mscs [option]
 
-### Options
+````
 * start [world]
 
     Start the Minecraft world server.  Start all worlds by default.
@@ -377,6 +384,7 @@ will be started using the `minecraft` user instead for security purposes.
 * update
 
     Update the client and server software packages.
+````
 
 ### Examples
 
@@ -401,56 +409,9 @@ ie.
     sudo mscs send alpha say Hello world!
 
 
-### Import Existing Worlds
-
-You just need to create a new directory in the worlds folder for the world you wish to import.
-Suppose the world you wish to import is called `alpha`, you would create a new folder in
-`/opt/mscs/worlds`, then copy the data files over to that directory.
-
-If the directory containing the world `alpha` you wish to import looks like this:
-
-    $ ls
-    alpha
-    banned-ips.txt
-    banned-players.txt
-    crash-reports
-    logs
-    ops.txt
-    server.properties
-    white-list.txt
-
-You can just copy your world into the worlds directory:
-
-    mkdir /opt/mscs/worlds/alpha
-    cp -R * /opt/mscs/worlds/alpha
-
-Make sure you check `server-port` and `query.port` in `server.properties` to make sure it does not overlap with other servers created by the MSCS script. Also ensure that `enable-query` is set to `true`.  If you do not have `enable-query` and a `query.port` set, you will not be able to check the status of the world with the script.
-
-
-## Server Customization
-
-The default values in the script can be overwritten by modifying the
-`/etc/default/mscs` file.
-
-For example, to modify the default MAPS_URL variable, add the following line
-to the file:
-
-    MAPS_URL="http://server.com/minecraft/maps"
-
-The server settings for each world can be customized by adding certain
-key/value pairs to the world's `mscs.properties` file.
-
-
-
-
-### Additional documentation
-
-More examples and documentation on server customization can be found on the [wiki](https://github.com/sandain/MinecraftServerControlScript/wiki/Server-Customization-Examples) page.
-
 ## License
 
 See [LICENSE](LICENSE)
-
 
 ## Issues
 
