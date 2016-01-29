@@ -7,10 +7,23 @@ A powerful command-line control script for UNIX and Linux powered Minecraft serv
 # Index
 * [Overview](#overview)
 * [Prerequisites for installation](#prerequisites-for-installation)
+  * [Required programs](#required-programs)
+  * [Configuring the Firewall / NAT](#configuring-the-firewall-/-nat)
+  * [Mapping Software (Optional)](#mapping-software-(optional)
 * [Installation](#installation)
+  * [Downloading the script](#downloading-the-script)
+  * [Configuration](#configuration)
 * [Creating and importing worlds](#creating-and-importing-worlds)
+  * [Create new world](#create-new-world)
+  * [Import existing world](#import-existing-world)
 * [Adjusting server options](#adjusting-server-options)
-* [Scheduling backups](#scheduling-backups)
+  * [The mscs.properties file](#the-mscs.properties-file)
+  * [The msctl file](#the-msctl-file)
+* [Automated backups and restarts](#scheduling-backups-and-restarts)
+  * [Scheduling backups](#scheduling-backups)
+  * [Removing backups after X days](#removing-backups-after-x-days)
+  * [Scheduling restarts](#scheduling-restarts)
+* [Command reference]
 * [License](LICENSE)
 * [Issues](#issues)
 
@@ -260,7 +273,7 @@ You can set the default settings of **mscs.properties** in this file, as well as
 * Line 348 is the beginning of the **mirror image** settings.
 * Line 370 is the beginning of the **minecraft overviewer** settings
 
-## Scheduling Backups
+## Scheduling backups
 MSCS uses [**cron**](https://en.wikipedia.org/wiki/Cron), a scheduler software that can run programs on a set interval of time. Below is an example of one way how you could setup backups via cron to backup a world every 2 hours:
 
 Type the following (in any directory): 
@@ -281,7 +294,7 @@ Type the following (in any directory):
   For instance, if the `mscs` script is located in `/home/MinecraftServerControlScript/mscs`, and I want to backup the world "vanillaMC" every 2 hours, it would look like this:
   
   ````
-  0 */2 * * *  //home/MinecraftServerControlScript/mscs backup vanillaMC
+  0 */2 * * *  /home/MinecraftServerControlScript/mscs backup vanillaMC
   ````
   
   Finally, press escape, then type
@@ -290,9 +303,11 @@ Type the following (in any directory):
   
   The backups will be saved in `/opt/mscs/backups`. 
   
-### Removing backups after X days
+## Removing backups after X days
 You can specify how long to keep backups by changing the `BACKUP_DURATION` in the `/usr/local/bin/msctl` file, on line 331.
-  
+
+## Scheduling restarts
+You can schedule restarts for the server following the same method as outline in [scheduling backups](#scheduling-backups).   Simply change the scheduled command from `backup <myWorld>` to `restart <myWorld>`. `myWorld` is the name of world you wish to restart; omit if you wish to restart all worlds.
   
 ## Command Reference
 
