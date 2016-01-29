@@ -5,18 +5,12 @@ A powerful command-line control script for UNIX and Linux powered Minecraft serv
 
 
 # Index
-I.   [Overview](#overview)
-
-II.  [Prerequisites for installation](#prerequisites-for-installation)
-
-III. [Installation](#installation)
-
-IV.  [First-time usage](#first-time-usage)
-
-V.   [License](LICENSE)
-
-VI.  [Issues](#issues)
-
+* [Overview](#overview)
+* [Prerequisites for installation](#prerequisites-for-installation)
+* [Installation](#installation)
+* [First-time usage](#first-time-usage)
+* [License](LICENSE)
+* [Issues](#issues)
 
 ## Overview
 **M**inecraft**S**erver**C**ontrol**S**cript (**MSCS**) is a server-management script for UNIX and Linux powered Minecraft servers. 
