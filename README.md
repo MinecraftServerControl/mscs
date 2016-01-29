@@ -8,7 +8,8 @@ A powerful command-line control script for UNIX and Linux powered Minecraft serv
 * [Overview](#overview)
 * [Prerequisites for installation](#prerequisites-for-installation)
 * [Installation](#installation)
-* [First-time usage](#first-time-usage)
+* [Creating and importing worlds](#creating-and-importing-worlds)
+* [Adjusting server options](#adjusting-server-options)
 * [License](LICENSE)
 * [Issues](#issues)
 
@@ -118,7 +119,7 @@ That's it!
 If you wish to configure the script manually, please visit the [wiki page](https://github.com/Roflicide/MinecraftServerControlScript/wiki/Manual-Configuration).
 
 
-## First-time Usage
+## Creating and importing worlds
 So you successfully installed the script--great! 
 
 At first, you probably want to [create a new world](#create-new-world) or [import an existing world](#import-existing-world) into the script. 
