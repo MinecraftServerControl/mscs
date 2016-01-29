@@ -10,6 +10,7 @@ A powerful command-line control script for UNIX and Linux powered Minecraft serv
 * [Installation](#installation)
 * [Creating and importing worlds](#creating-and-importing-worlds)
 * [Adjusting server options](#adjusting-server-options)
+* [Scheduling backups](#scheduling-backups)
 * [License](LICENSE)
 * [Issues](#issues)
 
