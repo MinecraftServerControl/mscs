@@ -123,7 +123,7 @@ So you successfully installed the script--great!
 
 At first, you probably want to [create a new world](#create-new-world) or [import an existing world](#import-existing-world) into the script. 
 
-Then, you should adjust the [ettings for the server](#adjusting-server-options) as needed.
+Then, you should adjust the [settings for the server](#adjusting-server-options) as needed.
 
 ### Create new world
 The command to create a new world is:
@@ -147,9 +147,9 @@ Suppose you want to import a world folder named `world` into MSCS, and that you 
 
 1. First, if you don't have one already, create a `worlds` folder in `/opt/mscs/`.
 
-2. Create a new folder **within the `/opt/mscs/worlds/` directory that is the name you want MSCS to use for the world**. For this example, I chose "vanillaMC". So for instance, I created a new directory `vanillaMC` within the `/opt/mscs/worlds` directory, so the path would be `/opt/mscs/worlds/vanillaMC`. 
+2. Create a new folder **within the `/opt/mscs/worlds/` directory that is the name you want MSCS to use for the world**. For this example, I chose "vanillaMC". So, I created a new directory `vanillaMC` within the `/opt/mscs/worlds` directory, so the path would be `/opt/mscs/worlds/vanillaMC`. 
 
-3. Drag the folder of the world you wish to move into the folder you just created. So I would drag the world `world` into the `vanillaMC` folder. The path of `world` (the actual world folder) would now be `/opt/mscs/worlds/vanillaMC/myWorld/`.
+3. Drag the folder of the world you wish to move into the folder you just created. So I would drag the world `world` into the `vanillaMC` folder. The path of `world` (the actual world folder) would now be `/opt/mscs/worlds/vanillaMC/world/`.
 
 The finished file structure should be as follows with a world named `world` and a containing folder name "vanillaMC":
 ````
@@ -163,7 +163,7 @@ eula.text
 whitelist.json
 and more files...
 ````
-Again, the most important thing to note here is that your actual world folder is within a containing folder that is inside of the `worlds/` subdirectory. The name of the containing folder of `world` is the name which you will use within MSCS commands to manipulate that world--so in this case, when referring to the world above you will use the name `vanillaMC`, not the actual name of the world folder--`world`.
+
 
 After you've set up the file structure, you now need to create a world entry into MSCS. Do this via:
 
@@ -172,13 +172,10 @@ After you've set up the file structure, you now need to create a world entry int
 Where `world` is the **name of the containing folder you created** (so it would be "vanillaMC" from the previous example", and `port` is the server port (by default, use 25565).
 `ip` is optional and will be used if you wish to create multiple worlds across different servers. For now, leave it blank.
 
-Afterwards, simply start the server via `mscs start [world]` where `world` is the name of the containing world's folder (again, it would be "vanillaMC" from the last example).
+Afterwards, simply start the server via `mscs start [world]` where `world` is the name of the containing world's folder (again, it would be "vanillaMC" from the last example). Then, accept the EULA, run the start command again, and you're good to go!
 
-**Finally, accept the EULA**.
-As of Minecraft version 1.7.10, Mojang requires that users of their software read and agree to their [EULA](https://account.mojang.com/documents/minecraft_eula).  After the first time you start the server, you need to modify the `eula.txt` file in your world's folder, changing the value of the `eula` variable from `false` to `true`.
-The EULA can be found in `/opt/mscs/worlds/vanillaMC` where `vanillaMC` is the name you gave to to the world you imported.
+As a last note, make sure you check `server-port` and `query.port` in `server.properties` to make sure it does not overlap with other servers created by the MSCS script. Also ensure that `enable-query` is set to `true`.  If you do not have `enable-query` and a `query.port` set, you will not be able to check the status of the world with the script.
 
-After accepting the EULA simply start the server using the same command above, and you're all set!
 
 ## Adjusting server options
 There are two ways of adjusting the options through MSCS: changing values in the mscs.properties file and/or editing the msctl file directly.
