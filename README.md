@@ -151,19 +151,14 @@ Suppose you want to import a world folder named `world` into MSCS, and that you 
 
 3. Drag the folder of the world you wish to move into the folder you just created. So I would drag the world `world` into the `vanillaMC` folder. The path of `world` (the actual world folder) would now be `/opt/mscs/worlds/vanillaMC/world/`.
 
-The finished file structure should be as follows with a world named `world` and a containing folder name "vanillaMC":
+The finished file structure should resemble the following, with a world named `world` and a containing folder name "vanillaMC":
 ````
 /opt/mscs/vanillaMC       // The path
 
 world                     // The actual world folder
-server.properties
-banned-ips.json
-ops.json
-eula.text
-whitelist.json
-and more files...
+server.properties         
+other world files... (in no particular order)
 ````
-
 
 After you've set up the file structure, you now need to create a world entry into MSCS. Do this via:
 
