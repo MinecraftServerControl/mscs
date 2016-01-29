@@ -5,16 +5,23 @@ A powerful command-line control script for UNIX and Linux powered Minecraft serv
 
 
 # Index
-* [Features](#features)
-* [Prerequisites](#prerequisites)
-* [Installation](#installation)
-* [First-time Usage](#first-time-usage)
-* [Server Customization](#server-customization)
-* [License](LICENSE)
-* [Issues](#issues)
+I.   [Overview](#overview)
+
+II.  [Prerequisites for installation](#prerequisites-for-installation)
+
+III. [Installation](#installation)
+
+IV.  [First-time usage](#first-time-usage)
+
+V.   [License](LICENSE)
+
+VI.  [Issues](#issues)
 
 
-## Features
+## Overview
+**M**inecraft**S**erver**C**ontrol**S**cript (**MSCS**) is a server-management script for UNIX and Linux powered Minecraft servers. 
+Features include:
+
 * Run multiple Minecraft worlds.
 * Start, stop, and restart single or multiple worlds.
 * Create, delete, disable, and enable worlds.
@@ -27,10 +34,9 @@ A powerful command-line control script for UNIX and Linux powered Minecraft serv
 * Update the server and client software automatically.
 * Send commands to a world server from the command line.
 
-See the [Usage](#usage) section below for a description on how to use these features.
+Most of the general/beginner documentation is located in this file. For additional documentation that is not located in this file, please check the [wiki](https://github.com/Roflicide/MinecraftServerControlScript/wiki). 
 
-
-## Prerequisites
+## Prerequisites for installation
 Ensure that you have done the following before installing MSCS:
 
 ### Required Programs
