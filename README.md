@@ -23,7 +23,7 @@ A powerful command-line control script for UNIX and Linux powered Minecraft serv
   * [Scheduling backups](#scheduling-backups)
   * [Removing backups after X days](#removing-backups-after-x-days)
   * [Scheduling restarts](#scheduling-restarts)
-* [Command reference]
+* [Command reference](#command-reference)
 * [License](LICENSE)
 * [Issues](#issues)
 
@@ -307,8 +307,8 @@ Type the following (in any directory):
 You can specify how long to keep backups by changing the `BACKUP_DURATION` in the `/usr/local/bin/msctl` file, on line 331.
 
 ## Scheduling restarts
-You can schedule restarts for the server following the same method as outline in [scheduling backups](#scheduling-backups).   Simply change the scheduled command from `backup <myWorld>` to `restart <myWorld>`. `myWorld` is the name of world you wish to restart; omit if you wish to restart all worlds.
-  
+You can schedule restarts for the server following the same method as outlined in [scheduling backups](#scheduling-backups).   Simply change the scheduled command from `backup <myWorld>` to `restart <myWorld>`. `myWorld` is the name of world you wish to restart; omit if you wish to restart all worlds.
+
 ## Command Reference
 
 All commands below assume that you are running them as either the `minecraft`
