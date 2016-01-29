@@ -108,6 +108,10 @@ Navigate to the `MinecraftServerControlScript` directory that you just downloade
 Ubuntu like environments by running:
 
         sudo make install
+Then, type
+        chmod -R u+w /opt/mscs
+        chown -R minecraft:minecraft /opt/mscs
+This will give the user you created in the config (by default, the user `minecraft`) access to write in the `/opt/mscs` folder. If you configured MSCS manually when you installed the script, then replace `minecraft` with the name of the user you made.
 
 That's it!
 If you wish to configure the script manually, please visit the [wiki page](https://github.com/Roflicide/MinecraftServerControlScript/wiki/Manual-Configuration).
@@ -118,7 +122,7 @@ So you successfully installed the script--great!
 There are a few important locations that you should know when using MinecraftServerControlScript:
 
 * `/usr/local/bin` -- This contains the `MSCS` and `MSCTL` scripts used to power MinecraftServerControlScript. When modifying the script, you're going to want to modify one of these files (more in the adjusting options section).
-* `/opt/mscs` -- All of your worlds and backups are stored in here.
+* `/opt/mscs/worlds` -- All of your worlds are stored in here. 
 
 From here, you probably want to [create a new world](#create-new-world) or [import an existing world](#import-existing-world) into the script. Then, you should adjust the [amount of RAM and other settings for the server](#adjusting-server-options).
 
@@ -130,15 +134,86 @@ The command to create a new world is:
 Where `world` is the name of the world you specify, and `port` is the server port (by default, use 25565).
 `ip` is optional and will be used if you wish to create multiple worlds across different servers. For now, leave it blank.
 
-**If you get a permission error, such as `mkdir: cannot create directory` then type the following:**
+Afterwards, simply start the server via `mscs start [world]` where `world` is the name of the world. 
 
-        chmod -R u+w /opt/mscs
-        chown -R minecraft:minecraft /opt/mscs
-This will give the user you created in the config (by default, the user `minecraft`) access to write in the `/opt/mscs` folder. If you configured MSCS manually when you installed the script, then replace `minecraft` with the name of the user you made.
+**Finally, accept the EULA**.
+As of Minecraft version 1.7.10, Mojang requires that users of their software read and agree to their [EULA](https://account.mojang.com/documents/minecraft_eula).  After the first time you start the server, you need to modify the `eula.txt` file in your world's folder, changing the value of the `eula` variable from `false` to `true`.
+
+The EULA can be found in `/opt/mscs/worlds/myWorld` where `myWorld` is the name given to the world you created.
+
+After accepting the EULA simply start the server using the same command above, and you're all set!
 
 ### Import existing world
+Suppose you want to import a world folder named `world` into MSCS, and that you want MSCS to recognize this world by the name "vanillaMC".
+1. First, if you don't have one already, create a `worlds` folder in /opt/mscs/.
+2. Create a new folder **within the `/opt/mscs/worlds/` directory that is the name you want MSCS to recongize for the world.**. For this example, I chose "vanillaMC". So for instance, I created a new directory `vanillaMC` within the `/opt/mscs/worlds` directory, so the path would be `/opt/mscs/worlds/vanillaMC`. 
+3. Drag the folder of the world you wish to move into the folder you just created. So I would drag the world `world` into the `vanillaMC` folder. The path of `world` (the actual world folder) would now be `/opt/mscs/worlds/vanillaMC/myWorld/`.
 
-### Adjusting server options
+The finished file structure should be as follows with a world named `world` and a containing folder name "vanillaMC":
+````
+/opt/mscs/vanillaMC       // The path
+
+world                     // The actual world folder
+server.properties
+banned-ips.json
+ops.json
+eula.text
+whitelist.json
+and more files...
+````
+Again, the most important thing to note here is that your actual world folder is within a containing folder that is inside of the `worlds/` subdirectory. The name of the containing folder of `world` is the name which you will use within MSCS commands to manipulate that world--so in this case, when referring to the world above you will use the name `vanillaMC`, not the actual name of the world folder--`world`.
+
+After you've set up the file structure, you now need to create a world entry into MSCS. Do this via:
+
+        mscs create [world] [port] <ip>
+  
+Where `world` is the **name of the containing folder you created** (so it would be "vanillaMC" from the previous example", and `port` is the server port (by default, use 25565).
+`ip` is optional and will be used if you wish to create multiple worlds across different servers. For now, leave it blank.
+
+Afterwards, simply start the server via `mscs start [world]` where `world` is the name of the containing world's folder (again, it would be "vanillaMC" from the last example).
+
+**Finally, accept the EULA**.
+As of Minecraft version 1.7.10, Mojang requires that users of their software read and agree to their [EULA](https://account.mojang.com/documents/minecraft_eula).  After the first time you start the server, you need to modify the `eula.txt` file in your world's folder, changing the value of the `eula` variable from `false` to `true`.
+The EULA can be found in `/opt/mscs/worlds/vanillaMC` where `vanillaMC` is the name you gave to to the world you imported.
+
+After accepting the EULA simply start the server using the same command above, and you're all set!
+
+## Adjusting server options
+There are two ways of adjusting the options through MSCS: changing values in the mscs.properties file and/or editing the msctl file directly.
+
+### The mscs.properties file
+The `mscs.properties` file can be found in every world folder (for instance, if you had a world called `myWorld`, the path would be `/opt/mscs/worlds/myWorld/mscs.properties`).
+
+By default, the file only has one line in it: `mscs-enabled=true`. You can add a variety of flags to this file and set them as true/false to your liking.
+
+The following flags are available:
+* mscs-enabled - Enable or disable the world server.
+* mscs-version-type - Assign the version type (release or snapshot).
+* mscs-client-version - Assign the version of the client software.
+* mscs-client-jar - Assign the .jar file for the client software.
+* mscs-client-url - Assign the download URL for the client software.
+* mscs-client-location - Assign the location of the client .jar file.
+* mscs-server-version - Assign the version of the server software.
+* mscs-server-jar - Assign the .jar file for the server software.
+* mscs-server-url - Assign the download URL for the server software.
+* mscs-server-args - Assign the arguments to the server.
+* mscs-initial-memory - Assign the initial amount of memory for the server.
+* mscs-maximum-memory - Assign the maximum amount of memory for the server.
+* mscs-server-location - Assign the location of the server .jar file.
+* mscs-server-command - Assign the command to run for the server.
+
+The following variables may be used in some of the values of the above keys:
+* $JAVA - The Java virtual machine.
+* $CURRENT_VERSION - The current Mojang Minecraft release version.
+* $CLIENT_VERSION - The version of the client software.
+* $SERVER_VERSION - The version of the server software.
+* $SERVER_JAR - The .jar file to run for the server.
+* $SERVER_ARGS - The arguments to the server.
+* $INITIAL_MEMORY - The initial amount of memory for the server.
+* $MAXIMUM_MEMORY - The maximum amount of memory for the server.
+* $SERVER_LOCATION - The location of the server .jar file.
+### The msctl file
+
 
 ## Scheduling Backups
 
@@ -330,68 +405,8 @@ to the file:
 The server settings for each world can be customized by adding certain
 key/value pairs to the world's `mscs.properties` file.
 
-The following keys are available:
-* mscs-enabled - Enable or disable the world server.
-* mscs-version-type - Assign the version type (release or snapshot).
-* mscs-client-version - Assign the version of the client software.
-* mscs-client-jar - Assign the .jar file for the client software.
-* mscs-client-url - Assign the download URL for the client software.
-* mscs-client-location - Assign the location of the client .jar file.
-* mscs-server-version - Assign the version of the server software.
-* mscs-server-jar - Assign the .jar file for the server software.
-* mscs-server-url - Assign the download URL for the server software.
-* mscs-server-args - Assign the arguments to the server.
-* mscs-initial-memory - Assign the initial amount of memory for the server.
-* mscs-maximum-memory - Assign the maximum amount of memory for the server.
-* mscs-server-location - Assign the location of the server .jar file.
-* mscs-server-command - Assign the command to run for the server.
 
-The following variables may be used in some of the values of the above keys:
-* $JAVA - The Java virtual machine.
-* $CURRENT_VERSION - The current Mojang Minecraft release version.
-* $CLIENT_VERSION - The version of the client software.
-* $SERVER_VERSION - The version of the server software.
-* $SERVER_JAR - The .jar file to run for the server.
-* $SERVER_ARGS - The arguments to the server.
-* $INITIAL_MEMORY - The initial amount of memory for the server.
-* $MAXIMUM_MEMORY - The maximum amount of memory for the server.
-* $SERVER_LOCATION - The location of the server .jar file.
 
-### Example key/value pairs
-
-Equivalent to the default values:
-
-    mscs-enabled=true
-    mscs-version-type=release
-    mscs-client-version=$CURRENT_VERSION
-    mscs-client-jar=$CLIENT_VERSION.jar
-    mscs-client-url=https://s3.amazonaws.com/Minecraft.Download/versions/$CLIENT_VERSION/$CLIENT_VERSION.jar
-    mscs-client-location=/opt/mscs/client/$CLIENT_VERSION
-    mscs-server-version=$CURRENT_VERSION
-    mscs-server-jar=minecraft_server.$SERVER_VERSION.jar
-    mscs-server-url=https://s3.amazonaws.com/Minecraft.Download/versions/$SERVER_VERSION/minecraft_server.$SERVER_VERSION.jar
-    mscs-server-args=nogui
-    mscs-initial-memory=128M
-    mscs-maximum-memory=2048M
-    mscs-server-location=/opt/mscs/server
-    mscs-server-command=$JAVA -Xms$INITIAL_MEMORY -Xmx$MAXIMUM_MEMORY -jar $SERVER_LOCATION/$SERVER_JAR $SERVER_ARGS
-
-Run a Minecraft version 1.6.4 server:
-
-    mscs-client-version=1.6.4
-    mscs-server-version=1.6.4
-
-Use Forge to run a 1.8.4 server (requires additional setup):
-
-    mscs-client-version=1.8.4
-    mscs-server-version=1.8.4
-    mscs-server-jar=forge-1.8-11.14.1.1419-universal.jar
-    mscs-server-url=http://files.minecraftforge.net/maven/net/minecraftforge/forge/1.8-11.14.1.1419/forge-1.8-11.14.1.1419-universal.jar
-
-Use the latest BungeeCord successful build (requires additional setup):
-
-    mscs-server-jar=BungeeCord.jar
-    mscs-server-url=http://ci.md-5.net/job/BungeeCord/lastSuccessfulBuild/artifact/bootstrap/target/BungeeCord.jar
 
 ### Additional documentation
 
