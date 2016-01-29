@@ -39,7 +39,7 @@ Features include:
 * Uses the Minecraft [Query protocol](http:b //wiki.vg/Query) to keep track of current server conditions.
 * LSB and systemd compatible init script, allows for seamless integration with your server's startup and shutdown sequences.
 * Map worlds using the [Minecraft Overviewer](http://overviewer.org/) mapping software.
-* Backup worlds, and remove backups older than X days.
+* Automatically backup worlds, remove backups older than X days, and restart worlds.
 * Update the server and client software automatically.
 * Send commands to a world server from the command line.
 
