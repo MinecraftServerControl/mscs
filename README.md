@@ -1,7 +1,7 @@
-Minecraft Server Control Script
-===============================
+<p align="center">
+  <img src="http://i.imgur.com/fUM7Ne8.png" />
+</p>
 
-A powerful command-line control script for UNIX and Linux powered Minecraft servers.
 
 # Index
 * [Overview](#overview)
