@@ -284,7 +284,7 @@ Type the following (in any directory):
 The backups will be saved in `/opt/mscs/backups`. 
   
 ### Removing backups after X days
-You can specify how long to keep backups by changing the `BACKUP_DURATION` in the `mscs.conf` or `mscs` file (see [adjusting global server settings](#adjusting-global-server-settings).
+You can specify how long to keep backups by changing the `BACKUP_DURATION` in the `mscs.conf` or `mscs` file (see [adjusting global server settings](#adjusting-global-server-settings)).
 
 ### Scheduling restarts
 You can schedule restarts for the server following the same method as outlined in [scheduling backups](#scheduling-backups).   Simply change the scheduled command from `backup <myWorld>` to `restart <myWorld>`. `myWorld` is the name of world you wish to restart; omit if you wish to restart all worlds.
