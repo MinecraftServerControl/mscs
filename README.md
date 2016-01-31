@@ -256,7 +256,7 @@ Please note: `$HOME` represents the home directory of the user that is responsib
 
 Then simply `cd` into the directory it outputs and create the file.
 
-Once you've created the file, you need to populate it with a list of properties. The list of properties can be found [here](https://github.com/sandain/MinecraftServerControlScript/wiki).
+Once you've created the file, you need to populate it with a list of properties. The list of properties can be found [here](https://github.com/sandain/MinecraftServerControlScript/wiki/Global-Server-Settings).
 
 ## Automated backups and restarts
 
