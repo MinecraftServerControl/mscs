@@ -16,6 +16,7 @@
   * [Import existing world](#import-existing-world)
   * [Adjusting world properties](#adjusting-world-properties)
   * [Adjusting global server options](#adjusting-global-server-settings)
+  * [Enabling Forge, BungeeCord, and other server software](#enabling-forge-bungeecord-and-other-server-software)
 * [Automated backups and restarts](#automated-backups-and-restarts)
   * [Scheduling backups](#scheduling-backups)
   * [Removing backups after X days](#removing-backups-after-x-days)
@@ -231,8 +232,8 @@ The following variables may be used in some of the values of the above keys:
     mscs-server-location=/opt/mscs/server
     mscs-server-command=$JAVA -Xms$INITIAL_MEMORY -Xmx$MAXIMUM_MEMORY -jar $SERVER_LOCATION/$SERVER_JAR $SERVER_ARGS
 
-### Enabling Forge, BungeeCord, other server versions and server software
-Please visit the [https://github.com/sandain/MinecraftServerControlScript/wiki](wiki) for additional information.
+### Enabling Forge, BungeeCord, and other server software
+Please visit the [wiki](https://github.com/sandain/MinecraftServerControlScript/wiki/Server-Customization-Examples) for additional information.
 
 ### Adjusting global server settings
 In tandem with the `mscs.properties` file--which handles options for individual worlds--is the `mscs.conf` or simply `mscs` file, which handles global server settings.
@@ -253,7 +254,7 @@ Please note: `$HOME` represents the home directory of the user that is responsib
 
 Then simply `cd` into the directory it outputs and create the file.
 
-Once you've created the file, you need to populate it with a list of properties. Copy/paste the list of properties, which can be found [https://github.com/sandain/MinecraftServerControlScript/wiki/Global-Server-Settings](here).
+Once you've created the file, you need to populate it with a list of properties. Copy/paste the list of properties, which can be found [here](https://github.com/sandain/MinecraftServerControlScript/wiki).
 
 ## Automated backups and restarts
 
