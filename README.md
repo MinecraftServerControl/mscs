@@ -281,7 +281,7 @@ Type the following (in any directory):
   `:wq`
   to save and quit.
   
-  The backups will be saved in `/opt/mscs/backups`. 
+The backups will be saved in `/opt/mscs/backups`. 
   
 ### Removing backups after X days
 You can specify how long to keep backups by changing the `BACKUP_DURATION` in the `mscs.conf` or `mscs` file (see [adjusting global server settings](#adjusting-global-server-settings).
