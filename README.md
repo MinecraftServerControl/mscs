@@ -393,7 +393,7 @@ on their site to install overviewer.
 
 Then, once you have it installed, modify the settings (if necessary) 
 found in the `mscs.conf` or `mscs` file 
-(see [adjusting global server settings](#adjusting-global-server-settings):
+(see [adjusting global server settings](#adjusting-global-server-settings)):
 
  ````
  OVERVIEWER_BIN=$(which overviewer.py)
