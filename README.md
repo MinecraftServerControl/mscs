@@ -12,8 +12,8 @@
   * [Downloading the script](#downloading-the-script)
   * [Configuration](#configuration)
 * [Getting started guide](#getting-started-guide)
-  * [Create new world](#create-new-world)
-  * [Import existing world](#import-existing-world)
+  * [Creating a new world](#creating-a-new-world)
+  * [Importing an existing world](#importing-an-existing-world)
   * [Adjusting world properties](#adjusting-world-properties)
   * [Enabling Forge, BungeeCord, and other server software](#enabling-forge-bungeecord-and-other-server-software)
   * [Adjusting global server options](#adjusting-global-server-settings)
@@ -137,7 +137,7 @@ At first, you probably want to [create a new world](#create-new-world) or [impor
 
 Then, you should adjust the [settings for the server](#adjusting-server-options) as needed.
 
-### Create new world
+### Creating a new world
 The command to create a new world is:
 
         mscs create [world] [port] <ip>
@@ -154,7 +154,7 @@ The EULA can be found in `/opt/mscs/worlds/myWorld` where `myWorld` is the name 
 
 After accepting the EULA simply start the server using the same command above, and you're all set!
 
-### Import existing world
+### Importing an existing world
 Suppose you want to import a world folder named `world` into MSCS, and that you want MSCS to recognize this world by the name "vanillaMC".
 
 1. First, if you don't have one already, create a `worlds` folder in `/opt/mscs/`.
