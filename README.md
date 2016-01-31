@@ -15,7 +15,8 @@
   * [Creating a new world](#creating-a-new-world)
   * [Importing an existing world](#importing-an-existing-world)
   * [Adjusting world properties](#adjusting-world-properties)
-    * [Enabling Forge, BungeeCord, and other server software](#enabling-forge-bungeecord-and-other-server-software)
+    * [Enabling Forge, BungeeCord, and other server software]
+	(#enabling-forge-bungeecord-and-other-server-software)
   * [Adjusting global server options](#adjusting-global-server-settings)
 * [Automated backups and restarts](#automated-backups-and-restarts)
   * [Scheduling backups](#scheduling-backups)
@@ -28,17 +29,26 @@
 * [Issues](#issues)
 
 ## Overview
-**M**inecraft **S**erver **C**ontrol **S**cript (**MSCS**) is a server-management script for UNIX and Linux powered Minecraft servers. 
+**M**inecraft **S**erver **C**ontrol **S**cript (**MSCS**) 
+is a server-management script for UNIX and Linux powered Minecraft servers. 
+
 Features include:
 
 * Run multiple Minecraft worlds.
 * Start, stop, and restart single or multiple worlds.
 * Create, delete, disable, and enable worlds.
-* Includes support for additional server types: [Forge](http://www.minecraftforge.net/), [BungeeCord](http://www.spigotmc.org/wiki/bungeecord/), [SpigotMC](http://www.spigotmc.org/wiki/spigot/), etc.
+* Includes support for additional server types: [Forge]
+(http://www.minecraftforge.net/), 
+[BungeeCord](http://www.spigotmc.org/wiki/bungeecord/), 
+[SpigotMC](http://www.spigotmc.org/wiki/spigot/), etc.
 * Users automatically notified of important server events.
-* LSB and systemd compatible init script, allows for seamless integration with your server's startup and shutdown sequences.
-* Map worlds using the [Minecraft Overviewer](http://overviewer.org/) mapping software.
-* Automatically backup worlds, remove backups older than X days, and restart worlds.
+* LSB and systemd compatible init script, 
+allows for seamless integration with your server's startup and shutdown 
+sequences.
+* Map worlds using the [Minecraft Overviewer](http://overviewer.org/)
+ mapping software.
+* Automatically backup worlds, remove backups older than X days, 
+and restart worlds.
 * Update the server and client software automatically.
 * Send commands to a world server from the command line.
 
@@ -63,7 +73,7 @@ requirements that this script has that may not already be in place:
 If you are running Debian or Ubuntu, you can make sure that these are
 installed by running:
 
-        sudo apt-get install default-jre perl python wget rdiff-backup socat iptables
+`sudo apt-get install default-jre perl python wget rdiff-backup socat iptables`
     
 ### Configuring the firewall / NAT
 If you have a firewall installed on your computer, or a router using NAT
@@ -84,7 +94,8 @@ command-line tool for rendering high-resolution maps of Minecraft worlds. It
 generates a set of static html and image files and uses the Google Maps API to
 display a nice interactive map.
 
-If you wish to use the mapping software, you can [download](http://overviewer.org/downloads) premade binaries for
+If you wish to use the mapping software, you can [download]
+(http://overviewer.org/downloads) premade binaries for
 supported systems, or build your own binary from source if needed.
 
 Repositories for automatic installation are also available:
@@ -94,7 +105,8 @@ Repositories for automatic installation are also available:
 ## Installation
 ### Downloading the script
 The easiest way to download the script is to make a clone of the [git
-repository](https://github.com/sandain/MinecraftServerControlScript.git). You must have git installed first. To install git:
+repository](https://github.com/sandain/MinecraftServerControlScript.git). 
+You must have git installed first. To install git:
 
         sudo apt-get install git
         
@@ -102,13 +114,16 @@ Then:
 
         git clone https://github.com/sandain/MinecraftServerControlScript.git
         
-Note that it will be downloaded into the current directory which you are working in. 
+Note that it will be downloaded into the current directory which you are working
+ in. 
 
 ##### Other ways to download
 
-* Get the latest stable [release](https://github.com/sandain/MinecraftServerControlScript/releases).
+* Get the latest stable [release]
+(https://github.com/sandain/MinecraftServerControlScript/releases).
 
-* Get the development version as a [zip file](https://github.com/sandain/MinecraftServerControlScript/archive/master.zip):
+* Get the development version as a [zip file]
+(https://github.com/sandain/MinecraftServerControlScript/archive/master.zip):
 
         wget https://github.com/sandain/MinecraftServerControlScript/archive/master.zip
 
@@ -116,7 +131,9 @@ Note that it will be downloaded into the current directory which you are working
 
 ### Configuration
 
-Navigate to the `MinecraftServerControlScript` directory that you just downloaded. Configuration can be done with the included Makefile in Debian and
+Navigate to the `MinecraftServerControlScript` directory that you just 
+downloaded. 
+Configuration can be done with the included Makefile in Debian and
 Ubuntu like environments by running:
 
         sudo make install
@@ -124,48 +141,76 @@ Then, type
 
         chmod -R u+w /opt/mscs
         chown -R minecraft:minecraft /opt/mscs
-This will give the user you created in the config (by default, the user `minecraft`) access to write in the `/opt/mscs` folder. If you configured MSCS manually when you installed the script, then replace `minecraft` with the name of the user you made.
+This will give the user you created in the config 
+(by default, the user `minecraft`) 
+access to write in the `/opt/mscs` folder. 
+If you configured MSCS manually when you installed the script, 
+then replace `minecraft` with the name of the user you made.
 
 That's it!
-If you wish to configure the script manually, please visit the [wiki page](https://github.com/sandain/MinecraftServerControlScript/wiki/Manual-Configuration).
+If you wish to configure the script manually, please visit the [wiki page]
+(https://github.com/sandain/MinecraftServerControlScript/wiki/Manual-Configuration).
 
 
 ## Getting started guide
 So you successfully installed the script--great! 
 
-At first, you probably want to [create a new world](#creating-a-new-world) or [import an existing world](#importing-an-existing-world) into the script. 
+At first, you probably want to [create a new world](#creating-a-new-world) or 
+[import an existing world](#importing-an-existing-world) into the script. 
 
 Then, you should adjust the [world properties](#adjusting-world-properties), 
 adjust the [global server settings](#adjusting-global-server-settings), and 
-enable any other [server software](#enabling-forge-bungeecord-and-other-server-software) as needed.
+enable any other 
+[server software](#enabling-forge-bungeecord-and-other-server-software) as needed.
 
 ### Creating a new world
 The command to create a new world is:
 
         mscs create [world] [port] <ip>
   
-Where `world` is the name of the world you specify, and `port` is the server port (by default, use 25565).
-`ip` is optional and will be used if you wish to create multiple worlds across different servers. For now, leave it blank.
+Where `world` is the name of the world you specify, 
+and `port` is the server port (by default, use 25565).
+`ip` is optional and will be used if you wish to create multiple worlds 
+across different servers. 
 
-Afterwards, simply start the server via `mscs start [world]` where `world` is the name of the world. 
+Afterwards, simply start the server via `mscs start [world]` where `world` 
+is the name of the world. 
 
 **Finally, accept the EULA**.
-As of Minecraft version 1.7.10, Mojang requires that users of their software read and agree to their [EULA](https://account.mojang.com/documents/minecraft_eula).  After the first time you start the server, you need to modify the `eula.txt` file in your world's folder, changing the value of the `eula` variable from `false` to `true`.
+As of Minecraft version 1.7.10, Mojang requires that users of their software 
+read and agree to their 
+[EULA](https://account.mojang.com/documents/minecraft_eula).  
+After the first time you start the server, you need to modify the `eula.txt` 
+file in your world's folder, changing the value of the `eula` variable from 
+`false` to `true`.
 
-The EULA can be found in `/opt/mscs/worlds/myWorld` where `myWorld` is the name given to the world you created.
+The EULA can be found in `/opt/mscs/worlds/myWorld` where `myWorld` 
+is the name given to the world you created.
 
-After accepting the EULA simply start the server using the same command above, and you're all set!
+After accepting the EULA simply start the server using the same command above, 
+and you're all set!
 
 ### Importing an existing world
-Suppose you want to import a world folder named `world` into MSCS, and that you want MSCS to recognize this world by the name "vanillaMC".
+Suppose you want to import a world folder named `world` into MSCS, and that you 
+want MSCS to recognize this world by the name "vanillaMC".
 
-1. First, if you don't have one already, create a `worlds` folder in `/opt/mscs/`.
+1. First, if you don't have one already, create a `worlds` folder in 
+`/opt/mscs/`.
 
-2. Create a new folder **within the `/opt/mscs/worlds/` directory that is the name you want MSCS to use for the world**. For this example, I chose "vanillaMC". So, I created a new directory `vanillaMC` within the `/opt/mscs/worlds` directory, so the path would be `/opt/mscs/worlds/vanillaMC`. 
+2. Create a new folder **within the `/opt/mscs/worlds/` directory that is the 
+name you want MSCS to use for the world**.
+3. For this example, I chose "vanillaMC". So, I created a new directory
+`vanillaMC` within the `/opt/mscs/worlds` directory, so the path would be 
+`/opt/mscs/worlds/vanillaMC`. 
 
-3. Drag the folder of the world you wish to move into the folder you just created. So I would drag the world `world` into the `vanillaMC` folder. The path of `world` (the actual world folder) would now be `/opt/mscs/worlds/vanillaMC/world/`.
+3. Drag the folder of the world you wish to move into the folder you 
+just created. 
+So I would drag the world `world` into the `vanillaMC` folder. 
+The path of `world` (the actual world folder) would now be 
+`/opt/mscs/worlds/vanillaMC/world/`.
 
-The finished file structure should resemble the following, with a world named `world` and a containing folder name "vanillaMC":
+The finished file structure should resemble the following, with a world named 
+`world` and a containing folder name "vanillaMC":
 ````
 /opt/mscs/vanillaMC       // The path
 
@@ -174,21 +219,39 @@ server.properties
 other world files... (in no particular order)
 ````
 
-After you've set up the file structure, you now need to create a world entry into MSCS. Do this via:
+After you've set up the file structure, you now need to create a world entry 
+into MSCS. Do this via:
 
         mscs create [world] [port] <ip>
   
-Where `world` is the **name of the containing folder you created** (so it would be "vanillaMC" from the previous example", and `port` is the server port (by default, use 25565).
-`ip` is optional and will be used if you wish to create multiple worlds across different servers. For now, leave it blank.
+Where `world` is the **name of the containing folder you created** 
+(so it would be "vanillaMC" from the previous example", 
+and `port` is the server port (by default, use 25565).
+`ip` is optional and will be used if you wish to create multiple worlds 
+across different servers. For now, leave it blank.
 
-Afterwards, simply start the server via `mscs start [world]` where `world` is the name of the containing world's folder (again, it would be "vanillaMC" from the last example). Then, accept the EULA, run the start command again, and you're good to go!
+Afterwards, simply start the server via `mscs start [world]` where `world` 
+is the name of the containing world's folder (again, it would be "vanillaMC" 
+from the last example). 
+Then, accept the EULA, run the start command again, and you're good to go!
 
-As a last note, make sure you check `server-port` and `query.port` in `server.properties` to make sure it does not overlap with other servers created by the MSCS script. Also ensure that `enable-query` is set to `true`.  If you do not have `enable-query` and a `query.port` set, you will not be able to check the status of the world with the script.
+As a last note, make sure you check `server-port` and `query.port` in 
+`server.properties` 
+to make sure it does not overlap with other servers created by the MSCS script. 
+Also ensure that `enable-query` is set to `true`.  
+If you do not have `enable-query` and a `query.port` set, 
+you will not be able to check the status of the world with the script.
 
 ### Adjusting world properties
-The `mscs.properties` file can be found in every world folder (for instance, if you had a world called `myWorld`, the path would be `/opt/mscs/worlds/myWorld/mscs.properties`). This file allows you to adjust many different properties for each world you have.
+The `mscs.properties` file can be found in every world folder 
+(for instance, if you had a world called `myWorld`, the path would be 
+`/opt/mscs/worlds/myWorld/mscs.properties`). 
+This file allows you to adjust many different properties for each world 
+you have.
 
-By default, the file only has one line in it: `mscs-enabled=true`. You can add a variety of flags to this file and set them as to a true/false boolean or a variable to your liking.
+By default, the file only has one line in it: `mscs-enabled=true`. 
+You can add a variety of flags to this file and set them as to a true/false 
+boolean or a variable to your liking.
 
 The following flags are available:
 * mscs-enabled - Enable or disable the world server.
@@ -235,33 +298,49 @@ The following variables may be used in some of the values of the above keys:
     mscs-server-command=$JAVA -Xms$INITIAL_MEMORY -Xmx$MAXIMUM_MEMORY -jar $SERVER_LOCATION/$SERVER_JAR $SERVER_ARGS
     
 #### Enabling Forge, BungeeCord, and other server software
-Please visit the [wiki](https://github.com/sandain/MinecraftServerControlScript/wiki/Server-Customization-Examples) for additional information.
+Please visit the [wiki]
+(https://github.com/sandain/MinecraftServerControlScript/wiki/Server-Customization-Examples) 
+for additional information.
 
 ### Adjusting global server settings
-In tandem with the `mscs.properties` file--which handles options for individual worlds--is the `mscs.conf` or simply `mscs` file, which handles global server settings.
+In tandem with the `mscs.properties` file--which handles options for individual 
+worlds--
+is the `mscs.conf` or simply `mscs` file, which handles global server settings.
 
-**You must create this file**. By default, MSCS looks for this file in three places (in this order):
+**You must create this file**. By default, MSCS looks for this file in three 
+places (in this order):
 
 1. `$HOME/mscs.conf` 
 
 2. `$HOME/.config/mscs/mscs.conf`
 
-3. `/etc/default/mscs`-- **if you save it in this location it is only called `mscs`, NOT `mscs.conf`**
+3. `/etc/default/mscs`-- **if you save it in this location it is only called 
+`mscs`, NOT `mscs.conf`**
 
-It doesn't matter where you create the file, as long as you put it in one of the above places.
+It doesn't matter where you create the file, as long as you put it in one of 
+the above places.
 
-Please note: `$HOME` represents the home directory of the user that is responsible for the script--if you followed the configuration above, then that would be the `minecraft` user. To print the home directory of the `minecraft` user type:
+Please note: `$HOME` represents the home directory of the user that is 
+responsible for the script--
+if you followed the configuration above, then that would be the `minecraft` 
+user. 
+To print the home directory of the `minecraft` user type:
 
 `eval echo ~$minecraft`
 
 Then simply `cd` into the directory it outputs and create the file.
 
-Once you've created the file, you need to populate it with a list of properties. The list of properties can be found [here](https://github.com/sandain/MinecraftServerControlScript/wiki/Global-Server-Settings).
+Once you've created the file, you need to populate it with a list of properties. 
+The list of properties can be found 
+[here](https://github.com/sandain/MinecraftServerControlScript/wiki/Global-Server-Settings).
 
 ## Automated backups and restarts
 
 ### Scheduling backups
-MSCS uses [**cron**](https://en.wikipedia.org/wiki/Cron), a scheduler software that can run programs on a set interval of time. Below is an example of one way how you could setup backups via cron to backup a world every 2 hours:
+MSCS uses [**cron**](https://en.wikipedia.org/wiki/Cron), 
+a scheduler software that can run programs on a set interval of time. 
+Below is an example of one way how you could setup backups via cron to backup 
+a world every 2 hours:
 
 Type the following (in any directory): 
 
@@ -274,8 +353,17 @@ Type the following (in any directory):
   ````
   0 */2 * * *  /usr/local/bin/mscs backup myWorld
   ````
-  * `0 */2 * * *` is the time interval to backup. This particular expression means backup every 2 hours. You can change this to 3, 4, 5 or whatever amount of hours to backup X amount of hours. You can also backup according to days, minutes, seconds, the time of the day, and more. See [the wiki page](https://github.com/sandain/MinecraftServerControlScript/wiki/Backup-and-Restore) for more information.
-  * `myWorld` is the name of the world you wish to backup. Omitting this will backup all worlds.
+  * `0 */2 * * *` is the time interval to backup. 
+This particular expression means backup every 2 hours. 
+You can change this to 3, 4, 5 or whatever amount of hours to backup 
+X amount of hours. 
+You can also backup according to days, minutes, seconds, the time of 
+the day, and more. 
+See [the wiki page]
+(https://github.com/sandain/MinecraftServerControlScript/wiki/Backup-and-Restore) 
+for more information.
+  * `myWorld` is the name of the world you wish to backup. 
+  Omitting this will backup all worlds.
 
   Finally, press escape, then type
   `:wq`
@@ -284,15 +372,28 @@ Type the following (in any directory):
 The backups will be saved in `/opt/mscs/backups`. 
   
 ### Removing backups after X days
-You can specify how long to keep backups by changing the `BACKUP_DURATION` in the `mscs.conf` or `mscs` file (see [adjusting global server settings](#adjusting-global-server-settings)).
+You can specify how long to keep backups by changing the `BACKUP_DURATION` 
+in the `mscs.conf` or `mscs` file 
+(see [adjusting global server settings](#adjusting-global-server-settings)).
 
 ### Scheduling restarts
-You can schedule restarts for the server following the same method as outlined in [scheduling backups](#scheduling-backups).   Simply change the scheduled command from `backup <myWorld>` to `restart <myWorld>`. `myWorld` is the name of world you wish to restart; omit if you wish to restart all worlds.
+You can schedule restarts for the server following the same method as outlined 
+in [scheduling backups](#scheduling-backups).  
+Simply change the scheduled command from `backup <myWorld>` to 
+`restart <myWorld>`. `myWorld` 
+is the name of world you wish to restart; omit if you wish to 
+restart all worlds.
 
 ## Mapping the world
-Minecraft Server Control Script uses [overviewer](http://docs.overviewer.org/en/latest/) to generate minecraft maps. First, follow the [instructions](http://docs.overviewer.org/en/latest/installing/) on their site to install overviewer. 
+Minecraft Server Control Script uses 
+[overviewer](http://docs.overviewer.org/en/latest/) to generate minecraft maps. 
+First, follow the 
+[instructions](http://docs.overviewer.org/en/latest/installing/) 
+on their site to install overviewer. 
 
-Then, once you have it installed, modify the settings (if necessary) found in the `mscs.conf` or `mscs` file (see [adjusting global server settings](#adjusting-global-server-settings):
+Then, once you have it installed, modify the settings (if necessary) 
+found in the `mscs.conf` or `mscs` file 
+(see [adjusting global server settings](#adjusting-global-server-settings):
 
  ````
  OVERVIEWER_BIN=$(which overviewer.py)
@@ -303,7 +404,8 @@ Then, once you have it installed, modify the settings (if necessary) found in th
 
 After you've tinkered the settings to your liking, run
 `mscs map <world>`
-where `world` is the name of the world you would like to get mapped. Omit the world name to map all worlds.
+where `world` is the name of the world you would like to get mapped. 
+Omit the world name to map all worlds.
 By default maps are saved into `/opt/mscs/maps`.
 
 
