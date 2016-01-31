@@ -240,11 +240,11 @@ In tandem with the `mscs.properties` file--which handles options for individual 
 
 **You must create this file**. By default, MSCS looks for this file in three places (in this order):
 
-1. `$HOME/**mscs.conf**` 
+1. `$HOME/mscs.conf` 
 
-2. `$HOME/.config/mscs/**mscs.conf**`
+2. `$HOME/.config/mscs/mscs.conf`
 
-3. `/etc/default/**mscs**`-- **if you save it in this location it is only called `mscs`, NOT `mscs.conf`**
+3. `/etc/default/mscs`-- **if you save it in this location it is only called `mscs`, NOT `mscs.conf`**
 
 It doesn't matter where you create the file, as long as you put it in one of the above places.
 
@@ -254,7 +254,7 @@ Please note: `$HOME` represents the home directory of the user that is responsib
 
 Then simply `cd` into the directory it outputs and create the file.
 
-Once you've created the file, you need to populate it with a list of properties. Copy/paste the list of properties, which can be found [here](https://github.com/sandain/MinecraftServerControlScript/wiki).
+Once you've created the file, you need to populate it with a list of properties. The list of properties can be found [here](https://github.com/sandain/MinecraftServerControlScript/wiki).
 
 ## Automated backups and restarts
 
