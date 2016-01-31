@@ -15,7 +15,7 @@
   * [Create new world](#create-new-world)
   * [Import existing world](#import-existing-world)
   * [Adjusting world properties](#adjusting-world-properties)
-  * [Enabling Forge, BungeeCord, and other server software](#enabling-forge-bungeecord-and-other-server-software
+  * [Enabling Forge, BungeeCord, and other server software](#enabling-forge-bungeecord-and-other-server-software)
   * [Adjusting global server options](#adjusting-global-server-settings)
 * [Automated backups and restarts](#automated-backups-and-restarts)
   * [Scheduling backups](#scheduling-backups)
