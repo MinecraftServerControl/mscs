@@ -15,8 +15,8 @@
   * [Creating a new world](#creating-a-new-world)
   * [Importing an existing world](#importing-an-existing-world)
   * [Adjusting world properties](#adjusting-world-properties)
-  * [Enabling Forge, BungeeCord, and other server software](#enabling-forge-bungeecord-and-other-server-software)
   * [Adjusting global server options](#adjusting-global-server-settings)
+  * [Enabling Forge, BungeeCord, and other server software](#enabling-forge-bungeecord-and-other-server-software)
 * [Automated backups and restarts](#automated-backups-and-restarts)
   * [Scheduling backups](#scheduling-backups)
   * [Removing backups after X days](#removing-backups-after-x-days)
@@ -133,9 +133,11 @@ If you wish to configure the script manually, please visit the [wiki page](https
 ## Getting started guide
 So you successfully installed the script--great! 
 
-At first, you probably want to [create a new world](#create-new-world) or [import an existing world](#import-existing-world) into the script. 
+At first, you probably want to [create a new world](#creating-a-new-world) or [import an existing world](#importing-an-existing-world) into the script. 
 
-Then, you should adjust the [settings for the server](#adjusting-server-options) as needed.
+Then, you should adjust the [world properties](#adjusting-world-properties),
+Adjust the [global server settings](#adjusting-global-server-settings), and 
+Enable any other [server software](#enabling-forge-bungeecord-and-other-server-software) as needed.
 
 ### Creating a new world
 The command to create a new world is:
@@ -232,9 +234,6 @@ The following variables may be used in some of the values of the above keys:
     mscs-server-location=/opt/mscs/server
     mscs-server-command=$JAVA -Xms$INITIAL_MEMORY -Xmx$MAXIMUM_MEMORY -jar $SERVER_LOCATION/$SERVER_JAR $SERVER_ARGS
 
-### Enabling Forge, BungeeCord, and other server software
-Please visit the [wiki](https://github.com/sandain/MinecraftServerControlScript/wiki/Server-Customization-Examples) for additional information.
-
 ### Adjusting global server settings
 In tandem with the `mscs.properties` file--which handles options for individual worlds--is the `mscs.conf` or simply `mscs` file, which handles global server settings.
 
@@ -255,6 +254,9 @@ Please note: `$HOME` represents the home directory of the user that is responsib
 Then simply `cd` into the directory it outputs and create the file.
 
 Once you've created the file, you need to populate it with a list of properties. The list of properties can be found [here](https://github.com/sandain/MinecraftServerControlScript/wiki).
+
+### Enabling Forge, BungeeCord, and other server software
+Please visit the [wiki](https://github.com/sandain/MinecraftServerControlScript/wiki/Server-Customization-Examples) for additional information.
 
 ## Automated backups and restarts
 
