@@ -2,7 +2,6 @@
   <img src="http://i.imgur.com/fUM7Ne8.png" />
 </p>
 
-
 # Index
 * [Overview](#overview)
 * [Prerequisites for installation](#prerequisites-for-installation)
@@ -12,12 +11,11 @@
 * [Installation](#installation)
   * [Downloading the script](#downloading-the-script)
   * [Configuration](#configuration)
-* [Creating and importing worlds](#creating-and-importing-worlds)
+* [Getting started guide](#getting-started-guide)
   * [Create new world](#create-new-world)
   * [Import existing world](#import-existing-world)
-* [Adjusting server options](#adjusting-server-options)
-  * [The mscs.properties file](#the-mscs.properties-file)
-  * [The msctl file](#the-msctl-file)
+  * [Adjusting world properties](#the-mscs.properties-file)
+  * [Adjusting wrapper properties](#the-msctl-file)
 * [Automated backups and restarts](#automated-backups-and-restarts)
   * [Scheduling backups](#scheduling-backups)
   * [Removing backups after X days](#removing-backups-after-x-days)
@@ -37,14 +35,11 @@ Features include:
 * Create, delete, disable, and enable worlds.
 * Includes support for additional server types: [Forge](http://www.minecraftforge.net/), [BungeeCord](http://www.spigotmc.org/wiki/bungeecord/), [SpigotMC](http://www.spigotmc.org/wiki/spigot/), etc.
 * Users automatically notified of important server events.
-* Uses the Minecraft [Query protocol](http:b //wiki.vg/Query) to keep track of current server conditions.
 * LSB and systemd compatible init script, allows for seamless integration with your server's startup and shutdown sequences.
 * Map worlds using the [Minecraft Overviewer](http://overviewer.org/) mapping software.
 * Automatically backup worlds, remove backups older than X days, and restart worlds.
 * Update the server and client software automatically.
 * Send commands to a world server from the command line.
-
-Most of the general/beginner documentation is located in this file. For additional documentation that is not located in this file, please check the [wiki](https://github.com/Roflicide/MinecraftServerControlScript/wiki). 
 
 ## Prerequisites for installation
 Ensure that you have done the following before installing MSCS:
@@ -131,10 +126,10 @@ Then, type
 This will give the user you created in the config (by default, the user `minecraft`) access to write in the `/opt/mscs` folder. If you configured MSCS manually when you installed the script, then replace `minecraft` with the name of the user you made.
 
 That's it!
-If you wish to configure the script manually, please visit the [wiki page](https://github.com/Roflicide/MinecraftServerControlScript/wiki/Manual-Configuration).
+If you wish to configure the script manually, please visit the [wiki page](https://github.com/sandain/MinecraftServerControlScript/wiki/Manual-Configuration).
 
 
-## Creating and importing worlds
+## Getting started guide
 So you successfully installed the script--great! 
 
 At first, you probably want to [create a new world](#create-new-world) or [import an existing world](#import-existing-world) into the script. 
@@ -187,12 +182,8 @@ Afterwards, simply start the server via `mscs start [world]` where `world` is th
 
 As a last note, make sure you check `server-port` and `query.port` in `server.properties` to make sure it does not overlap with other servers created by the MSCS script. Also ensure that `enable-query` is set to `true`.  If you do not have `enable-query` and a `query.port` set, you will not be able to check the status of the world with the script.
 
-
-## Adjusting server options
-There are two ways of adjusting the options through MSCS: changing values in the mscs.properties file and/or editing the msctl file directly.
-
-### The mscs.properties file
-The `mscs.properties` file can be found in every world folder (for instance, if you had a world called `myWorld`, the path would be `/opt/mscs/worlds/myWorld/mscs.properties`).
+### Adjusting world properties
+The `mscs.properties` file can be found in every world folder (for instance, if you had a world called `myWorld`, the path would be `/opt/mscs/worlds/myWorld/mscs.properties`). This file allows you to adjust many different properties for each world you have.
 
 By default, the file only has one line in it: `mscs-enabled=true`. You can add a variety of flags to this file and set them as to a true/false boolean or a variable to your liking.
 
@@ -240,39 +231,29 @@ The following variables may be used in some of the values of the above keys:
     mscs-server-location=/opt/mscs/server
     mscs-server-command=$JAVA -Xms$INITIAL_MEMORY -Xmx$MAXIMUM_MEMORY -jar $SERVER_LOCATION/$SERVER_JAR $SERVER_ARGS
 
-Run a Minecraft version 1.6.4 server:
+### Enabling Forge, BungeeCord, other server versions and server software
+Please visit the [https://github.com/sandain/MinecraftServerControlScript/wiki](wiki) for additional information.
 
-    mscs-client-version=1.6.4
-    mscs-server-version=1.6.4
+### Adjusting global server settings
+In tandem with the `mscs.properties` file--which handles options for individual worlds--is the `mscs.conf` or simply `mscs` file, which handles global server settings.
 
-Use Forge to run a 1.8.4 server (requires additional setup):
+**You must create this file**. By default, MSCS looks for this file in three places (in this order):
 
-    mscs-client-version=1.8.4
-    mscs-server-version=1.8.4
-    mscs-server-jar=forge-1.8-11.14.1.1419-universal.jar
-    mscs-server-url=http://files.minecraftforge.net/maven/net/minecraftforge/forge/1.8-11.14.1.1419/forge-1.8-11.14.1.1419-universal.jar
+1. `$HOME/**mscs.conf**` 
 
-Use the latest BungeeCord successful build (requires additional setup):
+2. `$HOME/.config/mscs/**mscs.conf**`
 
-    mscs-server-jar=BungeeCord.jar
-    mscs-server-url=http://ci.md-5.net/job/BungeeCord/lastSuccessfulBuild/artifact/bootstrap/target/BungeeCord.jar
+3. `/etc/default/**mscs**`-- **if you save it in this location it is only called `mscs`, NOT `mscs.conf`**
 
-##### Additional documentation
+It doesn't matter where you create the file, as long as you put it in one of the above places.
 
-More examples and documentation on server customization can be found on the [wiki](https://github.com/sandain/MinecraftServerControlScript/wiki/Server-Customization-Examples) page.
+Please note: `$HOME` represents the home directory of the user that is responsible for the script--if you followed the configuration above, then that would be the `minecraft` user. To print the home directory of the `minecraft` user type:
 
-### The msctl file
-The `msctl` file can be found at `/usr/local/bin`.
+`eval echo ~$minecraft`
 
-The `msctl` file is an additional file for adjusting the properties of your server that are not found in `mscs.properties`. Starting at line 236 and ending at line 385 is where the settings are in this file.
+Then simply `cd` into the directory it outputs and create the file.
 
-You can set the default settings of **mscs.properties** in this file, as well as some other useful settings:
-* Line 305 is the beginning of the **server instance configuration** settings.
-* Line 321 is the beginning of the **backup configuration** settings.
-* Line 334 is the beginning of the **server log configuration** settings.
-* Line 341 is the beginning of the **listing option** settings.
-* Line 348 is the beginning of the **mirror image** settings.
-* Line 370 is the beginning of the **minecraft overviewer** settings
+Once you've created the file, you need to populate it with a list of properties. Copy/paste the list of properties, which can be found [https://github.com/sandain/MinecraftServerControlScript/wiki/Global-Server-Settings](here).
 
 ## Automated backups and restarts
 
@@ -288,18 +269,11 @@ Type the following (in any directory):
   Page down until you get to an empty line. Then paste the following:
   
   ````
-  0 */2 * * *  PATH-TO-MSCS backup myWorld
+  0 */2 * * *  /usr/local/bin/mscs backup myWorld
   ````
   * `0 */2 * * *` is the time interval to backup. This particular expression means backup every 2 hours. You can change this to 3, 4, 5 or whatever amount of hours to backup X amount of hours. You can also backup according to days, minutes, seconds, the time of the day, and more. See [the wiki page](https://github.com/sandain/MinecraftServerControlScript/wiki/Backup-and-Restore) for more information.
-  * `PATH-TO-MSCS` is the path of where the `mscs` file is (which will be inside the `MinecraftServerControlScript` folder that you downloaded)
   * `myWorld` is the name of the world you wish to backup. Omitting this will backup all worlds.
 
-  For instance, if the `mscs` script is located in `/home/MinecraftServerControlScript/mscs`, and I want to backup the world "vanillaMC" every 2 hours, it would look like this:
-  
-  ````
-  0 */2 * * *  /home/MinecraftServerControlScript/mscs backup vanillaMC
-  ````
-  
   Finally, press escape, then type
   `:wq`
   to save and quit.
@@ -307,7 +281,7 @@ Type the following (in any directory):
   The backups will be saved in `/opt/mscs/backups`. 
   
 ### Removing backups after X days
-You can specify how long to keep backups by changing the `BACKUP_DURATION` in the `/usr/local/bin/msctl` file, on line 331.
+You can specify how long to keep backups by changing the `BACKUP_DURATION` in the `mscs.conf` or `mscs` file (see [adjusting global server settings](#adjusting-global-server-settings).
 
 ### Scheduling restarts
 You can schedule restarts for the server following the same method as outlined in [scheduling backups](#scheduling-backups).   Simply change the scheduled command from `backup <myWorld>` to `restart <myWorld>`. `myWorld` is the name of world you wish to restart; omit if you wish to restart all worlds.
@@ -315,7 +289,7 @@ You can schedule restarts for the server following the same method as outlined i
 ## Mapping the world
 Minecraft Server Control Script uses [overviewer](http://docs.overviewer.org/en/latest/) to generate minecraft maps. First, follow the [instructions](http://docs.overviewer.org/en/latest/installing/) on their site to install overviewer. 
 
-Then, once you have it installed, modify the settings (if necessary) found in `/usr/local/bin/msctl`. The settings can be found starting on line 370 of the document:
+Then, once you have it installed, modify the settings (if necessary) found in the `mscs.conf` or `mscs` file (see [adjusting global server settings](#adjusting-global-server-settings):
 
  ````
  OVERVIEWER_BIN=$(which overviewer.py)
