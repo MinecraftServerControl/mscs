@@ -173,19 +173,12 @@ and `port` is the server port (by default, use 25565).
 `ip` is optional and will be used if you wish to create multiple worlds 
 across different servers. 
 
-Afterwards, simply start the server via `mscs start [world]` where `world` 
-is the name of the world. 
+Afterwards, start the server via `mscs start [world]` where `world` 
+is the name of the world. The world will then shut down because you have to accept the EULA.
 
-**Finally, accept the EULA**.
-As of Minecraft version 1.7.10, Mojang requires that users of their software 
-read and agree to their 
-[EULA](https://account.mojang.com/documents/minecraft_eula).  
-After the first time you start the server, you need to modify the `eula.txt` 
-file in your world's folder, changing the value of the `eula` variable from 
-`false` to `true`.
 
 The EULA can be found in `/opt/mscs/worlds/myWorld` where `myWorld` 
-is the name given to the world you created.
+is the name given to the world you created. 
 
 After accepting the EULA simply start the server using the same command above, 
 and you're all set!
@@ -198,21 +191,21 @@ want MSCS to recognize this world by the name "vanillaMC".
 `/opt/mscs/`.
 
 2. Create a new folder **within the `/opt/mscs/worlds/` directory that is the 
-name you want MSCS to use for the world**.
-3. For this example, I chose "vanillaMC". So, I created a new directory
-`vanillaMC` within the `/opt/mscs/worlds` directory, so the path would be 
-`/opt/mscs/worlds/vanillaMC`. 
+the same name that you wish to use for the world**.
+3. For this example, I chose "world". So, I created a new directory
+`world` within the `/opt/mscs/worlds` directory, so the path would be 
+`/opt/mscs/worlds/world`. 
 
 3. Drag the folder of the world you wish to move into the folder you 
 just created. 
-So I would drag the world `world` into the `vanillaMC` folder. 
-The path of `world` (the actual world folder) would now be 
-`/opt/mscs/worlds/vanillaMC/world/`.
+So I would drag the world `world` into the `/opt/mscs/worlds/world` folder. 
+The path of `world` (the actual world data folder) would now be 
+`/opt/mscs/worlds/world/world/`.
 
 The finished file structure should resemble the following, with a world named 
-`world` and a containing folder name "vanillaMC":
+`world`:
 ````
-/opt/mscs/worlds/vanillaMC       // The path
+/opt/mscs/worlds/world       // The path
 
 world                     // The actual world folder
 server.properties         
@@ -224,15 +217,14 @@ into MSCS. Do this via:
 
         mscs create [world] [port] <ip>
   
-Where `world` is the **name of the containing folder you created** 
-(so it would be "vanillaMC" from the previous example", 
+Where `world` is the world name
+(so it would be "world" from the previous example", 
 and `port` is the server port (by default, use 25565).
 `ip` is optional and will be used if you wish to create multiple worlds 
 across different servers. For now, leave it blank.
 
 Afterwards, simply start the server via `mscs start [world]` where `world` 
-is the name of the containing world's folder (again, it would be "vanillaMC" 
-from the last example). 
+is the name of the containing world's folder (again, it would be "world"). 
 Then, accept the EULA, run the start command again, and you're good to go!
 
 As a last note, make sure you check `server-port` and `query.port` in 
