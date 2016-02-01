@@ -184,33 +184,32 @@ After accepting the EULA simply start the server using the same command above,
 and you're all set!
 
 ### Importing an existing world
-Suppose you want to import a world folder named `world` into MSCS, and that you 
-want MSCS to recognize this world by the name "vanillaMC".
+### Import Existing Worlds
 
-1. First, if you don't have one already, create a `worlds` folder in 
-`/opt/mscs/`.
+You just need to create a new directory in the worlds folder for the world you wish to import.
+Suppose the world you wish to import is called `alpha`, you would create a new folder in
+`/opt/mscs/worlds` with the same name as the world, then copy the data files over to that new directory.
 
-2. Create a new folder **within the `/opt/mscs/worlds/` directory that is the 
-the same name that you wish to use for the world**.
-3. For this example, I chose "world". So, I created a new directory
-`world` within the `/opt/mscs/worlds` directory, so the path would be 
-`/opt/mscs/worlds/world`. 
+If the directory containing the world `alpha` you wish to import looks like this:
 
-3. Drag the folder of the world you wish to move into the folder you 
-just created. 
-So I would drag the world `world` into the `/opt/mscs/worlds/world` folder. 
-The path of `world` (the actual world data folder) would now be 
-`/opt/mscs/worlds/world/world/`.
+    $ ls
+    alpha
+    banned-ips.txt
+    banned-players.txt
+    crash-reports
+    logs
+    ops.txt
+    server.properties
+    white-list.txt
 
-The finished file structure should resemble the following, with a world named 
-`world`:
-````
-/opt/mscs/worlds/world       // The path
+You can just copy your world into the worlds directory:
 
-world                     // The actual world folder
-server.properties         
-other world files... (in no particular order)
-````
+    mkdir /opt/mscs/worlds/alpha  // Makes a directory called `alpha` in the `/worlds/` folder
+    cp -R * /opt/mscs/worlds/alpha // Copies the `alpha` world data folder into `/opt/mscs/worlds/alpha`
+    
+In sum, the ending path of your world `alpha` should be `/opt/mscs/worlds/alpha/alpha`.
+
+Make sure you check `server-port` and `query.port` in `server.properties` to make sure it does not overlap with other servers created by the MSCS script. Also ensure that `enable-query` is set to `true`.  If you do not have `enable-query` and a `query.port` set, you will not be able to check the status of the world with the script.
 
 After you've set up the file structure, you now need to create a world entry 
 into MSCS. Do this via:
@@ -223,8 +222,7 @@ and `port` is the server port (by default, use 25565).
 `ip` is optional and will be used if you wish to create multiple worlds 
 across different servers. For now, leave it blank.
 
-Afterwards, simply start the server via `mscs start [world]` where `world` 
-is the name of the containing world's folder (again, it would be "world"). 
+Afterwards, start the server via `mscs start [world]`. 
 Then, accept the EULA, run the start command again, and you're good to go!
 
 As a last note, make sure you check `server-port` and `query.port` in 
