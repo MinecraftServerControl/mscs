@@ -73,7 +73,7 @@ requirements that this script has that may not already be in place:
 If you are running Debian or Ubuntu, you can make sure that these are
 installed by running:
 
-        sudo apt-get install default-jre perl python wget rdiff-backup socat iptables
+    sudo apt-get install default-jre perl python wget rdiff-backup socat iptables
     
 ### Configuring the firewall / NAT
 If you have a firewall installed on your computer, or a router using NAT
@@ -108,11 +108,11 @@ The easiest way to download the script is to make a clone of the [git
 repository](https://github.com/sandain/MinecraftServerControlScript.git). 
 You must have git installed first. To install git:
 
-        sudo apt-get install git
+    sudo apt-get install git
         
 Then:
 
-        git clone https://github.com/sandain/MinecraftServerControlScript.git
+    git clone https://github.com/sandain/MinecraftServerControlScript.git
         
 Note that it will be downloaded into the current directory which you are working
  in. 
@@ -125,7 +125,7 @@ Note that it will be downloaded into the current directory which you are working
 * Get the development version as a [zip file]
 (https://github.com/sandain/MinecraftServerControlScript/archive/master.zip):
 
-        wget https://github.com/sandain/MinecraftServerControlScript/archive/master.zip
+    wget https://github.com/sandain/MinecraftServerControlScript/archive/master.zip
 
 
 
@@ -136,11 +136,12 @@ downloaded.
 Configuration can be done with the included Makefile in Debian and
 Ubuntu like environments by running:
 
-        sudo make install
+    sudo make install
 Then, type
 
-        chmod -R u+w /opt/mscs
-        chown -R minecraft:minecraft /opt/mscs
+    chmod -R u+w /opt/mscs
+    chown -R minecraft:minecraft /opt/mscs
+   
 This will give the user you created in the config 
 (by default, the user `minecraft`) 
 access to write in the `/opt/mscs` folder. 
@@ -166,7 +167,7 @@ enable any other
 ### Creating a new world
 The command to create a new world is:
 
-        mscs create [world] [port] <ip>
+    mscs create [world] [port] <ip>
   
 Where `world` is the name of the world you specify, 
 and `port` is the server port (by default, use 25565).
@@ -175,7 +176,6 @@ across different servers.
 
 Afterwards, start the server via `mscs start [world]` where `world` 
 is the name of the world. The world will then shut down because you have to accept the EULA.
-
 
 The EULA can be found in `/opt/mscs/worlds/myWorld` where `myWorld` 
 is the name given to the world you created. 
@@ -208,6 +208,14 @@ You can just copy your world into the worlds directory:
     cp -R * /opt/mscs/worlds/alpha // Copies the `alpha` world data folder into `/opt/mscs/worlds/alpha`
     
 In sum, the ending path of your world `alpha` should be `/opt/mscs/worlds/alpha/alpha`.
+
+If you would like to rename the `alpha` folder 
+(the one that is the parent folder of the actual world) to something different:
+
+    mkdir /opt/mscs/worlds/vanillaMC
+    cp -R * /opt/mscs/worlds/vanillaMC
+    mv /opt/mscs/worlds/vanillaMC/alpha /opt/mscs/worlds/vanillaMC/vanillaMC
+    mscs create vanillaMC 25565
 
 Make sure you check `server-port` and `query.port` in `server.properties` to make sure it does not overlap with other servers created by the MSCS script. Also ensure that `enable-query` is set to `true`.  If you do not have `enable-query` and a `query.port` set, you will not be able to check the status of the world with the script.
 
@@ -334,16 +342,14 @@ a world every 2 hours:
 
 Type the following (in any directory): 
 
-  ````
-  export EDITOR=vim
-  crontab -e
-  ````
+    export EDITOR=vim
+    crontab -e
+
   Page down until you get to an empty line. Then paste the following:
   
-  ````
-  0 */2 * * *  /usr/local/bin/mscs backup myWorld
-  ````
-  * `0 */2 * * *` is the time interval to backup. 
+    0 */2 * * *  /usr/local/bin/mscs backup myWorld
+  
+* `0 */2 * * *` is the time interval to backup. 
 This particular expression means backup every 2 hours. 
 You can change this to 3, 4, 5 or whatever amount of hours to backup 
 X amount of hours. 
@@ -385,12 +391,11 @@ Then, once you have it installed, modify the settings (if necessary)
 found in the `mscs.conf` or `mscs` file 
 (see [adjusting global server settings](#adjusting-global-server-settings)):
 
- ````
- OVERVIEWER_BIN=$(which overviewer.py)
- OVERVIEWER_URL="http://overviewer.org"
- MAPS_URL="my.minecraftserver.com"
- MAPS_LOCATION="$LOCATION/maps"
- ````
+    OVERVIEWER_BIN=$(which overviewer.py)
+    OVERVIEWER_URL="http://overviewer.org"
+    MAPS_URL="my.minecraftserver.com"
+    MAPS_LOCATION="$LOCATION/maps"
+
 
 After you've tinkered the settings to your liking, run
 `mscs map <world>`
