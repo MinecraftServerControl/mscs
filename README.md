@@ -73,7 +73,7 @@ requirements that this script has that may not already be in place:
 If you are running Debian or Ubuntu, you can make sure that these are
 installed by running:
 
-`sudo apt-get install default-jre perl python wget rdiff-backup socat iptables`
+        sudo apt-get install default-jre perl python wget rdiff-backup socat iptables
     
 ### Configuring the firewall / NAT
 If you have a firewall installed on your computer, or a router using NAT
@@ -212,7 +212,7 @@ The path of `world` (the actual world folder) would now be
 The finished file structure should resemble the following, with a world named 
 `world` and a containing folder name "vanillaMC":
 ````
-/opt/mscs/vanillaMC       // The path
+/opt/mscs/worlds/vanillaMC       // The path
 
 world                     // The actual world folder
 server.properties         
