@@ -22,7 +22,7 @@
   * [Removing backups after X days](#removing-backups-after-x-days)
   * [Scheduling restarts](#scheduling-restarts)
 * [Mapping the world](#mapping-the-world)
-	* [Adjusting map/mapping settings](#adjusting-map--mapping-settings)
+	* [Adjusting map/mapping settings](#adjusting-mapmapping-settings)
 * [Command reference](#command-reference)
   * [Examples](#examples)
 * [License](LICENSE)
