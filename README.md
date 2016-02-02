@@ -210,6 +210,7 @@ You can just copy your world into the worlds directory:
     cp -R * /opt/mscs/worlds/alpha // Copies the `alpha` world data folder into `/opt/mscs/worlds/alpha`
     
 In sum, the ending path of your world `alpha` should be `/opt/mscs/worlds/alpha/alpha`.
+
 ===================
 **Optional**: If you would like to rename the `alpha` folder 
 (the one that is the parent folder of the actual world) to a different name,
