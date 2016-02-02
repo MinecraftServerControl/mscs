@@ -26,6 +26,7 @@
 	* [Adjusting map/mapping settings](#adjusting-mapmapping-settings)
 * [Command reference](#command-reference)
   * [Examples](#examples)
+* [Troubleshooting](#troubleshooting)
 * [License](LICENSE)
 * [Issues](#issues)
 
@@ -139,16 +140,15 @@ Configuration can be done with the included Makefile in Debian and
 Ubuntu like environments by running:
 
     sudo make install
-Then, type
 
-    chmod -R u+w /opt/mscs
-    chown -R minecraft:minecraft /opt/mscs
    
 This will give the user you created in the config 
 (by default, the user `minecraft`) 
 access to write in the `/opt/mscs` folder. 
 If you configured MSCS manually when you installed the script, 
 then replace `minecraft` with the name of the user you made.
+
+If you get a permission error, please see the [troubleshooting](#troubleshooting) section.
 
 That's it!
 If you wish to configure the script manually, please visit the [wiki page]
@@ -564,7 +564,14 @@ To send a command to a world server, issue the command:
 ie.
 
     sudo mscs send alpha say Hello world!
+    
+## Troubleshooting
+#### Permission denied when attempting to run `mscs create ...`
+Type
 
+    chmod -R u+w /opt/mscs
+    chown -R minecraft:minecraft /opt/mscs
+To give the `minecraft` user the correct permissions needed to create/modify folders.
 
 ## License
 
