@@ -210,14 +210,16 @@ You can just copy your world into the worlds directory:
     cp -R * /opt/mscs/worlds/alpha // Copies the `alpha` world data folder into `/opt/mscs/worlds/alpha`
     
 In sum, the ending path of your world `alpha` should be `/opt/mscs/worlds/alpha/alpha`.
-
-If you would like to rename the `alpha` folder 
-(the one that is the parent folder of the actual world) to something different:
+===================
+**Optional**: If you would like to rename the `alpha` folder 
+(the one that is the parent folder of the actual world) to a different name,
+follow the steps below. In this example we wanted to rename the `alpha` folder to `vanillaMC`:
 
     mkdir /opt/mscs/worlds/vanillaMC
     cp -R * /opt/mscs/worlds/vanillaMC
     mv /opt/mscs/worlds/vanillaMC/alpha /opt/mscs/worlds/vanillaMC/vanillaMC
     mscs create vanillaMC 25565
+=================
 
 Make sure you check `server-port` and `query.port` in `server.properties` to make sure it does not overlap with other servers created by the MSCS script. Also ensure that `enable-query` is set to `true`.  If you do not have `enable-query` and a `query.port` set, you will not be able to check the status of the world with the script.
 
