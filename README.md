@@ -17,10 +17,11 @@
   * [Adjusting world properties](#adjusting-world-properties)
     * [Enabling Forge, BungeeCord, and other server software](#enabling-forge-bungeecord-and-other-server-software)
   * [Adjusting global server options](#adjusting-global-server-settings)
-* [Automated backups and restarts](#automated-backups-and-restarts)
+* [Scheduling backups and other tasks](#scheduling-backups-and-other-tasks)
   * [Scheduling backups](#scheduling-backups)
   * [Removing backups after X days](#removing-backups-after-x-days)
   * [Scheduling restarts](#scheduling-restarts)
+  * [Scheduling mapping](#scheduling-mapping)
 * [Mapping the world](#mapping-the-world)
 	* [Adjusting map/mapping settings](#adjusting-mapmapping-settings)
 * [Command reference](#command-reference)
@@ -333,7 +334,7 @@ Once you've created the file, you need to populate it with a list of properties.
 The list of properties can be found 
 [here](https://github.com/sandain/MinecraftServerControlScript/wiki/Global-Server-Settings).
 
-## Automated backups and restarts
+## Scheduling backups and other tasks
 
 ### Scheduling backups
 To schedule backups, you need to use [**cron**](https://en.wikipedia.org/wiki/Cron), 
@@ -381,6 +382,13 @@ Simply change the scheduled command from `backup <myWorld>` to
 is the name of world you wish to restart; omit if you wish to 
 restart all worlds.
 
+### Scheduling mapping
+You can do [through cron, the same way that you schedule backups](#scheduling-backups). 
+Simply replace the command with
+
+    mscs map <world>
+ 
+Where world is the name of the world you wish to map (omit for all worlds). 
 ## Mapping the world
 Minecraft Server Control Script uses 
 [overviewer](http://docs.overviewer.org/en/latest/) to generate minecraft maps. 
@@ -410,12 +418,7 @@ You can adjust the properties of the overviewer by editing the file `overviewer.
 
 In order for the map to update new changes in the world, 
 you need to run the overviewer periodically. 
-You can do [through cron, the same way that you schedule backups](#scheduling-backups). 
-Simply replace the command with
-
-    mscs map <world>
- 
-Where world is the name of the world you wish to map (omit for all worlds). 
+Please see [scheduling mapping](#scheduling-mapping).
 
 ## Command Reference
 
