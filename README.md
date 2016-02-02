@@ -15,14 +15,14 @@
   * [Creating a new world](#creating-a-new-world)
   * [Importing an existing world](#importing-an-existing-world)
   * [Adjusting world properties](#adjusting-world-properties)
-    * [Enabling Forge, BungeeCord, and other server software]
-	(#enabling-forge-bungeecord-and-other-server-software)
+    * [Enabling Forge, BungeeCord, and other server software](#enabling-forge-bungeecord-and-other-server-software)
   * [Adjusting global server options](#adjusting-global-server-settings)
 * [Automated backups and restarts](#automated-backups-and-restarts)
   * [Scheduling backups](#scheduling-backups)
   * [Removing backups after X days](#removing-backups-after-x-days)
   * [Scheduling restarts](#scheduling-restarts)
 * [Mapping the world](#mapping-the-world)
+	* [Adjusting map/mapping settings](#adjusting-map--mapping-settings)
 * [Command reference](#command-reference)
   * [Examples](#examples)
 * [License](LICENSE)
@@ -336,7 +336,7 @@ The list of properties can be found
 ## Automated backups and restarts
 
 ### Scheduling backups
-MSCS uses [**cron**](https://en.wikipedia.org/wiki/Cron), 
+To schedule backups, you need to use [**cron**](https://en.wikipedia.org/wiki/Cron), 
 a scheduler software that can run programs on a set interval of time. 
 Below is an example of one way how you could setup backups via cron to backup 
 a world every 2 hours:
@@ -404,6 +404,18 @@ where `world` is the name of the world you would like to get mapped.
 Omit the world name to map all worlds.
 By default maps are saved into `/opt/mscs/maps`.
 
+### Adjusting map/mapping settings
+
+You can adjust the properties of the overviewer by editing the file `overviewer.py`. Properties here include the output path of the map (i.e. you should change this to your web server directory), and render settings. Please visit [their website](http://docs.overviewer.org/en/latest/config/) for information on config.
+
+In order for the map to update new changes in the world, 
+you need to run the overviewer periodically. 
+You can do [through cron, the same way that you schedule backups](#scheduling-backups). 
+Simply replace the command with
+
+    mscs map <world>
+ 
+Where world is the name of the world you wish to map (omit for all worlds). 
 
 ## Command Reference
 
