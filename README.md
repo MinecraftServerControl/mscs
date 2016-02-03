@@ -15,8 +15,8 @@
   * [Creating a new world](#creating-a-new-world)
   * [Importing an existing world](#importing-an-existing-world)
   * [Adjusting world properties](#adjusting-world-properties)
-    * [Enabling Forge, BungeeCord, and other server software](#enabling-forge-bungeecord-and-other-server-software)
-  * [Adjusting global server options](#adjusting-global-server-settings)
+    * [Enabling Forge, BungeeCord, and other server software (optional)](#enabling-forge-bungeecord-and-other-server-software-optional)
+  * [Adjusting global server options (optional)](#adjusting-global-server-settings-optional)
 * [Scheduling backups and other tasks](#scheduling-backups-and-other-tasks)
   * [Scheduling backups](#scheduling-backups)
   * [Removing backups after X days](#removing-backups-after-x-days)
@@ -161,10 +161,10 @@ So you successfully installed the script--great!
 At first, you probably want to [create a new world](#creating-a-new-world) or 
 [import an existing world](#importing-an-existing-world) into the script. 
 
-Then, you should adjust the [world properties](#adjusting-world-properties), 
-adjust the [global server settings](#adjusting-global-server-settings), and 
+Then, you might want adjust the [world properties](#adjusting-world-properties), 
+adjust the [global server settings](#adjusting-global-server-settings-optional), and 
 enable any other 
-[server software](#enabling-forge-bungeecord-and-other-server-software) as needed.
+[server software](#enabling-forge-bungeecord-and-other-server-software-optional) as needed.
 
 ### Creating a new world
 The command to create a new world is:
@@ -186,7 +186,6 @@ After accepting the EULA simply start the server using the same command above,
 and you're all set!
 
 ### Importing an existing world
-### Import Existing Worlds
 
 You just need to create a new directory in the worlds folder for the world you wish to import.
 Suppose the world you wish to import is called `alpha`, you would create a new folder in
@@ -300,17 +299,19 @@ The following variables may be used in some of the values of the above keys:
     mscs-server-location=/opt/mscs/server
     mscs-server-command=$JAVA -Xms$INITIAL_MEMORY -Xmx$MAXIMUM_MEMORY -jar $SERVER_LOCATION/$SERVER_JAR $SERVER_ARGS
     
-#### Enabling Forge, BungeeCord, and other server software
+#### Enabling Forge, BungeeCord, and other server software (optional)
 Please visit the [wiki]
 (https://github.com/sandain/MinecraftServerControlScript/wiki/Server-Customization-Examples) 
 for additional information.
 
-### Adjusting global server settings
+### Adjusting global server settings (optional)
 In tandem with the `mscs.properties` file--which handles options for individual 
 worlds--
 is the `mscs.conf` or simply `mscs` file, which handles global server settings.
+This file, like the `mscs.properties` file, has default settings built-in to MSCS. However, you 
+can also customize it to your liking.
 
-**You must create this file**. By default, MSCS looks for this file in three 
+**To customize the properties, you must create this file.**. By default, MSCS looks for this file in three 
 places (in this order):
 
 1. `$HOME/mscs.conf` 
