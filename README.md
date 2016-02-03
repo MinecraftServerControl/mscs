@@ -14,6 +14,7 @@
 * [Getting started guide](#getting-started-guide)
   * [Creating a new world](#creating-a-new-world)
   * [Importing an existing world](#importing-an-existing-world)
+    * [Renaming world folder (optional)](#renaming-world-folder-optional)
   * [Adjusting world properties](#adjusting-world-properties)
     * [Enabling Forge, BungeeCord, and other server software (optional)](#enabling-forge-bungeecord-and-other-server-software-optional)
   * [Adjusting global server options (optional)](#adjusting-global-server-settings-optional)
@@ -162,9 +163,9 @@ At first, you probably want to [create a new world](#creating-a-new-world) or
 [import an existing world](#importing-an-existing-world) into the script. 
 
 Then, you might want adjust the [world properties](#adjusting-world-properties), 
-adjust the [global server settings](#adjusting-global-server-settings-optional), and 
+adjust the [global server settings (optional)](#adjusting-global-server-settings-optional), and 
 enable any other 
-[server software](#enabling-forge-bungeecord-and-other-server-software-optional) as needed.
+[server software (optional)](#enabling-forge-bungeecord-and-other-server-software-optional) as needed.
 
 ### Creating a new world
 The command to create a new world is:
@@ -210,8 +211,8 @@ You can just copy your world into the worlds directory:
     
 In sum, the ending path of your world `alpha` should be `/opt/mscs/worlds/alpha/alpha`.
 
-===================
-**Optional**: If you would like to rename the `alpha` folder 
+#### Renaming world folder (optional)
+If you would like to rename the `alpha` folder 
 (the one that is the parent folder of the actual world) to a different name,
 follow the steps below. In this example we wanted to rename the `alpha` folder to `vanillaMC`:
 
@@ -219,30 +220,9 @@ follow the steps below. In this example we wanted to rename the `alpha` folder t
     cp -R * /opt/mscs/worlds/vanillaMC
     mv /opt/mscs/worlds/vanillaMC/alpha /opt/mscs/worlds/vanillaMC/vanillaMC
     mscs create vanillaMC 25565
-=================
 
-Make sure you check `server-port` and `query.port` in `server.properties` to make sure it does not overlap with other servers created by the MSCS script. Also ensure that `enable-query` is set to `true`.  If you do not have `enable-query` and a `query.port` set, you will not be able to check the status of the world with the script.
-
-After you've set up the file structure, you now need to create a world entry 
-into MSCS. Do this via:
-
-        mscs create [world] [port] <ip>
-  
-Where `world` is the world name
-(so it would be "world" from the previous example", 
-and `port` is the server port (by default, use 25565).
-`ip` is optional and will be used if you wish to create multiple worlds 
-across different servers. For now, leave it blank.
-
-Afterwards, start the server via `mscs start [world]`. 
-Then, accept the EULA, run the start command again, and you're good to go!
-
-As a last note, make sure you check `server-port` and `query.port` in 
-`server.properties` 
-to make sure it does not overlap with other servers created by the MSCS script. 
-Also ensure that `enable-query` is set to `true`.  
-If you do not have `enable-query` and a `query.port` set, 
-you will not be able to check the status of the world with the script.
+After you've set up the file structure, [you can now create a world entry 
+into MSCS](#creating-a-new-world) using the name of the world.
 
 ### Adjusting world properties
 The `mscs.properties` file can be found in every world folder 
