@@ -16,6 +16,7 @@
   * [Importing an existing world](#importing-an-existing-world)
     * [Renaming world folder (optional)](#renaming-world-folder-optional)
   * [Adjusting world properties](#adjusting-world-properties)
+    * [Default world properties](#default-world-properties)
     * [Enabling Forge, BungeeCord, and other server software (optional)](#enabling-forge-bungeecord-and-other-server-software-optional)
   * [Adjusting global server options (optional)](#adjusting-global-server-settings-optional)
 * [Scheduling backups and other tasks](#scheduling-backups-and-other-tasks)
@@ -262,7 +263,9 @@ The following variables may be used in some of the values of the above keys:
 * $MAXIMUM_MEMORY - The maximum amount of memory for the server.
 * $SERVER_LOCATION - The location of the server .jar file.
 
-#### Example key/value pairs
+#### Default world properties
+Below are the default properties for the world. You can add one, none, or all of the properties below
+to the `mscs.properties` file and adjust it to your liking.
 
     mscs-enabled=true
     mscs-version-type=release
