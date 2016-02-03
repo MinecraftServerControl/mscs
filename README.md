@@ -205,8 +205,8 @@ If the directory containing the world `alpha` you wish to import looks like this
 
 You can just copy your world into the worlds directory:
 
-    mkdir /opt/mscs/worlds/alpha  // Makes a directory called `alpha` in the `/worlds/` folder
-    cp -R * /opt/mscs/worlds/alpha // Copies the `alpha` world data folder into `/opt/mscs/worlds/alpha`
+    mkdir /opt/mscs/worlds/alpha  
+    cp -R * /opt/mscs/worlds/alpha
     
 In sum, the ending path of your world `alpha` should be `/opt/mscs/worlds/alpha/alpha`.
 
