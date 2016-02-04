@@ -549,7 +549,7 @@ ie.
 
 ## Updating MSCS
 Periodically Minecraft Server Control Script is updated to address bug fixes and add new features.
-To fetch the latest update:
+To fetch the latest update, first `cd` into the folder where you downloaded MSCS. Then, type:
 
     git pull
     sudo make update
