@@ -28,6 +28,7 @@
 	* [Adjusting map/mapping settings](#adjusting-mapmapping-settings)
 * [Command reference](#command-reference)
   * [Examples](#examples)
+* [Updating MSCS](#updating-mscs)
 * [Troubleshooting](#troubleshooting)
 * [License](LICENSE)
 * [Issues](#issues)
@@ -545,7 +546,14 @@ To send a command to a world server, issue the command:
 ie.
 
     sudo mscs send alpha say Hello world!
-    
+
+## Updating MSCS
+Periodically Minecraft Server Control Script is updated to address bug fixes and add new features.
+To fetch the latest update:
+
+    git pull
+    sudo make update
+
 ## Troubleshooting
 #### Permission denied when attempting to run `mscs create ...`
 Type
