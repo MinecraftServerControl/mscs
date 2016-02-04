@@ -130,7 +130,7 @@ Note that it will be downloaded into the current directory which you are working
 (https://github.com/sandain/MinecraftServerControlScript/archive/master.zip):
 
 
-     wget https://github.com/sandain/MinecraftServerControlScript/archive/master.zip
+    wget https://github.com/sandain/MinecraftServerControlScript/archive/master.zip
 
 
 
@@ -145,10 +145,8 @@ Ubuntu like environments by running:
 
    
 This will give the user you created in the config 
-(by default, the user `minecraft`) 
+(by default, the user is called `minecraft`) 
 access to write in the `/opt/mscs` folder. 
-If you configured MSCS manually when you installed the script, 
-then replace `minecraft` with the name of the user you made.
 
 If you get a permission error, please see the [troubleshooting](#troubleshooting) section.
 
