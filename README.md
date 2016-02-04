@@ -129,8 +129,7 @@ Note that it will be downloaded into the current directory which you are working
 * Get the development version as a [zip file]
 (https://github.com/sandain/MinecraftServerControlScript/archive/master.zip):
 
-
-    wget https://github.com/sandain/MinecraftServerControlScript/archive/master.zip
+        wget https://github.com/sandain/MinecraftServerControlScript/archive/master.zip
 
 
 
