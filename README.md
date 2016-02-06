@@ -86,8 +86,10 @@ installed in your network, you will need to route some ports to your server.
 Instructions on how to accomplish this are beyond the scope of this post, but
 here are some things you will need to know:
 * The default port for the Minecraft server is: `25565`.
-* If you wish to run multiple world servers using this script, you will
+* If you wish to run multiple world servers using this script, you may
   want to open a range of ports (for example `25565 - 25575`).
+* If you are using [BungeeCord](http://www.spigotmc.org/wiki/bungeecord/),
+  you will most likely need to only open the default port: `25565`.
 
 See the [iptables.rules](iptables.rules)
 file for a very basic set of rules that you can use with the Iptables firewall.
