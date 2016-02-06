@@ -11,6 +11,7 @@
 * [Installation](#installation)
   * [Downloading the script](#downloading-the-script)
   * [Configuration](#configuration)
+  * [Updating MSCS](#updating-mscs)
 * [Getting started guide](#getting-started-guide)
   * [Creating a new world](#creating-a-new-world)
   * [Importing an existing world](#importing-an-existing-world)
@@ -28,7 +29,6 @@
 	* [Adjusting map/mapping settings](#adjusting-mapmapping-settings)
 * [Command reference](#command-reference)
   * [Examples](#examples)
-* [Updating MSCS](#updating-mscs)
 * [Troubleshooting](#troubleshooting)
 * [License](LICENSE)
 * [Issues](#issues)
@@ -134,8 +134,6 @@ Note that it will be downloaded into the current directory which you are working
 
         wget https://github.com/sandain/MinecraftServerControlScript/archive/master.zip
 
-
-
 ### Configuration
 
 Navigate to the `MinecraftServerControlScript` directory that you just 
@@ -145,7 +143,6 @@ Ubuntu like environments by running:
 
     sudo make install
 
-   
 This will give the user you created in the config 
 (by default, the user is called `minecraft`) 
 access to write in the `/opt/mscs` folder. 
@@ -156,6 +153,20 @@ That's it!
 If you wish to configure the script manually, please visit the [wiki page]
 (https://github.com/sandain/MinecraftServerControlScript/wiki/Manual-Configuration).
 
+### Updating MSCS
+Periodically Minecraft Server Control Script is updated to address bug fixes and add new features.
+The easiest way to fetch the latest update, assuming you used
+[the easiest way to install the script](#downloading-the-script), first `cd` into the folder where
+you downloaded MSCS. Then, type:
+
+    git pull
+
+You can alternatively use [one of the other methods](#other-ways-to-download) to download the
+latest version.  Just `cd` into the folder containing the MSCS download to continue.
+
+Once you have the latest version of MSCS downloaded, type:
+
+    sudo make update
 
 ## Getting started guide
 So you successfully installed the script--great! 
@@ -555,13 +566,6 @@ To send a command to a world server, issue the command:
 ie.
 
     sudo mscs send alpha say Hello world!
-
-## Updating MSCS
-Periodically Minecraft Server Control Script is updated to address bug fixes and add new features.
-To fetch the latest update, first `cd` into the folder where you downloaded MSCS. Then, type:
-
-    git pull
-    sudo make update
 
 ## Troubleshooting
 #### Permission denied when attempting to run `mscs create ...`
