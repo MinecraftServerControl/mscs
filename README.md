@@ -321,14 +321,8 @@ It doesn't matter where you create the file, as long as you put it in one of
 the above places.
 
 Please note: `$HOME` represents the home directory of the user that is 
-responsible for the script--
-if you followed the configuration above, then that would be the `minecraft` 
-user. 
-To print the home directory of the `minecraft` user type:
-
-`eval echo ~$minecraft`
-
-Then simply `cd` into the directory it outputs and create the file.
+responsible for the script--if you followed the configuration above, then
+that would be the `minecraft` user and the home directory would be `/opt/mscs`.
 
 Once you've created the file, you need to populate it with a list of properties. 
 The list of properties can be found 
