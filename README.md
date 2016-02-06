@@ -193,6 +193,8 @@ You just need to create a new directory in the worlds folder for the world you w
 Suppose the world you wish to import is called `alpha`, you would create a new folder in
 `/opt/mscs/worlds` with the same name as the world, then copy the data files over to that new directory.
 
+IMPORTANT: make sure the world that you are importing is not currently running.
+
 If the directory containing the world `alpha` you wish to import looks like this:
 
     $ ls
@@ -209,21 +211,32 @@ You can just copy your world into the worlds directory:
 
     mkdir /opt/mscs/worlds/alpha  
     cp -R * /opt/mscs/worlds/alpha
-    
-In sum, the ending path of your world `alpha` should be `/opt/mscs/worlds/alpha/alpha`.
+
+After you've copied the world files, you will want to [create a world entry
+into MSCS](#creating-a-new-world) using the name of the world and the port
+that you wish the world to use:
+
+    mscs create alpha 25565
+
 
 #### Renaming world folder (optional)
 If you would like to rename the `alpha` folder 
 (the one that is the parent folder of the actual world) to a different name,
-follow the steps below. In this example we wanted to rename the `alpha` folder to `vanillaMC`:
+follow the steps below.
+
+IMPORTANT: make sure the world that you are importing is not currently running.
+
+In this example we want to rename the `alpha` folder to `vanillaMC`:
 
     mkdir /opt/mscs/worlds/vanillaMC
     cp -R * /opt/mscs/worlds/vanillaMC
     mv /opt/mscs/worlds/vanillaMC/alpha /opt/mscs/worlds/vanillaMC/vanillaMC
-    mscs create vanillaMC 25565
 
 After you've set up the file structure, [you can now create a world entry 
-into MSCS](#creating-a-new-world) using the name of the world.
+into MSCS](#creating-a-new-world) using the name of the world and the port
+that you wish the world to use:
+
+    mscs create vanillaMC 25565
 
 ### Adjusting world properties
 The `mscs.properties` file can be found in every world folder 
