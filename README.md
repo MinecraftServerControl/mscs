@@ -68,7 +68,7 @@ requirements that this script has that may not already be in place:
 * Perl         - Most, if not all, Unix and Linux like systems have this
                  preinstalled.
 * Python       - Required by the Minecraft Overviewer mapping software.
-* make         - Allows the script to run the makefile for configuration.
+* GNU Make     - Allows the script to run the Makefile for configuration.
 * GNU Wget     - Allows the script to download software updates via the
                  internet.
 * rdiff-backup - Allows the script to efficiently run backups.
