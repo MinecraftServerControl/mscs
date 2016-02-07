@@ -187,8 +187,8 @@ The command to create a new world is:
   
 Where `world` is the name of the world you specify, 
 and `port` is the server port (by default, use `25565`).
-`ip` is optional and will be used if you wish to create multiple worlds 
-across different servers. 
+`ip` is optional and will be used if you wish to bind a world server to a
+specific network interface (e.g. `127.0.0.1` to enforce local access only). 
 
 Afterwards, start the server via `mscs start [world]` where `world` 
 is the name of the world. The world will then shut down because you have to accept the EULA.
