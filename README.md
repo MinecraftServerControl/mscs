@@ -68,6 +68,7 @@ requirements that this script has that may not already be in place:
 * Perl         - Most, if not all, Unix and Linux like systems have this
                  preinstalled.
 * Python       - Required by the Minecraft Overviewer mapping software.
+* make         - Allows the script to run the makefile for configuration.
 * GNU Wget     - Allows the script to download software updates via the
                  internet.
 * rdiff-backup - Allows the script to efficiently run backups.
@@ -78,7 +79,7 @@ requirements that this script has that may not already be in place:
 If you are running Debian or Ubuntu, you can make sure that these are
 installed by running:
 
-    sudo apt-get install default-jre perl python wget rdiff-backup socat iptables
+    sudo apt-get install default-jre perl python make wget rdiff-backup socat iptables
     
 ### Configuring the firewall / NAT
 If you have a firewall installed on your computer, or a router using NAT
