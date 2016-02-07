@@ -552,11 +552,11 @@ To start all of the world servers, issue the command:
 
     sudo mscs start
 
-To create a world named alpha, issue the command:
+To create a world named `alpha` on the default port `25565`, issue the command:
 
     sudo mscs create alpha 25565
 
-To start just the world named alpha, issue the command:
+To start just the world named `alpha`, issue the command:
 
     sudo mscs start alpha
 
