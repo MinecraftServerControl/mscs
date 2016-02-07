@@ -74,12 +74,12 @@ requirements that this script has that may not already be in place:
 * Socat        - Allows the script to communicate with the Minecraft server.
 * Iptables     - Although not explicitly required, a good firewall should be
                  installed.
-* Build-essential - Allows the script to run the makefile for configuration.
+* make         - Allows the script to run the makefile for configuration.
 
 If you are running Debian or Ubuntu, you can make sure that these are
 installed by running:
 
-    sudo apt-get install default-jre perl python wget rdiff-backup socat iptables build-essential
+    sudo apt-get install default-jre perl python wget rdiff-backup socat iptables make
     
 ### Configuring the firewall / NAT
 If you have a firewall installed on your computer, or a router using NAT
