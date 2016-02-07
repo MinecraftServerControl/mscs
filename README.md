@@ -186,7 +186,7 @@ The command to create a new world is:
     mscs create [world] [port] <ip>
   
 Where `world` is the name of the world you specify, 
-and `port` is the server port (by default, use 25565).
+and `port` is the server port (by default, use `25565`).
 `ip` is optional and will be used if you wish to create multiple worlds 
 across different servers. 
 
