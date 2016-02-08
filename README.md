@@ -175,7 +175,7 @@ So you successfully installed the script--great!
 At first, you probably want to [create a new world](#creating-a-new-world) or 
 [import an existing world](#importing-an-existing-world) into the script. 
 
-Then, you might want adjust the [world properties](#adjusting-world-properties), 
+Then, you might want to adjust the [world properties](#adjusting-world-properties), 
 adjust the [global server settings (optional)](#adjusting-global-server-settings-optional), and 
 enable any other 
 [server software (optional)](#enabling-forge-bungeecord-and-other-server-software-optional) as needed.
