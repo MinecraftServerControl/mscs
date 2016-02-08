@@ -421,7 +421,10 @@ By default maps are saved into `/opt/mscs/maps`.
 
 ### Adjusting map/mapping settings
 
-You can adjust the properties of the Overviewer by editing the file `overviewer-settings.py`. Properties here include the output path of the map (i.e. you should change this to your web server directory), and render settings. Please visit [their website](http://docs.overviewer.org/en/latest/config/) for information on config.
+You can individually adjust the properties that Overviewer will use for each
+world by editing the world's `overviewer-settings.py` file. Properties here
+include the output path of the map (i.e. you can change this to your web
+server directory), and render settings. Please visit [their website](http://docs.overviewer.org/en/latest/config/) for information on config.
 
 In order for the map to update new changes in the world, 
 you need to run Overviewer periodically. 
