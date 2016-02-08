@@ -293,7 +293,7 @@ to the `mscs.properties` file and adjust it to your liking.
     mscs-client-version=$CURRENT_VERSION
     mscs-client-jar=$CLIENT_VERSION.jar
     mscs-client-url=https://s3.amazonaws.com/Minecraft.Download/versions/$CLIENT_VERSION/$CLIENT_VERSION.jar
-    mscs-client-location=/opt/mscs/client/$CLIENT_VERSION
+    mscs-client-location=/opt/mscs/.minecraft/versions/$CLIENT_VERSION
     mscs-server-version=$CURRENT_VERSION
     mscs-server-jar=minecraft_server.$SERVER_VERSION.jar
     mscs-server-url=https://s3.amazonaws.com/Minecraft.Download/versions/$SERVER_VERSION/minecraft_server.$SERVER_VERSION.jar
