@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="http://i.imgur.com/fUM7Ne8.png" />
+  <img src="mscs-logo.png" />
 </p>
 
 # Index
