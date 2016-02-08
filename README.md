@@ -400,12 +400,8 @@ Where `<world>` is the name of the world you wish to map (omit for all worlds).
 
 ## Mapping the world
 Minecraft Server Control Script uses 
-[overviewer](http://docs.overviewer.org/en/latest/) to generate minecraft maps. 
-First, follow the 
-[instructions](http://docs.overviewer.org/en/latest/installing/) 
-on their site to install overviewer. 
-
-Then, once you have it installed, modify the settings (if necessary) 
+[Overviewer](http://docs.overviewer.org/en/latest/) to generate Minecraft maps. 
+After [installing](#mapping-software-optional), modify the settings (if necessary) 
 found in the `mscs.conf` or `mscs` file 
 (see [adjusting global server settings](#adjusting-global-server-settings)):
 
@@ -415,18 +411,20 @@ found in the `mscs.conf` or `mscs` file
     MAPS_LOCATION="$LOCATION/maps"
 
 
-After you've tinkered the settings to your liking, run
-`mscs map <world>`
-where `world` is the name of the world you would like to get mapped. 
+After you've tinkered the settings to your liking, run:
+
+    mscs map <world>
+
+Where `<world>` is the name of the world you would like to get mapped. 
 Omit the world name to map all worlds.
 By default maps are saved into `/opt/mscs/maps`.
 
 ### Adjusting map/mapping settings
 
-You can adjust the properties of the overviewer by editing the file `overviewer.py`. Properties here include the output path of the map (i.e. you should change this to your web server directory), and render settings. Please visit [their website](http://docs.overviewer.org/en/latest/config/) for information on config.
+You can adjust the properties of the Overviewer by editing the file `overviewer-settings.py`. Properties here include the output path of the map (i.e. you should change this to your web server directory), and render settings. Please visit [their website](http://docs.overviewer.org/en/latest/config/) for information on config.
 
 In order for the map to update new changes in the world, 
-you need to run the overviewer periodically. 
+you need to run Overviewer periodically. 
 Please see [scheduling mapping](#scheduling-mapping).
 
 ## Command Reference
