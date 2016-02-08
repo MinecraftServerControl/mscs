@@ -390,12 +390,13 @@ is the name of world you wish to restart; omit if you wish to
 restart all worlds.
 
 ### Scheduling mapping
-You can do [through cron, the same way that you schedule backups](#scheduling-backups). 
+You can also schedule mapping using the same method outlined in [scheduling backups](#scheduling-backups). 
 Simply replace the command with
 
     mscs map <world>
  
-Where world is the name of the world you wish to map (omit for all worlds). 
+Where world is the name of the world you wish to map (omit for all worlds).
+
 ## Mapping the world
 Minecraft Server Control Script uses 
 [overviewer](http://docs.overviewer.org/en/latest/) to generate minecraft maps. 
