@@ -403,7 +403,7 @@ Minecraft Server Control Script uses
 [Overviewer](http://docs.overviewer.org/en/latest/) to generate Minecraft maps. 
 After [installing](#mapping-software-optional), modify the settings (if necessary) 
 found in the `mscs.conf` or `mscs` file 
-(see [adjusting global server settings](#adjusting-global-server-settings)):
+(see [adjusting global server settings](#adjusting-global-server-settings-optional)):
 
     OVERVIEWER_BIN=$(which overviewer.py)
     OVERVIEWER_URL="http://overviewer.org"
