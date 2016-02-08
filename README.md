@@ -344,9 +344,9 @@ The list of properties can be found
 All MSCS tasks can be automated using [**cron**](https://en.wikipedia.org/wiki/Cron), 
 a scheduler software that can run programs on a set interval of time.
 Whether it be backups, restarts, mapping, or any other `mscs` command, 
-it can be scheduled using cron. 
+it can be scheduled using `cron`. 
 ### Scheduling backups
-Below is an example of one way how you could setup backups via cron to backup 
+Below is an example of one way how you could setup backups via `cron` to backup 
 a world every 2 hours:
 
 Type the following (in any directory): 
@@ -384,18 +384,19 @@ in the `mscs.conf` or `mscs` file
 ### Scheduling restarts
 You can schedule restarts for the server following the same method as outlined 
 in [scheduling backups](#scheduling-backups).  
-Simply change the scheduled command from `backup <myWorld>` to 
-`restart <myWorld>`. `myWorld` 
-is the name of world you wish to restart; omit if you wish to 
-restart all worlds.
+Simply change the scheduled command to:
+ 
+    mscs restart <world>
+ 
+Where `<world>` is the name of the world you wish to restart (omit for all worlds).
 
 ### Scheduling mapping
 You can also schedule mapping using the same method outlined in [scheduling backups](#scheduling-backups). 
-Simply replace the command with
+Simply replace the command with:
 
     mscs map <world>
  
-Where world is the name of the world you wish to map (omit for all worlds).
+Where `<world>` is the name of the world you wish to map (omit for all worlds).
 
 ## Mapping the world
 Minecraft Server Control Script uses 
