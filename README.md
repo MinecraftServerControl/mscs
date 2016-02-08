@@ -255,14 +255,10 @@ The `mscs.properties` file can be found in every world folder
 (for instance, if you had a world called `myWorld`, the path would be 
 `/opt/mscs/worlds/myWorld/mscs.properties`). 
 This file allows you to adjust many different properties for each world 
-you have.
+you have.  By default, the file only has one line in it: `mscs-enabled=true`.
 
-By default, the file only has one line in it: `mscs-enabled=true`. 
-You can add a variety of flags to this file and set them as to a true/false 
-boolean or a variable to your liking.
-
-The following flags are available:
-* mscs-enabled - Enable or disable the world server.
+The following properties are available:
+* mscs-enabled - Enable the world server (true or false).
 * mscs-version-type - Assign the version type (release or snapshot).
 * mscs-client-version - Assign the version of the client software.
 * mscs-client-jar - Assign the .jar file for the client software.
