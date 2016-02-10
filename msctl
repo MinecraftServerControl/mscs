@@ -1577,8 +1577,12 @@ querySendPacket() {
     # Unpack the token from the query.out buffer file.  There are a
     # variable amount of null bytes at the start of the response string, so
     # find the start of the packet by searching for the packet type and ID.
-    RESPONSE=$($PERL -ne '
-      $hex .= sprintf "%.2x", $_ foreach (unpack "C*", $_);
+    RESPONSE=$($PERL -0777 -ne '
+      foreach (unpack "C*", $_) {
+        $char = sprintf ("%.2x", $_);
+        $char =~ s/0a/5c6e/;
+        $hex .= $char;
+      }
       $hex =~ s/^0*'$2$ID'/'$2$ID'/;
       print $hex;
     ' $WORLD_DIR/query.out)
@@ -1602,13 +1606,11 @@ querySendPacket() {
 #           token      - The token.
 # ---------------------------------------------------------------------------
 querySendChallengePacket() {
-  local PACKET RESPONSE
+  local PACKET
   # Use an empty packet.
   PACKET="00000000"
   # Send the challenge packet to the Minecraft query server.
-  RESPONSE=$(querySendPacket "$1" "09" "$PACKET" "Cl>Z*")
-  # Return the response.
-  printf "$RESPONSE\n"
+  querySendPacket "$1" "09" "$PACKET" "Cl>Z*"
 }
 
 # ---------------------------------------------------------------------------
@@ -1627,7 +1629,7 @@ querySendChallengePacket() {
 #           hostip     - The host's IP address.
 # ---------------------------------------------------------------------------
 queryStatus() {
-  local PACKET RESPONSE TOKEN
+  local PACKET TOKEN
   if [ "$(getServerPropertiesValue $1 'enable-query')" = "true" ]; then
     # Send a challenge packet to the Minecraft query server.
     TOKEN=$(querySendChallengePacket $1 | cut -f 3)
@@ -1635,11 +1637,9 @@ queryStatus() {
       # Use the challenge token for the packet.
       PACKET=$(printf "%08x" $TOKEN)
       # Send the information request packet to the Minecraft query server.
-      RESPONSE=$(querySendPacket "$1" "00" "$PACKET" "Cl>Z*Z*Z*Z*Z*s<Z*")
+      querySendPacket "$1" "00" "$PACKET" "Cl>Z*Z*Z*Z*Z*s<Z*"
     fi
   fi
-  # Return the response.
-  printf "$RESPONSE\n"
 }
 
 # ---------------------------------------------------------------------------
@@ -1679,7 +1679,7 @@ queryStatus() {
 #           players    - The players currently logged onto the world.
 # ---------------------------------------------------------------------------
 queryDetailedStatus() {
-  local CHALLENGE ID PACKET RESPONSE TOKEN
+  local CHALLENGE ID PACKET TOKEN
   if [ "$(getServerPropertiesValue $1 'enable-query')" = "true" ]; then
     # Send a challenge packet to the Minecraft query server.
     CHALLENGE=$(querySendChallengePacket $1)
@@ -1689,12 +1689,10 @@ queryDetailedStatus() {
       # Use the challenge token for the packet, with the ID on the end.
       PACKET=$(printf "%08x%08x" $TOKEN $ID)
       # Send the information request packet to the Minecraft query server.
-      RESPONSE=$(querySendPacket "$1" "00" "$PACKET" \
-        "Cl>Z*CCZ*Z*Z*Z*Z*Z*Z*Z*Z*Z*Z*Z*Z*Z*Z*Z*Z*Z*Z*Z*CCZ*C(Z*)*")
+      querySendPacket "$1" "00" "$PACKET" \
+        "Cl>Z*CCZ*Z*Z*Z*Z*Z*Z*Z*Z*Z*Z*Z*Z*Z*Z*Z*Z*Z*Z*Z*CCZ*C(Z*)*"
     fi
   fi
-  # Return the response.
-  printf "$RESPONSE\n"
 }
 
 # ---------------------------------------------------------------------------
@@ -1721,15 +1719,15 @@ worldStatus() {
   if serverRunning $1; then
     STATUS=$(queryDetailedStatus $1)
     if [ -n "$STATUS" ]; then
-      NUM=$(echo "$STATUS" | cut -f 19)
-      MAX=$(echo "$STATUS" | cut -f 21)
-      VERSION=$(echo "$STATUS" | cut -f 13)
+      NUM=$(printf "%s" "$STATUS" | cut -f 19)
+      MAX=$(printf "%s" "$STATUS" | cut -f 21)
+      VERSION=$(printf "%s" "$STATUS" | cut -f 13)
       printf "running version %s (%d of %d users online).\n" $VERSION $NUM $MAX
       if [ $NUM -gt 0 ]; then
-        PLAYERS=$(echo "$STATUS" | cut -f 30)
+        PLAYERS=$(printf "%s" "$STATUS" | cut -f 30)
         COUNTER=1
         while [ $COUNTER -lt $NUM ]; do
-          PLAYERS=$(printf "%s, %s" "$PLAYERS" $(echo "$STATUS" | cut -f $((30+$COUNTER))))
+          PLAYERS=$(printf "%s, %s" "$PLAYERS" $(printf "%s" "$STATUS" | cut -f $((30+$COUNTER))))
           COUNTER=$(($COUNTER+1))
         done
         printf "    Players: %s.\n" "$PLAYERS"
