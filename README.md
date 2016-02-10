@@ -84,7 +84,7 @@ installed by running:
 ### Configuring the firewall / NAT
 If you have a firewall installed on your computer, or a router using NAT
 installed in your network, you will need to route some ports to your server.
-Instructions on how to accomplish this are beyond the scope of this post, but
+Instructions on how to accomplish this are beyond the scope of this document, but
 here are some things you will need to know:
 * The default port for the Minecraft server is: `25565`.
 * If you wish to run multiple world servers using this script, you may
@@ -133,7 +133,7 @@ Note that it will be downloaded into the current directory which you are working
 * Get the development version as a [zip file]
 (https://github.com/sandain/MinecraftServerControlScript/archive/master.zip):
 
-        wget https://github.com/sandain/MinecraftServerControlScript/archive/master.zip
+    wget https://github.com/sandain/MinecraftServerControlScript/archive/master.zip
 
 ### Configuration
 
@@ -350,7 +350,7 @@ Type the following (in any directory):
     export EDITOR=vim
     crontab -e
 
-  Page down until you get to an empty line. Then paste the following:
+Page down until you get to an empty line. Then paste the following:
   
     0 */2 * * *  /usr/local/bin/mscs backup myWorld
   
@@ -573,6 +573,7 @@ Type
 
     chmod -R u+w /opt/mscs
     chown -R minecraft:minecraft /opt/mscs
+
 To give the `minecraft` user the correct permissions needed to create/modify folders.
 
 ## License
