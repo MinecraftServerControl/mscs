@@ -1564,7 +1564,7 @@ querySendPacket() {
   # Make sure the query.in and query.out buffer files exist before
   # preparing and sending the packet to the Query server.
   if [ -e "$WORLD_DIR/query.in" ] && [ -e "$WORLD_DIR/query.out" ]; then
-    # Add the magic bytes to the incoming packet.
+    # Add the magic bytes and create the hex string packet.
     PACKET=$(printf "FEFD%s%s%s" "$2" "$ID" "$3")
     # Remove any old responses from the query.out buffer file.
     printf '' > "$WORLD_DIR/query.out"
@@ -1574,7 +1574,7 @@ querySendPacket() {
     " >> "$WORLD_DIR/query.in"
     # Give the Query server a moment to respond.
     sleep 1
-    # Unpack the token from the query.out buffer file.  There are a
+    # Unpack the response token from the query.out buffer file. There are a
     # variable amount of null bytes at the start of the response string, so
     # find the start of the packet by searching for the packet type and ID.
     RESPONSE=$($PERL -0777 -ne '
