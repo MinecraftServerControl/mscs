@@ -20,6 +20,7 @@
     * [Default world properties](#default-world-properties)
     * [Enabling Forge, BungeeCord, and other server software (optional)](#enabling-forge-bungeecord-and-other-server-software-optional)
   * [Adjusting global server options (optional)](#adjusting-global-server-settings-optional)
+  * [Configuring MSCS for multiple users (optional)](#configuring-mscs-for-multiple-users-optional)
 * [Scheduling backups and other tasks](#scheduling-backups-and-other-tasks)
   * [Scheduling backups](#scheduling-backups)
   * [Removing backups after X days](#removing-backups-after-x-days)
@@ -311,30 +312,25 @@ for additional information.
 ### Adjusting global server settings (optional)
 In tandem with the `mscs.properties` file--which handles options for individual 
 worlds--
-is the `mscs.conf` or simply `mscs` file, which handles global server settings.
-This file, like the `mscs.properties` file, has default settings built-in to MSCS. However, you 
-can also customize it to your liking.
+is the `mscs` file, which handles global server settings.
+This file, like the `mscs.properties` file, has default settings already built-in to MSCS.
+However, you can also customize it to your liking:
 
-**To customize the properties, you must create this file.**. By default, MSCS looks for this file in three 
-places (in this order):
+**To customize the properties, you must create this file.**. To create this file:
 
-1. `$HOME/mscs.conf` 
-
-2. `$HOME/.config/mscs/mscs.conf`
-
-3. `/etc/default/mscs`-- **if you save it in this location it is only called 
-`mscs`, NOT `mscs.conf`**
-
-It doesn't matter where you create the file, as long as you put it in one of 
-the above places.
-
-Please note: `$HOME` represents the home directory of the user that is 
-responsible for the script--if you followed the configuration above, then
-that would be the `minecraft` user and the home directory would be `/opt/mscs`.
+    touch /etc/default/mscs
 
 Once you've created the file, you need to populate it with a list of properties. 
 The list of properties can be found 
 [here](https://github.com/sandain/MinecraftServerControlScript/wiki/Global-Server-Settings).
+
+### Configuring MSCS for multiple users (optional)
+MSCS has the capability to store server data for individual users,
+ideal for those who have multiple users on a computer and want each user's data
+to be separated.
+Please see the 
+[wiki page](https://github.com/sandain/MinecraftServerControlScript/wiki/Configuring-MSCS-for-multiple-users) 
+for instructions.
 
 ## Scheduling backups and other tasks
 All MSCS tasks can be automated using [**cron**](https://en.wikipedia.org/wiki/Cron), 
