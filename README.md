@@ -316,7 +316,7 @@ is the `mscs` file, which handles global server settings.
 This file, like the `mscs.properties` file, has default settings already built-in to MSCS.
 However, you can also customize it to your liking:
 
-**To customize the properties, you must create this file.**. To create this file:
+**To customize the properties, you must create this file.** To create this file:
 
     touch /etc/default/mscs
 
