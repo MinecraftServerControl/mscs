@@ -1449,9 +1449,11 @@ overviewer() {
     sendCommand $1 "save-all"
     sendCommand $1 "save-off"
     sleep 20
+    # Run a backup of the world.
+    worldBackup $1
+    sendCommand $1 "save-on"
   fi
-  # Run a backup of the world.
-  worldBackup $1
+
   # Make sure the maps directory exists.
   mkdir -p "$MAPS_LOCATION/$1"
   # Make sure the Minecraft client is available.
@@ -1461,7 +1463,8 @@ overviewer() {
     # Check for Overviewer settings file.
     if [ ! -e "$WORLDS_LOCATION/$1/overviewer-settings.py" ]; then
       touch "$WORLDS_LOCATION/$1/overviewer-settings.py"
-      printf "worlds['$1'] = \"$WORLDS_LOCATION/$1/$1\"\n" >> $WORLDS_LOCATION/$1/overviewer-settings.py
+      #Use the backup location so we minimize the time the server don't save data.
+      printf "worlds['$1'] = \"$BACKUP_LOCATION/$1/$1\"\n" >> $WORLDS_LOCATION/$1/overviewer-settings.py
       printf "\n" >> $WORLDS_LOCATION/$1/overviewer-settings.py
       printf "renders['normalrender'] = {\n" >> $WORLDS_LOCATION/$1/overviewer-settings.py
       printf "  'world': '$1',\n" >> $WORLDS_LOCATION/$1/overviewer-settings.py
@@ -1485,7 +1488,6 @@ overviewer() {
   fi
   # Announce the location to access the world map to players.
   if [ $SERVER_RUNNING -eq 1 ]; then
-    sendCommand $1 "save-on"
     if [ $(compareMinecraftVersions $(getServerVersion $1) 1.7) -ge 0 ]; then
         sendCommand $WORLD 'tellraw @a {
           "text" : "",
