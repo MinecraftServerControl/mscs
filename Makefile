@@ -7,7 +7,14 @@ MSCS_INIT_D := /etc/init.d/mscs
 MSCS_SERVICE := /etc/systemd/system/mscs.service
 MSCS_COMPLETION := /etc/bash_completion.d/mscs
 
-.PHONY: install update clean
+.PHONY: docker-build docker-run install update clean
+
+docker-build:
+	docker build -t egut/mscs .
+	docker build -t myworld myWorld
+
+docker-run: docker-build
+	docker run -t -p 25565:25565 --name=myworld -d myworld
 
 install: update
 	adduser --system --group --home $(MSCS_HOME) --quiet $(MSCS_USER)

@@ -140,8 +140,15 @@ Options:
   -l <location>
     Uses <location> as the base path for data.  Overrides configuration file
     options.
+
+  -f
+    Run the server in foreground. More or less only needed when running
+    inside a docker container.
 EOF
 }
+
+# Default run the minecraft server in the background.
+RUN_IN_FOREGROUND=0
 
 # Parse command-line options
 # ---------------------------------------------------------------------------
@@ -173,6 +180,10 @@ while [ "$1" != "${1#-}" ]; do
         echo "$PROG: '-l' needs a location path argument."
         exit 1
       fi
+    ;;
+    -f)
+      echo "Will run minecraft server in foreground."
+      RUN_IN_FOREGROUND=1
     ;;
     *)
       echo "$PROG: unknown option '$1'."
@@ -1209,9 +1220,15 @@ start() {
     exit 1
   fi
   # Start the server.
-  sh -c "tail -f --pid=\$$ '$WORLD_DIR/console.in' | {
-    $SERVER_COMMAND mscs-world='$1' > '$WORLD_DIR/console.out' 2>&1; kill \$$;
-    }" &
+  if [ $RUN_IN_FOREGROUND -eq 1 ]; then
+    sh -c "tail -f --pid=\$$ '$WORLD_DIR/console.in' | {
+      $SERVER_COMMAND mscs-world='$1' > '$WORLD_DIR/console.out' 2>&1; kill \$$;
+      }"
+  else
+    sh -c "tail -f --pid=\$$ '$WORLD_DIR/console.in' | {
+      $SERVER_COMMAND mscs-world='$1' > '$WORLD_DIR/console.out' 2>&1; kill \$$;
+      }" &
+  fi
   # Verify the server is running.
   if [ $? -ne 0 ]; then
     printf "Error starting the server.\n"
