@@ -114,14 +114,14 @@ Repositories for automatic installation are also available:
 ## Installation
 ### Downloading the script
 The easiest way to download the script is to make a clone of the [git
-repository](https://github.com/sandain/MinecraftServerControlScript.git). 
+repository](https://github.com/MinecraftServerControl/mscs.git). 
 You must have git installed first. To install git:
 
     sudo apt-get install git
         
 Then:
 
-    git clone https://github.com/sandain/MinecraftServerControlScript.git
+    git clone https://github.com/MinecraftServerControl/mscs.git
         
 Note that it will be downloaded into the current directory which you are working
  in. 
@@ -129,12 +129,12 @@ Note that it will be downloaded into the current directory which you are working
 ##### Other ways to download
 
 * Get the latest stable [release]
-(https://github.com/sandain/MinecraftServerControlScript/releases).
+(https://github.com/MinecraftServerControl/mscs/releases).
 
 * Get the development version as a [zip file]
-(https://github.com/sandain/MinecraftServerControlScript/archive/master.zip):
+(https://github.com/MinecraftServerControl/mscs/archive/master.zip):
 
-    wget https://github.com/sandain/MinecraftServerControlScript/archive/master.zip
+    wget https://github.com/MinecraftServerControl/mscs/archive/master.zip
 
 ### Configuration
 
