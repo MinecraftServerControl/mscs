@@ -28,5 +28,4 @@ USER minecraft
 
 EXPOSE 25565
 
-ENTRYPOINT ["mscs","-f"]
-CMD ["start"]
+CMD mscs start $WORLD && sleep 3 && mscs watch $WORLD
