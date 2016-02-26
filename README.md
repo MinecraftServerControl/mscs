@@ -153,7 +153,7 @@ If you get a permission error, please see the [troubleshooting](#troubleshooting
 
 That's it!
 If you wish to configure the script manually, please visit the [wiki page]
-(https://github.com/sandain/MinecraftServerControlScript/wiki/Manual-Configuration).
+(https://github.com/MinecraftServerControl/mscs/wiki/Manual-Configuration).
 
 ### Updating MSCS
 Periodically Minecraft Server Control Script is updated to address bug fixes and add new features.
@@ -588,4 +588,4 @@ work out a solution with you.
 
 Support thread:  http://www.minecraftforum.net/viewtopic.php?f=10&t=129833
 
-Github Issues:  https://github.com/sandain/MinecraftServerControlScript/issues
+Github Issues:  https://github.com/MinecraftServerControl/mscs/issues
