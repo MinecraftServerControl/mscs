@@ -608,8 +608,6 @@ See [LICENSE](LICENSE)
 
 ## Disclaimer
 
-## Disclaimer
-
 Minecraft is a trademark of Mojang Synergies AB, a subsidiary of Microsoft
 Studios.  MSCS and MSC-GUI are designed to ease the use of the Mojang produced
 Minecraft server software on Linux and UNIX servers.  MSCS and MSC-GUI are
