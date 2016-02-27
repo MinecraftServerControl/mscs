@@ -139,10 +139,8 @@ Note that it will be downloaded into the current directory which you are working
 
 ### Configuration
 
-Navigate to the `MinecraftServerControlScript` directory that you just 
-downloaded. 
-Configuration can be done with the included Makefile in Debian and
-Ubuntu like environments by running:
+Navigate to the `mscs` directory that you just downloaded.  Configuration can be
+done with the included Makefile in Debian and Ubuntu like environments by running:
 
     sudo make install
 
