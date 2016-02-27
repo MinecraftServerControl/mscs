@@ -145,12 +145,11 @@ running:
 
     sudo make install
 
-This will give the user you created in the config 
-(by default, the user is called `minecraft`) 
-access to write in the `/opt/mscs` folder. 
+This will give the user you created in the config (by default, the user is
+called `minecraft`) access to write in the `/opt/mscs` folder.
 
-If you get a permission error, please see the
-[troubleshooting](#troubleshooting) section.
+If you get a permission error, please see the [troubleshooting]
+(#troubleshooting) section.
 
 That's it!
 If you wish to configure the script manually, please visit the [wiki page]
