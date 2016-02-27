@@ -30,9 +30,10 @@
 	* [Adjusting map/mapping settings](#adjusting-mapmapping-settings)
 * [Command reference](#command-reference)
   * [Examples](#examples)
-* [Troubleshooting](#troubleshooting)
-* [License](LICENSE)
 * [Issues](#issues)
+  * [Troubleshooting](#troubleshooting)
+* [License](LICENSE)
+
 
 ## Overview
 **M**inecraft **S**erver **C**ontrol **S**cript (**MSCS**) 
@@ -563,19 +564,6 @@ ie.
 
     sudo mscs send alpha say Hello world!
 
-## Troubleshooting
-#### Permission denied when attempting to run `mscs create ...`
-Type
-
-    chmod -R u+w /opt/mscs
-    chown -R minecraft:minecraft /opt/mscs
-
-To give the `minecraft` user the correct permissions needed to create/modify folders.
-
-## License
-
-See [LICENSE](LICENSE)
-
 ## Issues
 
 We have only tested this code in a Debian/Ubuntu environment, but there is no
@@ -589,3 +577,19 @@ work out a solution with you.
 Support thread:  http://www.minecraftforum.net/viewtopic.php?f=10&t=129833
 
 Github Issues:  https://github.com/MinecraftServerControl/mscs/issues
+
+### Troubleshooting
+
+#### Permission denied when attempting to run `mscs create ...`
+
+Type
+
+    chmod -R u+w /opt/mscs
+    chown -R minecraft:minecraft /opt/mscs
+
+To give the `minecraft` user the correct permissions needed to create/modify folders.
+
+## License
+
+See [LICENSE](LICENSE)
+
