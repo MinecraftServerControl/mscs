@@ -33,7 +33,7 @@
 * [Issues](#issues)
   * [Troubleshooting](#troubleshooting)
 * [License](LICENSE)
-
+* [Disclaimer](#disclaimer)
 
 ## Overview
 **M**inecraft **S**erver **C**ontrol **S**cript (**MSCS**) 
@@ -593,3 +593,9 @@ To give the `minecraft` user the correct permissions needed to create/modify fol
 
 See [LICENSE](LICENSE)
 
+## Disclaimer
+
+Minecraft is a trademark of Mojang Synergies AB, a subsidiary of Microsoft Studios.  MSCS
+is designed to ease the use of the Mojang produced Minecraft server software on Linux and
+UNIX servers.  MSCS is independently developed by open software enthusiasts with no support
+or implied warranty provided by either Mojang or Microsoft.
