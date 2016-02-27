@@ -305,7 +305,7 @@ to the `mscs.properties` file and adjust it to your liking.
     
 #### Enabling Forge, BungeeCord, and other server software (optional)
 Please visit the [wiki]
-(https://github.com/sandain/MinecraftServerControlScript/wiki/Server-Customization-Examples) 
+(https://github.com/MinecraftServerControl/mscs/wiki/Server-Customization-Examples) 
 for additional information.
 
 ### Adjusting global server settings (optional)
@@ -321,14 +321,14 @@ However, you can also customize it to your liking:
 
 Once you've created the file, you need to populate it with a list of properties. 
 The list of properties can be found 
-[here](https://github.com/sandain/MinecraftServerControlScript/wiki/Global-Server-Settings).
+[here](https://github.com/MinecraftServerControl/mscs/wiki/Global-Server-Settings).
 
 ### Configuring MSCS for multiple users (optional)
 MSCS has the capability to store server data for individual users,
 ideal for those who have multiple users on a computer and want each user's data
 to be separated.
 Please see the 
-[wiki page](https://github.com/sandain/MinecraftServerControlScript/wiki/Configuring-MSCS-for-multiple-users) 
+[wiki page](https://github.com/MinecraftServerControl/mscs/wiki/Configuring-MSCS-for-multiple-users) 
 for instructions.
 
 ## Scheduling backups and other tasks
@@ -356,7 +356,7 @@ X amount of hours.
 You can also backup according to days, minutes, seconds, the time of 
 the day, and more. 
 See [the wiki page]
-(https://github.com/sandain/MinecraftServerControlScript/wiki/Backup-and-Restore) 
+(https://github.com/MinecraftServerControl/mscs/wiki/Backup-and-Restore) 
 for more information.
   * `myWorld` is the name of the world you wish to backup. 
   Omitting this will backup all worlds.
