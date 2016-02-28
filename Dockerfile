@@ -1,4 +1,4 @@
-FROM debian:jessie
+FROM java:8
 #This dockerfile setup the basic things need for mscs to run inside a docker container.
 
 
@@ -6,7 +6,7 @@ FROM debian:jessie
 RUN apt-key adv --keyserver hkp://pgp.mit.edu:80 --recv-keys AB6EAF871F4C1BCE \
 	&& echo "deb http://overviewer.org/debian ./" >> /etc/apt/sources.list.d/overviewer.list \
     && apt-get update \
-	&& apt-get update && apt-get install -y default-jre perl python make wget rdiff-backup socat iptables minecraft-overviewer \
+	&& apt-get update && apt-get install -y perl python make wget rdiff-backup socat iptables minecraft-overviewer \
 	&& rm -rf /var/lib/apt/lists/*
 
 # grab gosu for easy step-down from root
