@@ -22,18 +22,44 @@ if [ -r $MSCS_DEFAULTS ]; then
   MSCS_ARGS="-c $MSCS_DEFAULTS "
 fi
 
+# gosu for easy step-down from root
+# see: https://github.com/tianon/gosu
+GOSU=${GOSU:-"/usr/local/bin/gosu"}
+
 # Setup the default user name.
 USER_NAME=${USER_NAME:-minecraft}
 
 # Setup the default installation location.
 LOCATION=${LOCATION:-"/opt/mscs"}
 
+#Check permissions LOCATION and some top directories
+if [ -n "$(find $(find $LOCATION -maxdepth 2) \! -user "$USER_NAME" -print -prune -o -prune)" ]; then
+  echo "Note: Wrong owner of the directory, fixing"
+  if [ "$(whoami)" = "root" ]; then
+    chmod -R u+w /opt/mscs && chown -R minecraft:minecraft /opt/mscs
+  else
+    sudo chmod -R u+w /opt/mscs && chown -R minecraft:minecraft /opt/mscs
+  fi
+fi
+
 # Setup the arguments to the msctl script.
 MSCS_ARGS="-p $PROG -l $LOCATION $MSCS_ARGS $@"
 
 # Run the msctl script.
 if [ "$USER_NAME" = "$(whoami)" ]; then
+  # Correct user
   msctl $MSCS_ARGS
+
+elif [ "$(whoami)" = "root" ]; then
+  # Running as root, step-down to user
+  if [ -x $GOSU ]; then
+    $GOSU $USER_NAME msctl $MSCS_ARGS
+
+  else
+    su $USER_NAME -p -c "msctl $MSCS_ARGS"
+  fi
+
 else
+  # Running as other user, switch
   sudo -u $USER_NAME msctl $MSCS_ARGS
 fi
