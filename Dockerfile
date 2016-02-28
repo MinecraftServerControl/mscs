@@ -28,7 +28,7 @@ RUN make install
 
 WORKDIR /opt/mscs
 
-VOLUME ['/opt/mscs/worlds', '/opt/mscs/maps', '/opt/mscs/backups']
+VOLUME /opt/mscs/worlds /opt/mscs/maps /opt/mscs/backups
 
 EXPOSE 25565
 

@@ -36,9 +36,9 @@ LOCATION=${LOCATION:-"/opt/mscs"}
 if [ -n "$(find $(find $LOCATION -maxdepth 2) \! -user "$USER_NAME" -print -prune -o -prune)" ]; then
   echo "Note: Wrong owner of the directory, fixing"
   if [ "$(whoami)" = "root" ]; then
-    chmod -R u+w /opt/mscs && chown -R minecraft:minecraft /opt/mscs
+    chmod -R u+w $LOCATION && chown -R minecraft:minecraft $LOCATION
   else
-    sudo chmod -R u+w /opt/mscs && chown -R minecraft:minecraft /opt/mscs
+    sudo chmod -R u+w $LOCATION && sudo chown -R minecraft:minecraft $LOCATION
   fi
 fi
 
