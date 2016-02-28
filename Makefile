@@ -1,4 +1,5 @@
 MSCS_USER := minecraft
+MSCS_GROUP := minecraft
 MSCS_HOME := /opt/mscs
 
 MSCTL := /usr/local/bin/msctl
@@ -9,8 +10,9 @@ MSCS_COMPLETION := /etc/bash_completion.d/mscs
 
 .PHONY: install update clean
 
-install: update
+install: $(MSCS_HOME) update
 	adduser --system --group --home $(MSCS_HOME) --quiet $(MSCS_USER)
+	chown -R $(MSCS_USER):$(MSCS_GROUP) $(MSCS_HOME)
 	if which systemctl; then \
 		systemctl -f enable mscs.service; \
 	else \
@@ -19,11 +21,11 @@ install: update
 	fi
 
 update:
-	install -m 0755 msctl $(MSCTL)
-	install -m 0755 mscs $(MSCS)
-	install -m 0644 mscs.completion $(MSCS_COMPLETION)
+	cp msctl $(MSCTL)
+	cp mscs $(MSCS)
+	cp mscs.completion $(MSCS_COMPLETION)
 	if which systemctl; then \
-		install -m 0644 mscs.service $(MSCS_SERVICE); \
+		cp mscs.service $(MSCS_SERVICE); \
 	fi
 
 clean:
@@ -35,3 +37,6 @@ clean:
 		rm -f $(MSCS_INIT_D); \
 	fi
 	rm -f $(MSCTL) $(MSCS) $(MSCS_COMPLETION)
+
+$(MSCS_HOME):
+	mkdir -p -m 755 $(MSCS_HOME)
