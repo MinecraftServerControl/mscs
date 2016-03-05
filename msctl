@@ -1453,7 +1453,6 @@ overviewer() {
     worldBackup $1
     sendCommand $1 "save-on"
   fi
-
   # Make sure the maps directory exists.
   mkdir -p "$MAPS_LOCATION/$1"
   # Make sure the Minecraft client is available.
@@ -1544,7 +1543,6 @@ queryStart() {
   if [ $? -ne 0 ]; then
     printf "Error connecting to the query server.\n"
   fi
-
 }
 
 # ---------------------------------------------------------------------------
@@ -1791,7 +1789,6 @@ migrateOldDisabledWorlds() {
   if [ -d "$OLD_DISABLED_WORLDS_LOCATION" ]; then
     # Be sure worlds directory exists
     mkdir -p "$WORLDS_LOCATION"
-
     for WORLD in $(ls "$OLD_DISABLED_WORLDS_LOCATION"); do
       if [ -d "$OLD_DISABLED_WORLDS_LOCATION/$WORLD" ]; then
         echo "Migrating old version's disabled world: $WORLD"
@@ -1981,7 +1978,6 @@ case "$1" in
       createWorld "$DEFAULT_WORLD" "$DEFAULT_PORT"
       printf ".\n"
     fi
-
   ;;
   delete|remove)
     # Get list of enabled worlds.
@@ -2080,7 +2076,6 @@ case "$1" in
         exit 1
       ;;
     esac
-
     case "$1" in
       ls)
         # Simple list
