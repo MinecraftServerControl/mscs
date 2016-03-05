@@ -132,6 +132,9 @@ Actions:
     Update the server software for the Minecraft world server.  Update
     server software for all worlds by default.
 
+  query <world>
+    Run a detailed Query on the Minecraft world server.
+
 Options:
 
   -c <config_file>
@@ -2371,6 +2374,20 @@ case "$1" in
       overviewer "$WORLD"
     done
     printf ".\n"
+  ;;
+  query)
+    # Make sure there is a world to query.
+    if [ ! -n "$2" ]; then
+      printf "World not provided.\n"
+      printf "  Usage:  $PROG $1 <world>\n"
+      exit 1
+    fi
+    if ! isWorldEnabled "$2"; then
+      printf "World '$2' does not exist or not enabled.\n"
+      printf "  Usage:  $PROG $1 <world>\n"
+      exit 1
+    fi
+    queryDetailedStatus "$2"
   ;;
   usage|help)
     printf "Minecraft Server Control Script\n"

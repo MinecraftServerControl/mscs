@@ -550,6 +550,10 @@ will be started using the `minecraft` user instead for security purposes.
 * update
 
     Update the client and server software packages.
+
+* query [world]
+
+    Run a detailed Query on the Minecraft world server.
 ````
 
 ### Examples
