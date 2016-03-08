@@ -1698,6 +1698,43 @@ queryDetailedStatus() {
   fi
 }
 
+# Send a detailed status query to the Minecraft query server and return the
+# data in JSON format.
+#
+# @param 1 The world server of interest.
+# @return Query values in JSON format.
+queryDetailedStatusJSON() {
+  local STATUS JSON PLAYERS COUNTER
+  STATUS=$(queryDetailedStatus $1)
+  if [ -n "$STATUS" ]; then
+    NUMPLAYERS=$(printf "%s" "$STATUS" | cut -f 19)
+    if [ $NUMPLAYERS -gt 0 ]; then
+      PLAYERS=$(printf "%s" "$STATUS" | cut -f 30)
+      COUNTER=1
+      while [ $COUNTER -lt $NUMPLAYERS ]; do
+        PLAYERS=$(printf "%s, %s" "$PLAYERS" $(printf "%s" "$STATUS" | cut -f $((30+$COUNTER))))
+        COUNTER=$(($COUNTER+1))
+      done
+    fi
+    JSON='{
+      "motd": "'$(printf "%s" "$STATUS" | cut -f 7)'",
+      "gametype": "'$(printf "%s" "$STATUS" | cut -f 9)'",
+      "gameid": "'$(printf "%s" "$STATUS" | cut -f 11)'",
+      "version": "'$(printf "%s" "$STATUS" | cut -f 13)'",
+      "plugins": "'$(printf "%s" "$STATUS" | cut -f 15)'",
+      "map": "'$(printf "%s" "$STATUS" | cut -f 17)'",
+      "numplayers": '$NUMPLAYERS',
+      "maxplayers": '$(printf "%s" "$STATUS" | cut -f 21)',
+      "hostport": "'$(printf "%s" "$STATUS" | cut -f 23)'",
+      "hostip": "'$(printf "%s" "$STATUS" | cut -f 25)'",
+      "players": ['$PLAYERS']
+    }'
+  else
+    JSON="{}"
+  fi
+  printf "%s" $JSON
+}
+
 # ---------------------------------------------------------------------------
 # Query the number of active users from the query server.
 #
@@ -2375,7 +2412,7 @@ case "$1" in
     done
     printf ".\n"
   ;;
-  query)
+  query|query-raw|query-json)
     # Make sure there is a world to query.
     if [ ! -n "$2" ]; then
       printf "World not provided.\n"
@@ -2387,7 +2424,14 @@ case "$1" in
       printf "  Usage:  $PROG $1 <world>\n"
       exit 1
     fi
-    queryDetailedStatus "$2"
+    case "$1" in
+      query|query-raw)
+        queryDetailedStatus "$2"
+      ;;
+      query-json)
+        queryDetailedStatusJSON "$2"
+      ;;
+    esac
   ;;
   usage|help)
     printf "Minecraft Server Control Script\n"
