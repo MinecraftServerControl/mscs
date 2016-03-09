@@ -1709,10 +1709,10 @@ queryDetailedStatusJSON() {
   if [ -n "$STATUS" ]; then
     NUMPLAYERS=$(printf "%s" "$STATUS" | cut -f 19)
     if [ $NUMPLAYERS -gt 0 ]; then
-      PLAYERS=$(printf "%s" "$STATUS" | cut -f 30)
+      PLAYERS=$(printf "\"%s\"" "$STATUS" | cut -f 30)
       COUNTER=1
       while [ $COUNTER -lt $NUMPLAYERS ]; do
-        PLAYERS=$(printf "%s, %s" "$PLAYERS" $(printf "%s" "$STATUS" | cut -f $((30+$COUNTER))))
+        PLAYERS=$(printf "%s, \"%s\"" "$PLAYERS" $(printf "%s" "$STATUS" | cut -f $((30+$COUNTER))))
         COUNTER=$(($COUNTER+1))
       done
     fi
