@@ -232,7 +232,7 @@ SOCAT=$(which socat)
 
 # Minecraft Versions information
 # ---------------------------------------------------------------------------
-MINECRAFT_VERSIONS_URL=https://s3.amazonaws.com/Minecraft.Download/versions/versions.json
+MINECRAFT_VERSIONS_URL=https://launchermeta.mojang.com/mc/game/version_manifest.json
 
 
 # Minecraft Server Settings
@@ -313,10 +313,10 @@ WORLDS_LOCATION="$LOCATION/worlds"
 # The location old disabled worlds were stored in previous versions
 OLD_DISABLED_WORLDS_LOCATION="$LOCATION/worlds-disabled"
 
-# The location to store the versions.json file.
-VERSIONS_JSON="$DEFAULT_SERVER_LOCATION/versions.json"
+# The location to store the version_manifest.json file.
+VERSIONS_JSON="$DEFAULT_SERVER_LOCATION/version_manifest.json"
 
-# The duration (in minutes) to keep the versions.json file before updating.
+# The duration (in minutes) to keep the version_manifest.json file before updating.
 VERSIONS_DURATION=1440
 
 
@@ -740,20 +740,20 @@ getCurrentMinecraftVersion() {
   # Determine the version type for the current world.
   TYPE=$(getMSCSValue "$1" "mscs-version-type" "$DEFAULT_VERSION_TYPE")
   if [ -s $VERSIONS_JSON ]; then
-    # Make a backup copy of the versions.json file.
+    # Make a backup copy of the version_manifest.json file.
     cp -p "$VERSIONS_JSON" "$VERSIONS_JSON.bak"
-    # Delete the versions.json file if it is old.
+    # Delete the version_manifest.json file if it is old.
     find "$VERSIONS_JSON" -mmin +"$VERSIONS_DURATION" -delete
   fi
-  # Download the versions.json file if it does not exist.
+  # Download the version_manifest.json file if it does not exist.
   if [ ! -s $VERSIONS_JSON ]; then
     $WGET --no-use-server-timestamps -qO "$VERSIONS_JSON" "$MINECRAFT_VERSIONS_URL"
     if [ $? -ne 0 ]; then
       if [ -s $VERSIONS_JSON.bak ]; then
-        printf "Error downloading the Minecraft versions.json file, using an old copy.\n"
+        printf "Error downloading the Minecraft version_manifest.json file, using an old copy.\n"
         cp -p "$VERSIONS_JSON.bak" "$VERSIONS_JSON"
       else
-        printf "Error downloading the Minecraft versions.json file.\n"
+        printf "Error downloading the Minecraft version_manifest.json file.\n"
         exit 1
       fi
     fi
