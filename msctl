@@ -759,9 +759,11 @@ getCurrentMinecraftVersion() {
     fi
   fi
   # Extract the current version information.
-  VERSION=$(
-    $PERL -ne 'if ($_ =~ /^\s+\"'$TYPE'\": \"([\w\.-]+)\"/) { print $1; }' $VERSIONS_JSON
-  )
+  VERSION=$($PERL -0777ne '
+    use JSON;
+    $json = decode_json ($_);
+    print $json->{latest}{'$TYPE'};
+  ' $VERSIONS_JSON)
   # Print an error and exit if the version string is empty.
   if [ -z "$VERSION" ]; then
     printf "Error detecting the current Minecraft version.\n"
@@ -777,18 +779,13 @@ getCurrentMinecraftVersion() {
 # @return The release time of the Minecraft version number.
 # ---------------------------------------------------------------------------
 getMinecraftVersionReleaseTime() {
-  cat $VERSIONS_JSON | $PERL -e '
-    $id = null;
-    while (<>) {
-      if ($_ =~ /\"id\":\s+\"('$1')\"/) {
-        $id = $1;
-      }
-      elsif ($id != null && $_ =~ /\"releaseTime\":\s+\"([\w:+-]+)\"/) {
-        print $1;
-        last;
-      }
+  $PERL -0777ne '
+    use JSON;
+    $json = decode_json ($_);
+    foreach $ver (@{$json->{versions}}) {
+      print $ver->{releaseTime} if ($ver->{id} eq "'$1'");
     }
-  '
+  ' $VERSIONS_JSON
 }
 
 # ---------------------------------------------------------------------------
