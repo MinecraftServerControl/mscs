@@ -1426,7 +1426,7 @@ overviewer() {
   fi
   # Announce the mapping of the world to players.
   if [ $SERVER_RUNNING -eq 1 ]; then
-    if [ $(compareMinecraftVersions $(getServerVersion $1) 1.7) -ge 0 ]; then
+    if [ $(compareMinecraftVersions $(getServerVersion $1) 1.7.2) -ge 0 ]; then
         sendCommand $WORLD 'tellraw @a {
           "text" : "",
           "extra" : [
@@ -1490,7 +1490,7 @@ overviewer() {
   fi
   # Announce the location to access the world map to players.
   if [ $SERVER_RUNNING -eq 1 ]; then
-    if [ $(compareMinecraftVersions $(getServerVersion $1) 1.7) -ge 0 ]; then
+    if [ $(compareMinecraftVersions $(getServerVersion $1) 1.7.2) -ge 0 ]; then
         sendCommand $WORLD 'tellraw @a {
           "text" : "",
           "extra" : [
