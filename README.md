@@ -375,13 +375,9 @@ for more information.
 
 The backups will be saved in `/opt/mscs/backups`.
 
-If you're running multiple cron jobs (i.e. mapping the world, creating backups, etc) that may overlap eachother, it's a good idea to get a package called `flock` that will prevent the jobs from overlapping so errors aren't thrown.
-
-To install:
-
-    sudo apt-get install flock
+If you're running multiple cron jobs (i.e. mapping the world, creating backups, etc) that may overlap eachother, it's a good idea to use a package called `flock` that will prevent the jobs from overlapping so errors aren't thrown. It should be installed on all linux systems by default.
     
-Following the example above, make your entry look like so:
+Continuing the example above, make your entry look like so:
 
      0 */2 * * *  flock -n /tmp/fcj.lockfile /usr/local/bin/mscs backup myWorld
     
