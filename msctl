@@ -1446,19 +1446,13 @@ overviewer() {
     else
       sendCommand $1 "say The world is about to be mapped with Overviewer."
     fi
-    sendCommand $1 "save-all"
-    sendCommand $1 "save-off"
-    sleep 20
-    # Run a backup of the world.
-    worldBackup $1
-    sendCommand $1 "save-on"
   fi
   # Make sure the maps directory exists.
   mkdir -p "$MAPS_LOCATION/$1"
   # Make sure the Minecraft client is available.
   updateClientSoftware "$1"
   # Make sure that the world files are actually there before mapping.
-  if [ -e "$WORLDS_LOCATION/$1/server.properties" ]; then
+  if [ -e "$BACKUP_LOCATION/$1/server.properties" ]; then
     # Check for Overviewer settings file.
     if [ ! -e "$WORLDS_LOCATION/$1/overviewer-settings.py" ]; then
       touch "$WORLDS_LOCATION/$1/overviewer-settings.py"
