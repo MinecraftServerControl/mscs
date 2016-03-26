@@ -1209,9 +1209,9 @@ start() {
     exit 1
   fi
   # Start the server.
-  sh -c "tail -f --pid=\$$ '$WORLD_DIR/console.in' | {
-    $SERVER_COMMAND mscs-world='$1' > '$WORLD_DIR/console.out' 2>&1; kill \$$;
-    }" &
+  sh -c "tail -f --pid=\$$ $WORLD_DIR/console.in | {
+    $SERVER_COMMAND mscs-world=$1 > $WORLD_DIR/console.out 2>&1; kill \$$;
+  }" &
   # Verify the server is running.
   if [ $? -ne 0 ]; then
     printf "Error starting the server.\n"
