@@ -11,7 +11,7 @@ MSCS_COMPLETION := /etc/bash_completion.d/mscs
 .PHONY: install update clean
 
 install: $(MSCS_HOME) update
-	adduser --system --group --home $(MSCS_HOME) --quiet $(MSCS_USER)
+	useradd --system --user-group --create-home --home $(MSCS_HOME) $(MSCS_USER)
 	chown -R $(MSCS_USER):$(MSCS_GROUP) $(MSCS_HOME)
 	if which systemctl; then \
 		systemctl -f enable mscs.service; \
