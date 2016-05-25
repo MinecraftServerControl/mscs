@@ -5,6 +5,8 @@ Requires=network.target
 After=network.target
 
 [Service]
+User=minecraft
+Group=minecraft
 ExecStart=/usr/local/bin/mscs start
 ExecStop=/usr/local/bin/mscs stop
 ExecReload=/usr/local/bin/mscs restart
