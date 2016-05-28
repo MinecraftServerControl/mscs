@@ -1689,11 +1689,13 @@ queryDetailedStatus() {
   fi
 }
 
+# ---------------------------------------------------------------------------
 # Send a detailed status query to the Minecraft query server and return the
 # data in JSON format.
 #
 # @param 1 The world server of interest.
 # @return Query values in JSON format.
+# ---------------------------------------------------------------------------
 queryDetailedStatusJSON() {
   local STATUS JSON PLAYERS COUNTER
   STATUS=$(queryDetailedStatus $1)
