@@ -1780,6 +1780,7 @@ worldStatus() {
 # ---------------------------------------------------------------------------
 
 # Make sure that Java, Perl, Python, Wget, Rdiff-backup, and Socat are installed.
+# ---------------------------------------------------------------------------
 if [ ! -e "$JAVA" ]; then
   printf "ERROR: Java not found!\n"
   printf "Try installing this with:\n"
@@ -1819,6 +1820,7 @@ fi
 
 
 # Respond to the command line arguments.
+# ---------------------------------------------------------------------------
 case "$1" in
   start)
     # Figure out which worlds to start.
