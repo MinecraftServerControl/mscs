@@ -1412,95 +1412,107 @@ updateServerSoftware() {
 # @param 1 The world server to map with Overviewer.
 # ---------------------------------------------------------------------------
 overviewer() {
-  local CLIENT_JAR CLIENT_LOCATION SERVER_RUNNING
-  if serverRunning $1; then
-    SERVER_RUNNING=1
-  else
-    SERVER_RUNNING=0
-  fi
-  # Announce the mapping of the world to players.
-  if [ $SERVER_RUNNING -eq 1 ]; then
-    if [ $(compareMinecraftVersions $(getServerVersion $1) 1.7.2) -ge 0 ]; then
-        sendCommand $WORLD 'tellraw @a {
-          "text" : "",
-          "extra" : [
-            {
-              "text" : "[Server] The world is about to be mapped with "
-            },
-            {
-              "text" : "Overviewer",
-              "color" : "aqua",
-              "clickEvent" : {
-                "action" : "open_url",
-                "value" : "'$OVERVIEWER_URL'"
-              }
-            },
-            {
-              "text" : "."
-            }
-          ]
-        }'
-    else
-      sendCommand $1 "say The world is about to be mapped with Overviewer."
-    fi
-  fi
+  local SETTINGS_FILE LOG_FILE VERSION_TEST
+  SETTINGS_FILE="$WORLDS_LOCATION/$1/overviewer-settings.py"
+  LOG_FILE="$WORLDS_LOCATION/$1/logs/overviewer.log"
+  VERSION_TEST=$(compareMinecraftVersions $(getServerVersion $1) 1.7.2)
   # Make sure the maps directory exists.
   mkdir -p "$MAPS_LOCATION/$1"
   # Make sure the Minecraft client is available.
   updateClientSoftware "$1"
-  # Make sure that the world files are actually there before mapping.
-  if [ -e "$BACKUP_LOCATION/$1/server.properties" ]; then
-    # Check for Overviewer settings file.
-    if [ ! -e "$WORLDS_LOCATION/$1/overviewer-settings.py" ]; then
-      touch "$WORLDS_LOCATION/$1/overviewer-settings.py"
-      #Use the backup location so we minimize the time the server don't save data.
-      printf "worlds['$1'] = \"$BACKUP_LOCATION/$1/$1\"\n" >> $WORLDS_LOCATION/$1/overviewer-settings.py
-      printf "\n" >> $WORLDS_LOCATION/$1/overviewer-settings.py
-      printf "renders['normalrender'] = {\n" >> $WORLDS_LOCATION/$1/overviewer-settings.py
-      printf "  'world': '$1',\n" >> $WORLDS_LOCATION/$1/overviewer-settings.py
-      printf "  'title': 'Normal',\n" >> $WORLDS_LOCATION/$1/overviewer-settings.py
-      printf "  'dimension': 'overworld',\n" >> $WORLDS_LOCATION/$1/overviewer-settings.py
-      printf "  'rendermode': 'normal'\n" >> $WORLDS_LOCATION/$1/overviewer-settings.py
-      printf "}\n" >> $WORLDS_LOCATION/$1/overviewer-settings.py
-      printf "\n" >> $WORLDS_LOCATION/$1/overviewer-settings.py
-      printf "renders['caverender'] = {\n" >> $WORLDS_LOCATION/$1/overviewer-settings.py
-      printf "  'world': '$1',\n" >> $WORLDS_LOCATION/$1/overviewer-settings.py
-      printf "  'title': 'Caves',\n" >> $WORLDS_LOCATION/$1/overviewer-settings.py
-      printf "  'dimension': 'overworld',\n" >> $WORLDS_LOCATION/$1/overviewer-settings.py
-      printf "  'rendermode': 'cave'\n" >> $WORLDS_LOCATION/$1/overviewer-settings.py
-      printf "}\n" >> $WORLDS_LOCATION/$1/overviewer-settings.py
-      printf "\n" >> $WORLDS_LOCATION/$1/overviewer-settings.py
-      printf "outputdir = \"$MAPS_LOCATION/$1\"\n" >> $WORLDS_LOCATION/$1/overviewer-settings.py
-    fi
-    # Generate the map and POI.
-    $OVERVIEWER_BIN --config="$WORLDS_LOCATION/$1/overviewer-settings.py" >> "$WORLDS_LOCATION/$1/logs/overviewer.log" 2>&1
-    $OVERVIEWER_BIN --config="$WORLDS_LOCATION/$1/overviewer-settings.py" --genpoi >> "$WORLDS_LOCATION/$1/logs/overviewer.log" 2>&1
+  # Create a default Overviewer settings file if it is missing.
+  if [ ! -e $SETTINGS_FILE ]; then
+    # Use the backup location so we minimize the time the server isn't saving
+    # data.
+    printf "worlds['$1'] = '$BACKUP_LOCATION/$1/$1'\n\n" > $SETTINGS_FILE
+    printf "renders['overworld-render'] = {\n" >> $SETTINGS_FILE
+    printf "  'world': '$1',\n" >> $SETTINGS_FILE
+    printf "  'title': 'Overworld',\n" >> $SETTINGS_FILE
+    printf "  'dimension': 'overworld',\n" >> $SETTINGS_FILE
+    printf "  'rendermode': 'normal'\n" >> $SETTINGS_FILE
+    printf "}\n\n" >> $SETTINGS_FILE
+    printf "renders['overworld-caves-render'] = {\n" >> $SETTINGS_FILE
+    printf "  'world': '$1',\n" >> $SETTINGS_FILE
+    printf "  'title': 'Caves',\n" >> $SETTINGS_FILE
+    printf "  'dimension': 'overworld',\n" >> $SETTINGS_FILE
+    printf "  'rendermode': 'cave'\n" >> $SETTINGS_FILE
+    printf "}\n\n" >> $SETTINGS_FILE
+    printf "renders['nether-render'] = {\n" >> $SETTINGS_FILE
+    printf "  'world': '$1',\n" >> $SETTINGS_FILE
+    printf "  'title': 'Nether',\n" >> $SETTINGS_FILE
+    printf "  'dimension': 'nether',\n" >> $SETTINGS_FILE
+    printf "  'rendermode': 'nether'\n" >> $SETTINGS_FILE
+    printf "}\n\n" >> $SETTINGS_FILE
+    printf "renders['end-render'] = {\n" >> $SETTINGS_FILE
+    printf "  'world': '$1',\n" >> $SETTINGS_FILE
+    printf "  'title': 'End',\n" >> $SETTINGS_FILE
+    printf "  'dimension': 'end',\n" >> $SETTINGS_FILE
+    printf "  'rendermode': 'normal'\n" >> $SETTINGS_FILE
+    printf "}\n\n" >> $SETTINGS_FILE
+    printf "processes = 2\n" >> $SETTINGS_FILE
+    printf "outputdir = '$MAPS_LOCATION/$1'\n" >> $SETTINGS_FILE
   fi
-  # Announce the location to access the world map to players.
-  if [ $SERVER_RUNNING -eq 1 ]; then
-    if [ $(compareMinecraftVersions $(getServerVersion $1) 1.7.2) -ge 0 ]; then
-        sendCommand $WORLD 'tellraw @a {
-          "text" : "",
-          "extra" : [
-            {
-              "text" : "[Server] Mapping is complete. You can access the maps "
-            },
-            {
-              "text" : "here",
-              "color" : "aqua",
-              "clickEvent" : {
-                "action" : "open_url",
-                "value" : "'$MAPS_URL'/'$WORLD'"
-              }
-            },
-            {
-              "text" : "."
+  # Make sure that the backup of the world files are there before mapping.
+  if [ ! -e "$BACKUP_LOCATION/$1/server.properties" ]; then
+    printf "\nError finding the backup for world $1.  To save server "
+    printf "down time, mapping is run from the backup location.\n"
+    printf "Run '$PROG backup $1' before mapping.\n"
+    exit 1
+  fi
+  # Announce the mapping of the world to players if the world is running.
+  if serverRunning $1; then
+    if [ $VERSION_TEST -ge 0 ]; then
+      sendCommand $1 'tellraw @a {
+        "text" : "",
+        "extra" : [
+          {
+            "text" : "[Server] The world is about to be mapped with "
+          },
+          {
+            "text" : "Overviewer",
+            "color" : "aqua",
+            "clickEvent" : {
+              "action" : "open_url",
+              "value" : "'$OVERVIEWER_URL'"
             }
-          ]
-        }'
+          },
+          {
+            "text" : "."
+          }
+        ]
+      }'
     else
-        sendCommand $1 "say Mapping is complete.  You can access the maps at:"
-        sendCommand $1 "say $MAPS_URL/$WORLD"
+      sendCommand $1 "say The world is about to be mapped with Overviewer."
+    fi
+  fi
+  # Generate the map and POI.
+  $OVERVIEWER_BIN --config=$SETTINGS_FILE >> $LOG_FILE 2>&1
+  $OVERVIEWER_BIN --config=$SETTINGS_FILE --genpoi >> $LOG_FILE 2>&1
+  # Announce the location to access the world map to players.
+  if serverRunning $1; then
+    if [ $VERSION_TEST -ge 0 ]; then
+      sendCommand $1 'tellraw @a {
+        "text" : "",
+        "extra" : [
+          {
+            "text" : "[Server] Mapping is complete. You can access the maps "
+          },
+          {
+            "text" : "here",
+            "color" : "aqua",
+            "clickEvent" : {
+              "action" : "open_url",
+              "value" : "'$MAPS_URL'/'$1'"
+            }
+          },
+          {
+            "text" : "."
+          }
+        ]
+      }'
+    else
+      sendCommand $1 "say Mapping is complete.  You can access the maps at:"
+      sendCommand $1 "say $MAPS_URL/$1"
     fi
   fi
 }
