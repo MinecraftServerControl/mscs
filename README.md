@@ -7,7 +7,7 @@
 * [Prerequisites for installation](#prerequisites-for-installation)
   * [Required programs](#required-programs)
   * [Configuring the firewall / NAT](#configuring-the-firewall--nat)
-  * [Mapping software (optional)](#mapping-software-optional)
+  * [Mapping software](#mapping-software)
 * [Installation](#installation)
   * [Downloading the script](#downloading-the-script)
   * [Configuration](#configuration)
@@ -15,12 +15,12 @@
 * [Getting started guide](#getting-started-guide)
   * [Creating a new world](#creating-a-new-world)
   * [Importing an existing world](#importing-an-existing-world)
-    * [Renaming world folder (optional)](#renaming-world-folder-optional)
+    * [Renaming world folder](#renaming-world-folder)
   * [Adjusting world properties](#adjusting-world-properties)
     * [Default world properties](#default-world-properties)
-    * [Enabling Forge, BungeeCord, and other server software (optional)](#enabling-forge-bungeecord-and-other-server-software-optional)
-  * [Adjusting global server options (optional)](#adjusting-global-server-settings-optional)
-  * [Configuring MSCS for multiple users (optional)](#configuring-mscs-for-multiple-users-optional)
+    * [Enabling Forge, BungeeCord, and other server software](#enabling-forge-bungeecord-and-other-server-software)
+  * [Adjusting global server options](#adjusting-global-server-settings)
+  * [Configuring MSCS for multiple users](#configuring-mscs-for-multiple-users)
 * [Scheduling backups and other tasks](#scheduling-backups-and-other-tasks)
   * [Scheduling backups](#scheduling-backups)
   * [Removing backups after X days](#removing-backups-after-x-days)
@@ -98,7 +98,7 @@ but here are some things you will need to know:
 See the [iptables.rules](iptables.rules) file for a very basic set of rules
 that you can use with the Iptables firewall.
 
-### Mapping software (optional)
+### Mapping software
 The script uses the [Minecraft Overviewer](http://overviewer.org) mapping
 software to generate maps of your worlds.  Minecraft Overviewer is a
 command-line tool for rendering high-resolution maps of Minecraft worlds. It
@@ -180,10 +180,8 @@ At first, you probably want to [create a new world](#creating-a-new-world) or
 
 Then, you might want to adjust the
 [world properties](#adjusting-world-properties), adjust the
-[global server settings](#adjusting-global-server-settings-optional)
-(optional), and enable any other
-[server software](#enabling-forge-bungeecord-and-other-server-software-optional)
-(optional) as needed.
+[global server settings](#adjusting-global-server-settings), and enable any other
+[server software](#enabling-forge-bungeecord-and-other-server-software) as needed.
 
 ### Creating a new world
 The command to create a new world is:
@@ -240,7 +238,7 @@ that you wish the world to use:
     mscs create alpha 25565
 
 
-#### Renaming world folder (optional)
+#### Renaming world folder
 If you would like to rename the `alpha` folder
 (the one that is the parent folder of the actual world) to a different name,
 follow the steps below.
@@ -314,11 +312,11 @@ liking.
     mscs-server-location=/opt/mscs/server
     mscs-server-command=$JAVA -Xms$INITIAL_MEMORY -Xmx$MAXIMUM_MEMORY -jar $SERVER_LOCATION/$SERVER_JAR $SERVER_ARGS
 
-#### Enabling Forge, BungeeCord, and other server software (optional)
+#### Enabling Forge, BungeeCord, and other server software
 Please visit the [wiki](https://github.com/MinecraftServerControl/mscs/wiki/Server-Customization-Examples)
 for additional information.
 
-### Adjusting global server settings (optional)
+### Adjusting global server settings
 In tandem with the `mscs.properties` file--which handles options for
 individual worlds--is the `mscs` file, which handles global server settings.
 This file, like the `mscs.properties` file, has default settings already
@@ -332,7 +330,7 @@ file:
 Once you've created the file, you need to populate it with a list of
 properties.  The list of properties can be found [here](https://github.com/MinecraftServerControl/mscs/wiki/Global-Server-Settings).
 
-### Configuring MSCS for multiple users (optional)
+### Configuring MSCS for multiple users
 MSCS has the capability to store server data for individual users, ideal for
 those who have multiple users on a computer and want each user's data to be
 separated. Please see the [wiki page](https://github.com/MinecraftServerControl/mscs/wiki/Configuring-MSCS-for-multiple-users)
@@ -378,7 +376,7 @@ The backups will be saved in `/opt/mscs/backups`.
 ### Removing backups after X days
 You can specify how long to keep backups by changing the `BACKUP_DURATION`
 in the `mscs.conf` or `mscs` file (see
-[adjusting global server settings](#adjusting-global-server-settings-optional)
+[adjusting global server settings](#adjusting-global-server-settings)
 ).
 
 ### Scheduling restarts
@@ -403,9 +401,9 @@ worlds).
 ## Mapping the world
 Minecraft Server Control Script uses [Overviewer]
 (http://docs.overviewer.org/en/latest/) to generate maps. After [installing]
-(#mapping-software-optional), modify the settings (if necessary) found in the
+(#mapping-software), modify the settings (if necessary) found in the
 `mscs.conf` or `mscs` file (see [adjusting global server settings]
-(#adjusting-global-server-settings-optional)):
+(#adjusting-global-server-settings)):
 
     OVERVIEWER_BIN=$(which overviewer.py)
     OVERVIEWER_URL="http://overviewer.org"
