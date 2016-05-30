@@ -38,6 +38,16 @@
 # ---------------------------------------------------------------------------
 PROG=$(basename $0)
 
+# Required Software
+# ---------------------------------------------------------------------------
+# Detect its presence and location for later.
+JAVA=$(which java)
+PERL=$(which perl)
+PYTHON=$(which python)
+WGET=$(which wget)
+RDIFF_BACKUP=$(which rdiff-backup)
+SOCAT=$(which socat)
+
 # Script Usage
 # ---------------------------------------------------------------------------
 
@@ -214,18 +224,6 @@ LOCATION="$HOME/mscs"
 
 # Override with command-line location option.
 [ -n "$LOCATION_CL" ] && LOCATION="$LOCATION_CL"
-
-# Required Software
-# ---------------------------------------------------------------------------
-# Detect its presence and location for later.
-
-JAVA=$(which java)
-PERL=$(which perl)
-PYTHON=$(which python)
-WGET=$(which wget)
-RDIFF_BACKUP=$(which rdiff-backup)
-SOCAT=$(which socat)
-
 
 # Global Server Configuration
 # ---------------------------------------------------------------------------
