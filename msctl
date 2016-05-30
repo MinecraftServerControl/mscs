@@ -50,7 +50,6 @@ SOCAT=$(which socat)
 
 # Script Usage
 # ---------------------------------------------------------------------------
-
 usage() {
   cat <<EOF
 Usage:  $PROG [<options>] <action>
@@ -215,7 +214,6 @@ fi
 
 # Server Location
 # ---------------------------------------------------------------------------
-
 # The default location of server software and data.
 LOCATION="$HOME/mscs"
 
@@ -236,7 +234,6 @@ MINECRAFT_VERSIONS_URL=https://launchermeta.mojang.com/mc/game/version_manifest.
 # Minecraft Server Settings
 # ---------------------------------------------------------------------------
 # Default settings if not provided in the world's mscs.properties file.
-
 DEFAULT_WORLD='world'
 DEFAULT_PORT='25565'
 DEFAULT_IP=''
@@ -253,7 +250,6 @@ DEFAULT_INITIAL_MEMORY='128M'
 DEFAULT_MAXIMUM_MEMORY='2048M'
 DEFAULT_SERVER_LOCATION=$LOCATION'/server'
 DEFAULT_SERVER_COMMAND='$JAVA -Xms$INITIAL_MEMORY -Xmx$MAXIMUM_MEMORY -jar $SERVER_LOCATION/$SERVER_JAR $SERVER_ARGS'
-
 # The server settings for each world can be customized by adding certain
 # key/value pairs to the world's mscs.properties file.
 #
@@ -301,50 +297,36 @@ DEFAULT_SERVER_COMMAND='$JAVA -Xms$INITIAL_MEMORY -Xmx$MAXIMUM_MEMORY -jar $SERV
 #   mscs-server-location=/opt/mscs/server
 #   mscs-server-command=$JAVA -Xms$INITIAL_MEMORY -Xmx$MAXIMUM_MEMORY -jar $SERVER_LOCATION/$SERVER_JAR $SERVER_ARGS
 
-
 # World (Server Instance) Configuration
 # ---------------------------------------------------------------------------
-
 # The location to store files for each world server.
 WORLDS_LOCATION="$LOCATION/worlds"
-
 # The location to store the version_manifest.json file.
 VERSIONS_JSON="$DEFAULT_SERVER_LOCATION/version_manifest.json"
-
 # The duration (in minutes) to keep the version_manifest.json file before updating.
 VERSIONS_DURATION=1440
 
-
 # Backup Configuration
 # ---------------------------------------------------------------------------
-
 # Location to store backups.
 BACKUP_LOCATION="$LOCATION/backups"
-
 # Location of the backup log file.
 BACKUP_LOG="$BACKUP_LOCATION/backup.log"
-
 # Length in days that backups survive.
 BACKUP_DURATION=15
 
-
 # Server Log Configuration
 # ---------------------------------------------------------------------------
-
 # Length in days that logs survive.
 LOG_DURATION=15
 
-
 # Listing options
 # ---------------------------------------------------------------------------
-
 # Server properties for detailed listing (list).
 DETAILED_LISTING_PROPERTIES="motd server-ip server-port max-players level-type online-mode"
 
-
 # Mirror Image Options
 # ---------------------------------------------------------------------------
-
 # Create a mirror image of the world data on system startup, and
 # update that mirror image on system shutdown.
 #
@@ -357,16 +339,13 @@ DETAILED_LISTING_PROPERTIES="motd server-ip server-port max-players level-type o
 # 0 - Do not use a mirror image, default.
 # 1 - Use a mirror image.
 ENABLE_MIRROR=0
-
 # The location to store the mirror image.
 #
 # NOTE: This is usually a ramdisk, e.g. /dev/shm on Debian/Ubuntu.
 MIRROR_PATH="/dev/shm/mscs"
 
-
 # Minecraft Overviewer Mapping Software Options
 # ---------------------------------------------------------------------------
-
 OVERVIEWER_BIN=$(which overviewer.py)
 OVERVIEWER_URL="http://overviewer.org"
 MAPS_URL="http://minecraft.server.com/maps"
@@ -378,7 +357,6 @@ MAPS_LOCATION="$LOCATION/maps"
 
 # Override with command-line location option.
 [ -n "$LOCATION_CL" ] && LOCATION="$LOCATION_CL"
-
 
 # ---------------------------------------------------------------------------
 # Internal Methods
