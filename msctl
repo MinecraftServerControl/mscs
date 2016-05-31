@@ -391,11 +391,11 @@ getValue() {
   if [ -e "$1" ]; then
     # Find the key/value combo.
     KEY=$($PERL -ne '
-      $_ =~ s/[\r]//;
+      $_ =~ s/[\x22\x27\r]//;
       if ($_ =~ /^('$2')=.*$/i) { print lc $1; }
     ' $1)
     VALUE=$($PERL -ne '
-      $_ =~ s/[\r]//;
+      $_ =~ s/[\x22\x27\r]//;
       if ($_ =~ /^'$2'=(.*)$/i) { print $1; }
     ' $1)
   fi
