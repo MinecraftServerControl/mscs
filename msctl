@@ -1189,6 +1189,17 @@ overviewer() {
   SETTINGS_FILE="$WORLDS_LOCATION/$1/overviewer-settings.py"
   LOG_FILE="$WORLDS_LOCATION/$1/logs/overviewer.log"
   VERSION_TEST=$(compareMinecraftVersions $(getServerVersion $1) 1.7.2)
+  # Make sure this world has a server.properties file before mapping.
+  if [ ! -e "$WORLDS_LOCATION/$1/server.properties" ]; then
+    return
+  fi
+  # Make sure that the backup of the world files are there before mapping.
+  if [ ! -e "$BACKUP_LOCATION/$1/server.properties" ]; then
+    printf "\nError finding the backup for world $1.  To save server "
+    printf "down time, mapping is run from the backup location.\n"
+    printf "Run '$PROG backup $1' before mapping.\n"
+    return
+  fi
   # Make sure the maps directory exists.
   mkdir -p "$MAPS_LOCATION/$1"
   # Make sure the Minecraft client is available.
@@ -1224,13 +1235,6 @@ overviewer() {
     printf "}\n\n" >> $SETTINGS_FILE
     printf "processes = 2\n" >> $SETTINGS_FILE
     printf "outputdir = '$MAPS_LOCATION/$1'\n" >> $SETTINGS_FILE
-  fi
-  # Make sure that the backup of the world files are there before mapping.
-  if [ ! -e "$BACKUP_LOCATION/$1/server.properties" ]; then
-    printf "\nError finding the backup for world $1.  To save server "
-    printf "down time, mapping is run from the backup location.\n"
-    printf "Run '$PROG backup $1' before mapping.\n"
-    exit 1
   fi
   # Announce the mapping of the world to players if the world is running.
   if serverRunning $1; then
