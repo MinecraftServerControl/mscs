@@ -16,10 +16,10 @@
 PROG=$(basename $0)
 
 # Setup the default user name.
-USER_NAME=${USER_NAME:-minecraft}
+USER_NAME="minecraft"
 
 # Setup the default installation location.
-LOCATION=${LOCATION:-"/opt/mscs"}
+LOCATION="/opt/mscs"
 
 # Setup the default location of the mscs.defaults file.
 MSCS_DEFAULTS="$LOCATION/mscs.defaults"
