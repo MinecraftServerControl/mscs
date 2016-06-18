@@ -1,0 +1,71 @@
+#!/bin/sh
+
+convert_defaults() {
+  printf "Converting defaults file: $1\n"
+  cp $1 $2
+  perl -i -ne '
+    %mscs = (
+      "LOCATION"                    => "mscs-location",
+      "WORLDS_LOCATION"             => "mscs-worlds-location",
+      "MINECRAFT_VERSIONS_URL"      => "mscs-versions-url",
+      "VERSIONS_JSON"               => "mscs-versions-json",
+      "VERSIONS_DURATION"           => "mscs-versions-duration",
+      "DETAILED_LISTING_PROPERTIES" => "mscs-detailed-listing",
+      "DEFAULT_WORLD"               => "mscs-default-world",
+      "DEFAULT_PORT"                => "mscs-default-port",
+      "DEFAULT_IP"                  => "mscs-default-ip",
+      "DEFAULT_VERSION_TYPE"        => "mscs-default-version-type",
+      "DEFAULT_CLIENT_VERSION"      => "mscs-default-client-version",
+      "DEFAULT_CLIENT_JAR"          => "mscs-default-client-jar",
+      "DEFAULT_CLIENT_URL"          => "mscs-default-client-url",
+      "DEFAULT_CLIENT_LOCATION"     => "mscs-default-client-location",
+      "DEFAULT_SERVER_VERSION"      => "mscs-default-server-version",
+      "DEFAULT_SERVER_JAR"          => "mscs-default-server-jar",
+      "DEFAULT_SERVER_URL"          => "mscs-default-server-url",
+      "DEFAULT_SERVER_ARGS"         => "mscs-default-server-args",
+      "DEFAULT_INITIAL_MEMORY"      => "mscs-default-initial-memory",
+      "DEFAULT_MAXIMUM_MEMORY"      => "mscs-default-maximum-memory",
+      "DEFAULT_SERVER_LOCATION"     => "mscs-default-server-location",
+      "DEFAULT_SERVER_COMMAND"      => "mscs-default-server-command",
+      "BACKUP_LOCATION"             => "mscs-backup-location",
+      "BACKUP_LOG"                  => "mscs-backup-log",
+      "BACKUP_DURATION"             => "mscs-backup-duration",
+      "LOG_DURATION"                => "mscs-log-duration",
+      "ENABLE_MIRROR"               => "mscs-enable-mirror",
+      "MIRROR_PATH"                 => "mscs-mirror-path",
+      "OVERVIEWER_BIN"              => "mscs-overviewer-bin",
+      "OVERVIEWER_URL"              => "mscs-overviewer-url",
+      "MAPS_LOCATION"               => "mscs-maps-location",
+      "MAPS_URL"                    => "mscs-maps-url"
+    );
+    $_ =~ s/[\r\n]//g;
+    if ($_ =~ /(\w+)\s*=\s*(.*)/) {
+      if (defined $mscs{$1}) {
+        print "$mscs{$1}=$2\n";
+      }
+      else {
+        print "\x23 $_\n";
+      }
+    }
+    elsif ($_ =~ /^\s*\x23/) {
+      print "$_\n";
+    }
+    elsif (length $_ > 0) {
+      print "\x23 $_\n";
+    }
+    else {
+      print "\n"
+    }
+  ' $2
+  printf "# Automatically updated on %s\n%s\n" "$(date)" "$(cat $2)" > $2
+  rm $1
+}
+
+test -s /etc/default/mscs && \
+  convert_defaults /etc/default/mscs /opt/mscs/mscs.defaults
+
+test -s ~/mscs.conf && \
+  convert_defaults ~/mscs.conf ~/mscs.defaults
+
+test -s ~/.config/mscs/mscs.conf && \
+  convert_defaults ~/.config/mscs/mscs.conf ~/.config/mscs/mscs.defaults

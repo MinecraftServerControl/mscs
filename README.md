@@ -16,11 +16,11 @@
   * [Creating a new world](#creating-a-new-world)
   * [Importing an existing world](#importing-an-existing-world)
     * [Renaming world folder](#renaming-world-folder)
+  * [Adjusting global server properties](#adjusting-global-server-properties)
+    * [Default global server properties](#default-global-server-properties)
   * [Adjusting world properties](#adjusting-world-properties)
     * [Default world properties](#default-world-properties)
     * [Enabling Forge, BungeeCord, and other server software](#enabling-forge-bungeecord-and-other-server-software)
-  * [Adjusting global server options](#adjusting-global-server-settings)
-  * [Configuring MSCS for multiple users](#configuring-mscs-for-multiple-users)
 * [Scheduling backups and other tasks](#scheduling-backups-and-other-tasks)
   * [Scheduling backups](#scheduling-backups)
   * [Removing backups after X days](#removing-backups-after-x-days)
@@ -180,8 +180,9 @@ At first, you probably want to [create a new world](#creating-a-new-world) or
 
 Then, you might want to adjust the
 [world properties](#adjusting-world-properties), adjust the
-[global server settings](#adjusting-global-server-settings), and enable any other
-[server software](#enabling-forge-bungeecord-and-other-server-software) as needed.
+[global server properties](#adjusting-global-server-properties), and enable any
+other [server software](#enabling-forge-bungeecord-and-other-server-software)
+as needed.
 
 ### Creating a new world
 The command to create a new world is:
@@ -258,12 +259,106 @@ that you wish the world to use:
 
     mscs create vanillaMC 25565
 
+### Adjusting global server properties
+Default values in the script can be overridden by adding certain properties to one
+of the `mscs.defaults` files. The `mscs.defaults` files can be found found in one
+of three places depending on how the script is being used. When using the `mscs`
+script, the `mscs.defaults` file can be found at `/opt/mscs/mscs.defaults`. When
+using the `msctl` script in [multi-user mode](https://github.com/MinecraftServerControl/mscs/wiki/Configuring-MSCS-for-multiple-users), the `mscs.defaults` file can be found at either `$HOME/mscs.defaults` or `$HOME/.config/mscs/mscs.defaults`.
+
+For more information on the various properties, see the [wiki page](https://github.com/MinecraftServerControl/mscs/wiki/Global-Server-Settings).
+
+The following properties are available:
+* mscs-location                - Location of the mscs files.
+* mscs-worlds-location         - Location of world files.
+* mscs-versions-url            - URL to download the version_manifest.json file.
+* mscs-versions-json           - Location of the version_manifest.json file.
+* mscs-versions-duration       - Length in minutes to keep the version_manifest.json file before updating.
+* mscs-detailed-listing        - Properties to return for detailed listings.
+* mscs-default-world           - Default world name.
+* mscs-default-port            - Default Port.
+* mscs-default-ip              - Default IP address.
+* mscs-default-version-type    - Default version type (release or snapshot).
+* mscs-default-client-version  - Default version of the client software.
+* mscs-default-client-jar      - Default .jar file for the client software.
+* mscs-default-client-url      - Default download URL for the client software.
+* mscs-default-client-location - Default location of the client .jar file.
+* mscs-default-server-version  - Default version of the server software.
+* mscs-default-server-jar      - Default .jar file for the server software.
+* mscs-default-server-url      - Default download URL for the server software.
+* mscs-default-server-args     - Default arguments to for a world server.
+* mscs-default-initial-memory  - Default initial amount of memory for a world server.
+* mscs-default-maximum-memory  - Default maximum amount of memory for a world server.
+* mscs-default-server-location - Default location of the server .jar file.
+* mscs-default-server-command  - Default command to run for a world server.
+* mscs-backup-location         - Location to store backup files.
+* mscs-backup-log              - Lcation of the backup log file.
+* mscs-backup-duration         - Length in days that backups survive.
+* mscs-log-duration            - Length in days that logs survive.
+* mscs-enable-mirror           - Enable the mirror option by default for worlds (default disabled).
+* mscs-mirror-path             - Default path for the mirror files.
+* mscs-overviewer-bin          - Location of Overviewer.
+* mscs-overviewer-url          - URL for Overviewer.
+* mscs-maps-location           - Location of Overviewer generated map files.
+* mscs-maps-url                - URL for accessing Overviewer generated maps.
+
+The following variables may be used in some of the above properties:
+* $JAVA                - The Java virtual machine.
+* $CURRENT_VERSION     - The current Mojang Minecraft release version.
+* $CLIENT_VERSION      - The version of the client software.
+* $SERVER_VERSION      - The version of the server software.
+* $SERVER_JAR          - The .jar file to run for the server.
+* $SERVER_ARGS         - The arguments to the server.
+* $INITIAL_MEMORY      - The initial amount of memory for the server.
+* $MAXIMUM_MEMORY      - The maximum amount of memory for the server.
+* $SERVER_LOCATION     - The location of the server .jar file.
+
+#### Default global server properties
+Below are the default global server properties. You can add one, none, or all
+of the properties below to one of the `mscs.defaults` files and adjust it to
+your liking.
+
+    mscs-location=/opt/mscs
+    mscs-worlds-location=/opt/mscs/worlds
+    mscs-versions-url=https://launchermeta.mojang.com/mc/game/version_manifest.json
+    mscs-versions-json=/opt/mscs/version_manifest.json
+    mscs-versions-duration=1440
+    mscs-default-world=world
+    mscs-default-port=25565
+    mscs-default-ip=
+    mscs-default-version-type=release
+    mscs-default-client-version=$CURRENT_VERSION
+    mscs-default-client-jar=$CLIENT_VERSION.jar
+    mscs-default-client-url=https://s3.amazonaws.com/Minecraft.Download/versions/$CLIENT_VERSION/$CLIENT_VERSION.jar
+    mscs-default-client-location=/opt/mscs/.minecraft/versions/$CLIENT_VERSION
+    mscs-default-server-version=$CURRENT_VERSION
+    mscs-default-server-jar=minecraft_server.$SERVER_VERSION.jar
+    mscs-default-server-url=https://s3.amazonaws.com/Minecraft.Download/versions/$SERVER_VERSION/minecraft_server.$SERVER_VERSION.jar
+    mscs-default-server-args=nogui
+    mscs-default-initial-memory=128M
+    mscs-default-maximum-memory=2048M
+    mscs-default-server-location=/opt/mscs/server
+    mscs-default-server-command=$JAVA -Xms$INITIAL_MEMORY -Xmx$MAXIMUM_MEMORY -jar $SERVER_LOCATION/$SERVER_JAR $SERVER_ARGS
+    mscs-backup-location=/opt/mscs/backups
+    mscs-backup-log=/opt/mscs/backups/backup.log
+    mscs-backup-duration=15
+    mscs-log-duration=15
+    mscs-detailed-listing=motd server-ip server-port max-players level-type online-mode
+    mscs-enable-mirror=0
+    mscs-mirror-path=/dev/shm/mscs
+    mscs-overviewer-bin=/usr/bin/overviewer.py
+    mscs-overviewer-url=http://overviewer.org
+    mscs-maps-location=/opt/mscs/maps
+    mscs-maps-url=http://minecraft.server.com/maps
+
 ### Adjusting world properties
-The `mscs.properties` file can be found in every world folder
-(for instance, if you had a world called `myWorld`, the path would be
-`/opt/mscs/worlds/myWorld/mscs.properties`).
-This file allows you to adjust many different properties for each world
-you have.  By default, the file only has one line in it: `mscs-enabled=true`.
+Each world server can override the default values in a similar manner by
+adding certain properties to the world's `mscs.properties` file. The
+`mscs.properties` file can be found in every world folder (for instance, if
+you had a world called `myWorld`, the path would be
+`/opt/mscs/worlds/myWorld/mscs.properties`). This file allows you to adjust
+many different properties for each world you have.  By default, the file only
+has one line in it: `mscs-enabled=true`.
 
 The following properties are available:
 * mscs-enabled - Enable the world server (true or false).
@@ -316,26 +411,6 @@ liking.
 Please visit the [wiki](https://github.com/MinecraftServerControl/mscs/wiki/Server-Customization-Examples)
 for additional information.
 
-### Adjusting global server settings
-In tandem with the `mscs.properties` file--which handles options for
-individual worlds--is the `mscs` file, which handles global server settings.
-This file, like the `mscs.properties` file, has default settings already
-built-in to MSCS. However, you can also customize it to your liking:
-
-**To customize the properties, you must create this file.** To create this
-file:
-
-    touch /etc/default/mscs
-
-Once you've created the file, you need to populate it with a list of
-properties.  The list of properties can be found [here](https://github.com/MinecraftServerControl/mscs/wiki/Global-Server-Settings).
-
-### Configuring MSCS for multiple users
-MSCS has the capability to store server data for individual users, ideal for
-those who have multiple users on a computer and want each user's data to be
-separated. Please see the [wiki page](https://github.com/MinecraftServerControl/mscs/wiki/Configuring-MSCS-for-multiple-users)
-for instructions.
-
 ## Scheduling backups and other tasks
 All MSCS tasks can be automated using [**cron**]
 (https://en.wikipedia.org/wiki/Cron), a scheduler software that can run
@@ -374,9 +449,9 @@ for more information.
 The backups will be saved in `/opt/mscs/backups`.
 
 ### Removing backups after X days
-You can specify how long to keep backups by changing the `BACKUP_DURATION`
-in the `mscs.conf` or `mscs` file (see
-[adjusting global server settings](#adjusting-global-server-settings)
+You can specify how long to keep backups by changing the
+`mscs-backup-duration` property in the `mscs.defaults` file (see
+[adjusting global server properties](#adjusting-global-server-properties)
 ).
 
 ### Scheduling restarts
@@ -402,13 +477,13 @@ worlds).
 Minecraft Server Control Script uses [Overviewer]
 (http://docs.overviewer.org/en/latest/) to generate maps. After [installing]
 (#mapping-software), modify the settings (if necessary) found in the
-`mscs.conf` or `mscs` file (see [adjusting global server settings]
-(#adjusting-global-server-settings)):
+`mscs.defaults` file (see [adjusting global server properties]
+(#adjusting-global-server-properties)):
 
-    OVERVIEWER_BIN=$(which overviewer.py)
-    OVERVIEWER_URL="http://overviewer.org"
-    MAPS_URL="my.minecraftserver.com"
-    MAPS_LOCATION="$LOCATION/maps"
+    mscs-overviewer-bin=/usr/bin/overviewer.py
+    mscs-overviewer-url=http://overviewer.org
+    mscs-maps-location=/opt/mscs/maps
+    mscs-maps-url=my.minecraftserver.com
 
 
 After you've tinkered the settings to your liking, run:
