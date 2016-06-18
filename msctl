@@ -391,12 +391,20 @@ getValue() {
   if [ -e "$1" ]; then
     # Find the key/value combo.
     KEY=$($PERL -ne '
-      $_ =~ s/[\x22\x27\r]//;
-      if ($_ =~ /^('$2')=.*$/i) { print lc $1; }
+      # Remove single and double quotes plus CR and LF.
+      $_ =~ s/[\x22\x27\r\n]//g;
+      # Remove comments.
+      $_ =~ s/\x23.*//;
+      # Extract the key.
+      if ($_ =~ /^\s*('$2')\s*=\s*.*$/i) { print lc $1; }
     ' $1)
     VALUE=$($PERL -ne '
-      $_ =~ s/[\x22\x27\r]//;
-      if ($_ =~ /^'$2'=(.*)$/i) { print $1; }
+      # Remove single and double quotes plus CR and LF.
+      $_ =~ s/[\x22\x27\r\n]//g;
+      # Remove comments.
+      $_ =~ s/\x23.*//;
+      # Extract the value.
+      if ($_ =~ /^\s*'$2'\s*=\s*(.*)$/i) { print $1; }
     ' $1)
   fi
   # Return the value if found, the default value if not.
