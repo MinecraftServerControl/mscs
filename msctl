@@ -179,6 +179,18 @@ getJavaPID() {
 }
 
 # ---------------------------------------------------------------------------
+# Get the amount of memory used by the Java process for the world server.
+#
+# @param 1 The world server of interest.
+# @return The amount of memory used.
+# ---------------------------------------------------------------------------
+getJavaMemory() {
+  local PID
+  PID=$(getJavaPID "$1")
+  ps -h -p $PID -o rss
+}
+
+# ---------------------------------------------------------------------------
 # Check to see if the world server is running.
 #
 # @param 1 The world server of interest.
@@ -1557,6 +1569,7 @@ worldStatus() {
       printf "running.\n"
     fi
     printf "    Process ID: %d.\n" $(getJavaPID "$1")
+    printf "    Memory used: %d kB.\n" $(getJavaMemory "$1")
   elif [ "$(getMSCSValue $1 'mscs-enabled')" = "false" ]; then
     printf "disabled.\n"
   else
