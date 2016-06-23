@@ -403,12 +403,20 @@ getValue() {
   if [ -e "$1" ]; then
     # Find the key/value combo.
     KEY=$($PERL -ne '
-      $_ =~ s/[\x22\x27\r]//;
-      if ($_ =~ /^('$2')=.*$/i) { print lc $1; }
+      # Remove single and double quotes plus CR and LF.
+      $_ =~ s/[\x22\x27\r\n]//g;
+      # Remove comments.
+      $_ =~ s/^\s*\x23.*//;
+      # Extract the key.
+      if ($_ =~ /^\s*('$2')\s*=\s*.*$/i) { print lc $1; }
     ' $1)
     VALUE=$($PERL -ne '
-      $_ =~ s/[\x22\x27\r]//;
-      if ($_ =~ /^'$2'=(.*)$/i) { print $1; }
+      # Remove single and double quotes plus CR and LF.
+      $_ =~ s/[\x22\x27\r\n]//g;
+      # Remove comments.
+      $_ =~ s/^\s*\x23.*//;
+      # Extract the value.
+      if ($_ =~ /^\s*'$2'\s*=\s*(.*)$/i) { print $1; }
     ' $1)
   fi
   # Return the value if found, the default value if not.
@@ -444,6 +452,16 @@ setValue() {
   else
     printf "$2=$3\n" >> "$1"
   fi
+}
+
+# ---------------------------------------------------------------------------
+# Get the value of a key in the mscs.defaults file.
+#
+# @param 1 The key to get.
+# @param 2 The default value.
+# ---------------------------------------------------------------------------
+getDefaultsValue() {
+  getValue "$MSCS_DEFAULTS" "$1" "$2"
 }
 
 # ---------------------------------------------------------------------------
@@ -1660,31 +1678,108 @@ while [ "$1" != "${1#-}" ]; do
   shift
 done
 
-# Override Global Variables
+# Override Default Values
 # ---------------------------------------------------------------------------
-# Override global variables below by adding them to the specified file.  If
-# the file does not exist, the default values below will be used.
-# Configuration files are checked in the following order. First file found is
-# sourced and the rest are discarded:
+# Override the default values by adding them to one of the following files. If
+# none of the files exist, the default values in the script will be used (see
+# below). Possible files are checked in the following order:
 #   command line option "-c".
-#   $HOME/mscs.conf
-#   $HOME/.config/mscs/mscs.conf
-if [ -r "$MSCS_DEFAULTS_CL" ]; then
+#   $HOME/mscs.defaults
+#   $HOME/.config/mscs/mscs.defaults
+if [ -n "$MSCS_DEFAULTS_CL" ]; then
   MSCS_DEFAULTS="$MSCS_DEFAULTS_CL"
-elif [ -r "$HOME/mscs.conf" ]; then
-  MSCS_DEFAULTS="$HOME/mscs.conf"
-elif [ -r "$HOME/.config/mscs/mscs.conf" ]; then
-  MSCS_DEFAULTS="$HOME/.config/mscs/mscs.conf"
+elif [ -r "$HOME/mscs.defaults" ]; then
+  MSCS_DEFAULTS="$HOME/mscs.defaults"
+elif [ -r "$HOME/.config/mscs/mscs.defaults" ]; then
+  MSCS_DEFAULTS="$HOME/.config/mscs/mscs.defaults"
 fi
+# Default values in the script can be overridden by adding certain key/value
+# pairs to one of the mscs.defaults files mentioned above. Default values in
+# the script will be used unless overridden in one these files.
+#
+# The following keys are available:
+#   mscs-location                - Location of the mscs files.
+#   mscs-worlds-location         - Location of world files.
+#   mscs-versions-url            - URL to download the version_manifest.json file.
+#   mscs-versions-json           - Location of the version_manifest.json file.
+#   mscs-versions-duration       - Duration (in minutes) to keep the version_manifest.json file before updating.
+#   mscs-detailed-listing        - Properties to return for detailed listings.
+#   mscs-default-world           - Default world name.
+#   mscs-default-port            - Default Port.
+#   mscs-default-ip              - Default IP address.
+#   mscs-default-version-type    - Default version type (release or snapshot).
+#   mscs-default-client-version  - Default version of the client software.
+#   mscs-default-client-jar      - Default .jar file for the client software.
+#   mscs-default-client-url      - Default download URL for the client software.
+#   mscs-default-client-location - Default location of the client .jar file.
+#   mscs-default-server-version  - Default version of the server software.
+#   mscs-default-server-jar      - Default .jar file for the server software.
+#   mscs-default-server-url      - Default download URL for the server software.
+#   mscs-default-server-args     - Default arguments to for a world server.
+#   mscs-default-initial-memory  - Default initial amount of memory for a world server.
+#   mscs-default-maximum-memory  - Default maximum amount of memory for a world server.
+#   mscs-default-server-location - Default location of the server .jar file.
+#   mscs-default-server-command  - Default command to run for a world server.
+#   mscs-backup-location         - Location to store backup files.
+#   mscs-backup-log              - Lcation of the backup log file.
+#   mscs-backup-duration         - Length in days that backups survive.
+#   mscs-log-duration            - Length in days that logs survive.
+#   mscs-enable-mirror           - Enable the mirror option by default for worlds (default disabled).
+#   mscs-mirror-path             - Default path for the mirror files.
+#   mscs-overviewer-bin          - Location of Overviewer.
+#   mscs-overviewer-url          - URL for Overviewer.
+#   mscs-maps-location           - Location of Overviewer generated map files.
+#   mscs-maps-url                - URL for accessing Overviewer generated maps.
+#
+# The following variables may be used in some of the key values:
+#   $JAVA                - The Java virtual machine.
+#   $CURRENT_VERSION     - The current Mojang Minecraft release version.
+#   $CLIENT_VERSION      - The version of the client software.
+#   $SERVER_VERSION      - The version of the server software.
+#   $SERVER_JAR          - The .jar file to run for the server.
+#   $SERVER_ARGS         - The arguments to the server.
+#   $INITIAL_MEMORY      - The initial amount of memory for the server.
+#   $MAXIMUM_MEMORY      - The maximum amount of memory for the server.
+#   $SERVER_LOCATION     - The location of the server .jar file.
+#
+# The following example key/value pairs are equivalent to the default values:
+#   mscs-location=/opt/mscs
+#   mscs-worlds-location=/opt/mscs/worlds
+#   mscs-versions-url=https://launchermeta.mojang.com/mc/game/version_manifest.json
+#   mscs-versions-json=/opt/mscs/version_manifest.json
+#   mscs-versions-duration=1440
+#   mscs-default-world=world
+#   mscs-default-port=25565
+#   mscs-default-ip=
+#   mscs-default-version-type=release
+#   mscs-default-client-version=$CURRENT_VERSION
+#   mscs-default-client-jar=$CLIENT_VERSION.jar
+#   mscs-default-client-url=https://s3.amazonaws.com/Minecraft.Download/versions/$CLIENT_VERSION/$CLIENT_VERSION.jar
+#   mscs-default-client-location=/opt/mscs/.minecraft/versions/$CLIENT_VERSION
+#   mscs-default-server-version=$CURRENT_VERSION
+#   mscs-default-server-jar=minecraft_server.$SERVER_VERSION.jar
+#   mscs-default-server-url=https://s3.amazonaws.com/Minecraft.Download/versions/$SERVER_VERSION/minecraft_server.$SERVER_VERSION.jar
+#   mscs-default-server-args=nogui
+#   mscs-default-initial-memory=128M
+#   mscs-default-maximum-memory=2048M
+#   mscs-default-server-location=/opt/mscs/server
+#   mscs-default-server-command=$JAVA -Xms$INITIAL_MEMORY -Xmx$MAXIMUM_MEMORY -jar $SERVER_LOCATION/$SERVER_JAR $SERVER_ARGS
+#   mscs-backup-location=/opt/mscs/backups
+#   mscs-backup-log=/opt/mscs/backups/backup.log
+#   mscs-backup-duration=15
+#   mscs-log-duration=15
+#   mscs-detailed-listing=motd server-ip server-port max-players level-type online-mode
+#   mscs-enable-mirror=0
+#   mscs-mirror-path=/dev/shm/mscs
+#   mscs-overviewer-bin=/usr/bin/overviewer.py
+#   mscs-overviewer-url=http://overviewer.org
+#   mscs-maps-location=/opt/mscs/maps
+#   mscs-maps-url=http://minecraft.server.com/maps
 
 # Server Location
 # ---------------------------------------------------------------------------
 # The default location of server software and data.
-LOCATION="$HOME/mscs"
-
-# Override the default values if the default file exists.
-[ -r "$MSCS_DEFAULTS" ] && . "$MSCS_DEFAULTS"
-
+LOCATION=$(getDefaultsValue 'mscs-location' $HOME'/mscs')
 # Override with command-line location option.
 [ -n "$LOCATION_CL" ] && LOCATION="$LOCATION_CL"
 
@@ -1693,29 +1788,29 @@ LOCATION="$HOME/mscs"
 
 # Minecraft Versions information
 # ---------------------------------------------------------------------------
-MINECRAFT_VERSIONS_URL=https://launchermeta.mojang.com/mc/game/version_manifest.json
+MINECRAFT_VERSIONS_URL=$(getDefaultsValue 'mscs-versions-url' 'https://launchermeta.mojang.com/mc/game/version_manifest.json')
 
 # Minecraft Server Settings
 # ---------------------------------------------------------------------------
-# Default settings if not provided in the world's mscs.properties file.
-DEFAULT_WORLD='world'
-DEFAULT_PORT='25565'
-DEFAULT_IP=''
-DEFAULT_VERSION_TYPE='release'
-DEFAULT_CLIENT_VERSION='$CURRENT_VERSION'
-DEFAULT_CLIENT_JAR='$CLIENT_VERSION.jar'
-DEFAULT_CLIENT_URL='https://s3.amazonaws.com/Minecraft.Download/versions/$CLIENT_VERSION/$CLIENT_VERSION.jar'
-DEFAULT_CLIENT_LOCATION=$HOME'/.minecraft/versions/$CLIENT_VERSION'
-DEFAULT_SERVER_VERSION='$CURRENT_VERSION'
-DEFAULT_SERVER_JAR='minecraft_server.$SERVER_VERSION.jar'
-DEFAULT_SERVER_URL='https://s3.amazonaws.com/Minecraft.Download/versions/$SERVER_VERSION/minecraft_server.$SERVER_VERSION.jar'
-DEFAULT_SERVER_ARGS='nogui'
-DEFAULT_INITIAL_MEMORY='128M'
-DEFAULT_MAXIMUM_MEMORY='2048M'
-DEFAULT_SERVER_LOCATION=$LOCATION'/server'
-DEFAULT_SERVER_COMMAND='$JAVA -Xms$INITIAL_MEMORY -Xmx$MAXIMUM_MEMORY -jar $SERVER_LOCATION/$SERVER_JAR $SERVER_ARGS'
-# The server settings for each world can be customized by adding certain
-# key/value pairs to the world's mscs.properties file.
+# Settings used if not provided in the world's mscs.properties file.
+DEFAULT_WORLD=$(getDefaultsValue 'mscs-default-world' 'world')
+DEFAULT_PORT=$(getDefaultsValue 'mscs-default-port' '25565')
+DEFAULT_IP=$(getDefaultsValue 'mscs-default-ip' '')
+DEFAULT_VERSION_TYPE=$(getDefaultsValue 'mscs-default-version-type' 'release')
+DEFAULT_CLIENT_VERSION=$(getDefaultsValue 'mscs-default-client-version' '$CURRENT_VERSION')
+DEFAULT_CLIENT_JAR=$(getDefaultsValue 'mscs-default-client-jar' '$CLIENT_VERSION.jar')
+DEFAULT_CLIENT_URL=$(getDefaultsValue 'mscs-default-client-url' 'https://s3.amazonaws.com/Minecraft.Download/versions/$CLIENT_VERSION/$CLIENT_VERSION.jar')
+DEFAULT_CLIENT_LOCATION=$(getDefaultsValue 'mscs-default-client-location' $HOME'/.minecraft/versions/$CLIENT_VERSION')
+DEFAULT_SERVER_VERSION=$(getDefaultsValue 'mscs-default-server-version' '$CURRENT_VERSION')
+DEFAULT_SERVER_JAR=$(getDefaultsValue 'mscs-default-server-jar' 'minecraft_server.$SERVER_VERSION.jar')
+DEFAULT_SERVER_URL=$(getDefaultsValue 'mscs-default-server-url' 'https://s3.amazonaws.com/Minecraft.Download/versions/$SERVER_VERSION/minecraft_server.$SERVER_VERSION.jar')
+DEFAULT_SERVER_ARGS=$(getDefaultsValue 'mscs-default-server-args' 'nogui')
+DEFAULT_INITIAL_MEMORY=$(getDefaultsValue 'mscs-default-initial-memory' '128M')
+DEFAULT_MAXIMUM_MEMORY=$(getDefaultsValue 'mscs-default-maximum-memory' '2048M')
+DEFAULT_SERVER_LOCATION=$(getDefaultsValue 'mscs-default-server-location' $LOCATION'/server')
+DEFAULT_SERVER_COMMAND=$(getDefaultsValue 'mscs-default-server-command' '$JAVA -Xms$INITIAL_MEMORY -Xmx$MAXIMUM_MEMORY -jar $SERVER_LOCATION/$SERVER_JAR $SERVER_ARGS')
+# Each world server can override the default values in a similar manner by
+# adding certain key/value pairs to the world's mscs.properties file.
 #
 # The following keys are available:
 #   mscs-enabled         - Enable or disable the world server.
@@ -1733,8 +1828,7 @@ DEFAULT_SERVER_COMMAND='$JAVA -Xms$INITIAL_MEMORY -Xmx$MAXIMUM_MEMORY -jar $SERV
 #   mscs-server-location - Assign the location of the server .jar file.
 #   mscs-server-command  - Assign the command to run for the server.
 #
-# The following variables may be used in some of the values of the above
-# keys:
+# Like above, the following variables may be used in some of the key values:
 #   $JAVA                - The Java virtual machine.
 #   $CURRENT_VERSION     - The current Mojang Minecraft release version.
 #   $CLIENT_VERSION      - The version of the client software.
@@ -1764,30 +1858,30 @@ DEFAULT_SERVER_COMMAND='$JAVA -Xms$INITIAL_MEMORY -Xmx$MAXIMUM_MEMORY -jar $SERV
 # World (Server Instance) Configuration
 # ---------------------------------------------------------------------------
 # The location to store files for each world server.
-WORLDS_LOCATION="$LOCATION/worlds"
+WORLDS_LOCATION=$(getDefaultsValue 'mscs-worlds-location' $LOCATION'/worlds')
 # The location to store the version_manifest.json file.
-VERSIONS_JSON="$DEFAULT_SERVER_LOCATION/version_manifest.json"
+VERSIONS_JSON=$(getDefaultsValue 'mscs-versions-json' $LOCATION'/version_manifest.json')
 # The duration (in minutes) to keep the version_manifest.json file before updating.
-VERSIONS_DURATION=1440
+VERSIONS_DURATION=$(getDefaultsValue 'mscs-versions-duration' '1440')
 
 # Backup Configuration
 # ---------------------------------------------------------------------------
 # Location to store backups.
-BACKUP_LOCATION="$LOCATION/backups"
+BACKUP_LOCATION=$(getDefaultsValue 'mscs-backup-location' $LOCATION'/backups')
 # Location of the backup log file.
-BACKUP_LOG="$BACKUP_LOCATION/backup.log"
+BACKUP_LOG=$(getDefaultsValue 'mscs-backup-log' $BACKUP_LOCATION'/backup.log')
 # Length in days that backups survive.
-BACKUP_DURATION=15
+BACKUP_DURATION=$(getDefaultsValue 'mscs-backup-duration' '15')
 
 # Server Log Configuration
 # ---------------------------------------------------------------------------
 # Length in days that logs survive.
-LOG_DURATION=15
+LOG_DURATION=$(getDefaultsValue 'mscs-log-duration' '15')
 
 # Listing options
 # ---------------------------------------------------------------------------
 # Server properties for detailed listing (list).
-DETAILED_LISTING_PROPERTIES="motd server-ip server-port max-players level-type online-mode"
+DETAILED_LISTING_PROPERTIES=$(getDefaultsValue 'mscs-detailed-listing' 'motd server-ip server-port max-players level-type online-mode')
 
 # Mirror Image Options
 # ---------------------------------------------------------------------------
@@ -1802,25 +1896,18 @@ DETAILED_LISTING_PROPERTIES="motd server-ip server-port max-players level-type o
 #
 # 0 - Do not use a mirror image, default.
 # 1 - Use a mirror image.
-ENABLE_MIRROR=0
+ENABLE_MIRROR=$(getDefaultsValue 'mscs-enable-mirror' '0')
 # The location to store the mirror image.
 #
 # NOTE: This is usually a ramdisk, e.g. /dev/shm on Debian/Ubuntu.
-MIRROR_PATH="/dev/shm/mscs"
+MIRROR_PATH=$(getDefaultsValue 'mscs-mirror-path' '/dev/shm/mscs')
 
 # Minecraft Overviewer Mapping Software Options
 # ---------------------------------------------------------------------------
-OVERVIEWER_BIN=$(which overviewer.py)
-OVERVIEWER_URL="http://overviewer.org"
-MAPS_URL="http://minecraft.server.com/maps"
-MAPS_LOCATION="$LOCATION/maps"
-
-# Do additional overrides if the default file exists.
-# Override the default values if the default file exists.
-[ -r "$MSCS_DEFAULTS" ] && . "$MSCS_DEFAULTS"
-
-# Override with command-line location option.
-[ -n "$LOCATION_CL" ] && LOCATION="$LOCATION_CL"
+OVERVIEWER_BIN=$(getDefaultsValue 'mscs-overviewer-bin' $(which overviewer.py))
+OVERVIEWER_URL=$(getDefaultsValue 'mscs-overviewer-url' 'http://overviewer.org')
+MAPS_LOCATION=$(getDefaultsValue 'mscs-maps-location' $LOCATION'/maps')
+MAPS_URL=$(getDefaultsValue 'mscs-maps-url' 'http://minecraft.server.com/maps')
 
 # Respond to the command line arguments.
 # ---------------------------------------------------------------------------
