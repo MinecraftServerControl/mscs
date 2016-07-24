@@ -1571,7 +1571,7 @@ worldStatus() {
       NUM=$(printf "%s" "$STATUS" | cut -f 19)
       MAX=$(printf "%s" "$STATUS" | cut -f 21)
       VERSION=$(printf "%s" "$STATUS" | cut -f 13)
-      printf "running version %s (%d of %d users online).\n" $VERSION $NUM $MAX
+      printf "running version %s (%d of %d users online).\n" "$VERSION" $NUM $MAX
       if [ $NUM -gt 0 ]; then
         PLAYERS=$(printf "%s" "$STATUS" | cut -f 30)
         COUNTER=1
