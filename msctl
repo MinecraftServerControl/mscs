@@ -2478,7 +2478,15 @@ case "$1" in
     printf "Running Minecraft Overviewer mapping:"
     for WORLD in $WORLDS; do
       printf " $WORLD"
-      overviewer "$WORLD"
+      # Create a lock file so that we don't create duplicate processes.
+      if $(createLockFile $WORLD "overviewer"); then
+        overviewer "$WORLD"
+        # Remove the lock file.
+        removeLockFile $WORLD "overviewer"
+      else
+        printf "\nError lock file for world $WORLD could not be created."
+        printf "  Is the world already running Overviewer?\n"
+      fi
     done
     printf ".\n"
   ;;
