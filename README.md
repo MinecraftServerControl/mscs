@@ -274,6 +274,7 @@ The following properties are available:
 * mscs-versions-url            - URL to download the version_manifest.json file.
 * mscs-versions-json           - Location of the version_manifest.json file.
 * mscs-versions-duration       - Length in minutes to keep the version_manifest.json file before updating.
+* mscs-lockfile-duration       - Length in minutes to keep lock files before removing.
 * mscs-detailed-listing        - Properties to return for detailed listings.
 * mscs-default-world           - Default world name.
 * mscs-default-port            - Default Port.
@@ -323,6 +324,7 @@ your liking.
     mscs-versions-url=https://launchermeta.mojang.com/mc/game/version_manifest.json
     mscs-versions-json=/opt/mscs/version_manifest.json
     mscs-versions-duration=1440
+    mscs-lockfile-duration=1440
     mscs-default-world=world
     mscs-default-port=25565
     mscs-default-ip=
