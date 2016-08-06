@@ -2363,16 +2363,24 @@ case "$1" in
     printf "Backing up Minecraft Server:"
     for WORLD in $WORLDS; do
       printf " $WORLD"
-      if serverRunning $WORLD; then
-        sendCommand $WORLD "say Backing up the world."
-        sendCommand $WORLD "save-all"
-        sendCommand $WORLD "save-off"
-        sleep 20
-        worldBackup $WORLD
-        sendCommand $WORLD "save-on"
-        sendCommand $WORLD "say Backup complete."
+      # Create a lock file so that we don't create duplicate processes.
+      if $(createLockFile $WORLD "backup"); then
+        if serverRunning $WORLD; then
+          sendCommand $WORLD "say Backing up the world."
+          sendCommand $WORLD "save-all"
+          sendCommand $WORLD "save-off"
+          sleep 20
+          worldBackup $WORLD
+          sendCommand $WORLD "save-on"
+          sendCommand $WORLD "say Backup complete."
+        else
+          worldBackup $WORLD
+        fi
+        # Remove the lock file.
+        removeLockFile $WORLD "backup"
       else
-        worldBackup $WORLD
+        printf "\nError lock file for world $WORLD could not be created."
+        printf "  Is the world already running a backup?\n"
       fi
     done
     printf ".\n"
