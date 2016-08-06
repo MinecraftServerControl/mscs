@@ -873,6 +873,58 @@ getServerCommand() {
 }
 
 # ---------------------------------------------------------------------------
+# Create a lock file for a world. This will help avoid having multiple long
+# running processes running at the same time. This code was inspired by
+# http://bencane.com/2015/09/22/preventing-duplicate-cron-job-executions/
+#
+# @param 1 The world server.
+# @param 2 The type of lock file.
+# @return TRUE if lock file created, FALSE otherwise.
+# ---------------------------------------------------------------------------
+createLockFile() {
+  local PID LOCKFILE
+  LOCKFILE=$WORLDS_LOCATION/$1/lock-$2.pid
+  # Delete the old LOCKFILE.
+  find $LOCKFILE -mmin +"$LOCKFILE_DURATION" -delete > /dev/null 2>&1
+  # Check to see if the LOCKFILE exists.
+  if [ -s $LOCKFILE ]; then
+    PID=$(cat $LOCKFILE)
+    # LOCKFILE exists, check to see if its process is running.
+    ps -p $PID > /dev/null 2>&1
+    if [ $? -eq 0 ]; then
+      # LOCKFILE exists and the process is running, return FALSE.
+      return 1
+    else
+      # Process not found assume it is not running.
+      echo $$ > $LOCKFILE
+      if [ $? -ne 0 ]; then
+        # Error creating LOCKFILE, return FALSE.
+        return 1
+      fi
+    fi
+  else
+    # LOCKFILE does not exists.
+    echo $$ > $LOCKFILE
+    if [ $? -ne 0 ]; then
+      # Error creating LOCKFILE, return FALSE.
+      return 1
+    fi
+  fi
+  # Success creating LOCKFILE, return TRUE.
+  return 0
+}
+
+# ---------------------------------------------------------------------------
+# Remove a lock file for a world.
+#
+# @param 1 The world server.
+# @param 2 The type of lock file.
+# ---------------------------------------------------------------------------
+removeLockFile() {
+  rm -f $WORLDS_LOCATION/$1/lock-$2.pid
+}
+
+# ---------------------------------------------------------------------------
 # Remove old world log files and rotate log files from old servers (v < 1.7).
 #
 # @param 1 The world server generating the log to rotate.
@@ -1703,6 +1755,7 @@ fi
 #   mscs-versions-url            - URL to download the version_manifest.json file.
 #   mscs-versions-json           - Location of the version_manifest.json file.
 #   mscs-versions-duration       - Duration (in minutes) to keep the version_manifest.json file before updating.
+#   mscs-lockfile-duration       - Duration (in minutes) to keep lock files before removing.
 #   mscs-detailed-listing        - Properties to return for detailed listings.
 #   mscs-default-world           - Default world name.
 #   mscs-default-port            - Default Port.
@@ -1748,6 +1801,7 @@ fi
 #   mscs-versions-url=https://launchermeta.mojang.com/mc/game/version_manifest.json
 #   mscs-versions-json=/opt/mscs/version_manifest.json
 #   mscs-versions-duration=1440
+#   mscs-lockfile-duration=1440
 #   mscs-default-world=world
 #   mscs-default-port=25565
 #   mscs-default-ip=
@@ -1863,6 +1917,8 @@ WORLDS_LOCATION=$(getDefaultsValue 'mscs-worlds-location' $LOCATION'/worlds')
 VERSIONS_JSON=$(getDefaultsValue 'mscs-versions-json' $LOCATION'/version_manifest.json')
 # The duration (in minutes) to keep the version_manifest.json file before updating.
 VERSIONS_DURATION=$(getDefaultsValue 'mscs-versions-duration' '1440')
+# The duration (in minutes) to keep lock files before removing.
+LOCKFILE_DURATION=$(getDefaultsValue 'mscs-lockfile-duration' '1440')
 
 # Backup Configuration
 # ---------------------------------------------------------------------------
