@@ -433,7 +433,7 @@ Page down until you get to an empty line. Then paste the following:
     PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 
     # Run mscs backups
-    0 */2 * * *  /usr/local/bin/mscs backup myWorld
+    0 */2 * * *  mscs backup myWorld
 
 * We define the PATH because `cron` doesn't do it for us.
 
