@@ -414,16 +414,16 @@ Please visit the [wiki](https://github.com/MinecraftServerControl/mscs/wiki/Serv
 for additional information.
 
 ## Scheduling backups and other tasks
-All MSCS tasks can be automated using [**cron**]
-(https://en.wikipedia.org/wiki/Cron), a scheduler software that can run
-programs on a set interval of time. Whether it be backups, restarts, mapping,
-or any other `mscs` command, it can be scheduled using `cron`.
+All MSCS tasks can be automated using [**cron**](https://en.wikipedia.org/wiki/Cron),
+a scheduler software that can run programs on a set interval of time. Whether
+it be backups, restarts, mapping, or any other `mscs` command, it can be
+scheduled using `cron`.
 
 ### Scheduling backups
-Below is an example of one way how you could setup backups via `cron` to
-backup a world every 2 hours:
+Below is an example of one way you could setup backups via `cron` to backup a
+world every 2 hours:
 
-Run the crontab editor for the `minecraft` user using `sudo`:
+Edit the crontab file for the `minecraft` user using `sudo`:
 
     sudo crontab -e -u minecraft
 
