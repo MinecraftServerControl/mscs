@@ -425,30 +425,24 @@ backup a world every 2 hours:
 
 Type the following (in any directory):
 
-    export EDITOR=vim
     crontab -e
 
 Page down until you get to an empty line. Then paste the following:
 
     0 */2 * * *  /usr/local/bin/mscs backup myWorld
 
-* `0 */2 * * *` is the time interval to backup.
-This particular expression means backup every 2 hours.
-You can change this to 3, 4, 5 or whatever amount of hours to backup
-X amount of hours.
-You can also backup according to days, minutes, seconds, the time of
-the day, and more.
-See [the wiki page]
-(https://github.com/MinecraftServerControl/mscs/wiki/Backup-and-Restore)
-for more information.
-  * `myWorld` is the name of the world you wish to backup.
-  Omitting this will backup all worlds.
+* We define the PATH because `cron` doesn't do it for us.
 
-  Finally, press escape, then type
-  `:wq`
-  to save and quit.
+* `0 */2 * * *` is the time interval to backup. This particular expression
+  means backup every 2 hours. You can change this to 3, 4, 5, etc to backup
+  every X amount of hours. You can also backup according to days, minutes,
+  seconds, the time of the day, and more. See [the wiki page](https://github.com/MinecraftServerControl/mscs/wiki/Backup-and-Restore)
+  for more information.
 
-The backups will be saved in `/opt/mscs/backups`.
+* `myWorld` is the name of the world you wish to backup. Omitting this will
+  backup all worlds.
+
+* The backups will be saved in `/opt/mscs/backups`.
 
 ### Removing backups after X days
 You can specify how long to keep backups by changing the
