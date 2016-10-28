@@ -423,9 +423,9 @@ or any other `mscs` command, it can be scheduled using `cron`.
 Below is an example of one way how you could setup backups via `cron` to
 backup a world every 2 hours:
 
-Type the following (in any directory):
+Run the crontab editor for the `minecraft` user using `sudo`:
 
-    crontab -e
+    sudo crontab -e -u minecraft
 
 Page down until you get to an empty line. Then paste the following:
 
