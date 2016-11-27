@@ -152,7 +152,7 @@ called `minecraft`) access to write in the `/opt/mscs` folder.
 If you get a permission error, please see the [troubleshooting]
 (#troubleshooting) section.
 
-That's it!
+#### Manual Configuration
 If you wish to configure the script manually, please visit the [wiki page]
 (https://github.com/MinecraftServerControl/mscs/wiki/Manual-Configuration).
 
