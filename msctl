@@ -1651,7 +1651,8 @@ worldStatus() {
 # Begin.
 # ---------------------------------------------------------------------------
 
-# Make sure that Java, Perl, Python, Wget, Rdiff-backup, and Socat are installed.
+# Make sure that Java, Perl, libjson-perl, Python, Wget, Rdiff-backup, and
+# Socat are installed.
 # ---------------------------------------------------------------------------
 if [ ! -e "$JAVA" ]; then
   echo "ERROR: Java not found!"
@@ -1663,6 +1664,13 @@ if [ ! -e "$PERL" ]; then
   echo "ERROR: Perl not found!"
   echo "Try installing this with:"
   echo "sudo apt-get install perl"
+  exit 1
+fi
+perl -e 'use JSON;' > /dev/null 2>&1
+if [ $? -ne 0 ]; then
+  echo "ERROR: libjson-perl not found!"
+  echo "Try installing this with:"
+  echo "sudo apt-get install libjson-perl"
   exit 1
 fi
 if [ ! -e "$PYTHON" ]; then
