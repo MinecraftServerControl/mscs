@@ -1654,39 +1654,39 @@ worldStatus() {
 # Make sure that Java, Perl, Python, Wget, Rdiff-backup, and Socat are installed.
 # ---------------------------------------------------------------------------
 if [ ! -e "$JAVA" ]; then
-  printf "ERROR: Java not found!\n"
-  printf "Try installing this with:\n"
-  printf "sudo apt-get install default-jre"
+  echo "ERROR: Java not found!"
+  echo "Try installing this with:"
+  echo "sudo apt-get install default-jre"
   exit 1
 fi
 if [ ! -e "$PERL" ]; then
-  printf "ERROR: Perl not found!\n"
-  printf "Try installing this with:\n"
-  printf "sudo apt-get install perl\n"
+  echo "ERROR: Perl not found!"
+  echo "Try installing this with:"
+  echo "sudo apt-get install perl"
   exit 1
 fi
 if [ ! -e "$PYTHON" ]; then
-  printf "ERROR: Python not found!\n"
-  printf "Try installing this with:\n"
-  printf "sudo apt-get install python\n"
+  echo "ERROR: Python not found!"
+  echo "Try installing this with:"
+  echo "sudo apt-get install python"
   exit 1
 fi
 if [ ! -e "$WGET" ]; then
-  printf "ERROR: GNU Wget not found!\n"
-  printf "Try installing this with:\n"
-  printf "sudo apt-get install wget\n"
+  echo "ERROR: GNU Wget not found!"
+  echo "Try installing this with:"
+  echo "sudo apt-get install wget"
   exit 1
 fi
 if [ ! -e "$RDIFF_BACKUP" ]; then
-  printf "ERROR: rdiff-backup not found!\n"
-  printf "Try installing this with:\n"
-  printf "sudo apt-get install rdiff-backup\n"
+  echo "ERROR: rdiff-backup not found!"
+  echo "Try installing this with:"
+  echo "sudo apt-get install rdiff-backup"
   exit 1
 fi
 if [ ! -e "$SOCAT" ]; then
-  printf "ERROR: socat not found!\n"
-  printf "Try installing this with:\n"
-  printf "sudo apt-get install socat\n"
+  echo "ERROR: socat not found!"
+  echo "Try installing this with:"
+  echo "sudo apt-get install socat"
   exit 1
 fi
 
