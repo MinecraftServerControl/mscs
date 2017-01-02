@@ -980,7 +980,7 @@ watchLog() {
 # ---------------------------------------------------------------------------
 syncMirrorImage() {
   # Sync the world server.
-  cp -Ru "$WORLDS_LOCATION/$1/$1/*" "$WORLDS_LOCATION/$1/$1-original"
+  cp -Ru "$WORLDS_LOCATION/$1/$1/"* "$WORLDS_LOCATION/$1/$1-original"
   if [ $? -ne 0 ]; then
     printf "Error synchronizing mirror images for world $1.\n"
     exit 1
@@ -1042,11 +1042,11 @@ start() {
       mv "$WORLDS_LOCATION/$1/$1-original" "$WORLDS_LOCATION/$1/$1"
     fi
     # Copy the world files over to the mirror.
-    cp -R "$WORLDS_LOCATION/$1/$1/*" "$MIRROR_PATH/$1"
+    cp -R "$WORLDS_LOCATION/$1/$1/"* "$MIRROR_PATH/$1"
     # Rename the original world file directory.
     mv "$WORLDS_LOCATION/$1/$1" "$WORLDS_LOCATION/$1/$1-original"
     # Create a symlink from the world file directory's original name to the mirrored files.
-    ln -s "$MIRROR_PATH/$1" "$WORLDS_LOCATION/$1/$1"
+    ln -s "$MIRROR_PATH/$1/" "$WORLDS_LOCATION/$1/$1"
   fi
   # Change to the world's directory.
   cd $WORLD_DIR
