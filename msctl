@@ -1035,7 +1035,7 @@ start() {
     fi
     # Check for a clean dismount from the previous server run.  If we have a
     # <world>-original directory within <world> we didn't stop cleanly.
-    if [ -d "WORLDS_LOCATION/$1/$1-original" ]; then
+    if [ -d "$WORLDS_LOCATION/$1/$1-original" ]; then
       # Remove the symlink to the world-file mirror image.
       rm -r "$WORLDS_LOCATION/$1/$1"
       # Move the world files back to their original path name.
