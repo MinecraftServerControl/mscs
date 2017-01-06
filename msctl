@@ -1098,7 +1098,7 @@ stop() {
   sendCommand $1 "end"
   # Synchronize the mirror image of the world prior to closing, if
   # required.
-  if [ $ENABLE_MIRROR -eq 1 ] && [ -d $MIRROR_PATH ]; then
+  if [ $ENABLE_MIRROR -eq 1 ] && [ -L "$WORLDS_LOCATION/$1" ] && [ -d $WORLDS_LOCATION/$1/$1-original ]; then
     syncMirrorImage $1
     # Remove the symlink to the world-file mirror image.
     rm -r "$WORLDS_LOCATION/$1/$1"
@@ -1137,7 +1137,7 @@ worldBackup() {
   fi
   # Synchronize the mirror image of the world prior to closing, if
   # required.
-  if [ $ENABLE_MIRROR -eq 1 ] && [ -d $MIRROR_PATH ]; then
+  if [ $ENABLE_MIRROR -eq 1 ] && [ -L "$WORLDS_LOCATION/$1" ] && [ -d $WORLDS_LOCATION/$1/$1-original ]; then
     syncMirrorImage $1
   fi
   # Determine if we need to exclude the mirrored symlink or not
