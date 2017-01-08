@@ -12,7 +12,7 @@ UPDATE_D := $(wildcard update.d/*)
 
 .PHONY: install update clean
 
-install: $(MSCS_HOME) update
+install: update
 	useradd --system --user-group --create-home --home $(MSCS_HOME) $(MSCS_USER)
 	chown -R $(MSCS_USER):$(MSCS_GROUP) $(MSCS_HOME)
 	if which systemctl; then \
