@@ -1,5 +1,4 @@
 MSCS_USER := minecraft
-MSCS_GROUP := minecraft
 MSCS_HOME := /opt/mscs
 
 MSCTL := /usr/local/bin/msctl
@@ -14,7 +13,6 @@ UPDATE_D := $(wildcard update.d/*)
 
 install: $(MSCS_HOME) update
 	useradd --system --user-group --create-home --home $(MSCS_HOME) $(MSCS_USER)
-	chown -R $(MSCS_USER):$(MSCS_GROUP) $(MSCS_HOME)
 	if which systemctl; then \
 		systemctl -f enable mscs.service; \
 	else \
