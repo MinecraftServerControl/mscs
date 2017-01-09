@@ -40,6 +40,3 @@ clean:
 		rm -f $(MSCS_INIT_D); \
 	fi
 	rm -f $(MSCTL) $(MSCS) $(MSCS_COMPLETION)
-
-$(MSCS_HOME):
-	mkdir -p -m 755 $(MSCS_HOME)
