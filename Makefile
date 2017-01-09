@@ -21,11 +21,11 @@ install: update
 	fi
 
 update:
-	cp msctl $(MSCTL)
-	cp mscs $(MSCS)
-	cp mscs.completion $(MSCS_COMPLETION)
+	install -m 0755 msctl $(MSCTL)
+	install -m 0755 mscs $(MSCS)
+	install -m 0644 mscs.completion $(MSCS_COMPLETION)
 	if which systemctl; then \
-		cp mscs.service $(MSCS_SERVICE); \
+		install -m 0644 mscs.service $(MSCS_SERVICE); \
 	fi
 	@for script in $(UPDATE_D); do \
 		sh $$script; \
