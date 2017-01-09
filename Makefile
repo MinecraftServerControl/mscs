@@ -11,8 +11,8 @@ UPDATE_D := $(wildcard update.d/*)
 
 .PHONY: install update clean
 
-install: $(MSCS_HOME) update
-	useradd --system --user-group --create-home --home $(MSCS_HOME) $(MSCS_USER)
+install: update
+	useradd --system --user-group --create-home -K UMASK=0022 --home $(MSCS_HOME) $(MSCS_USER)
 	if which systemctl; then \
 		systemctl -f enable mscs.service; \
 	else \
@@ -40,6 +40,3 @@ clean:
 		rm -f $(MSCS_INIT_D); \
 	fi
 	rm -f $(MSCTL) $(MSCS) $(MSCS_COMPLETION)
-
-$(MSCS_HOME):
-	mkdir -p -m 755 $(MSCS_HOME)
