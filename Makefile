@@ -1,5 +1,4 @@
 MSCS_USER := minecraft
-MSCS_GROUP := minecraft
 MSCS_HOME := /opt/mscs
 
 MSCTL := /usr/local/bin/msctl
@@ -12,9 +11,8 @@ UPDATE_D := $(wildcard update.d/*)
 
 .PHONY: install update clean
 
-install: $(MSCS_HOME) update
-	useradd --system --user-group --create-home --home $(MSCS_HOME) $(MSCS_USER)
-	chown -R $(MSCS_USER):$(MSCS_GROUP) $(MSCS_HOME)
+install: update
+	useradd --system --user-group --create-home -K UMASK=0022 --home $(MSCS_HOME) $(MSCS_USER)
 	if which systemctl; then \
 		systemctl -f enable mscs.service; \
 	else \
@@ -23,11 +21,11 @@ install: $(MSCS_HOME) update
 	fi
 
 update:
-	cp msctl $(MSCTL)
-	cp mscs $(MSCS)
-	cp mscs.completion $(MSCS_COMPLETION)
+	install -m 0755 msctl $(MSCTL)
+	install -m 0755 mscs $(MSCS)
+	install -m 0644 mscs.completion $(MSCS_COMPLETION)
 	if which systemctl; then \
-		cp mscs.service $(MSCS_SERVICE); \
+		install -m 0644 mscs.service $(MSCS_SERVICE); \
 	fi
 	@for script in $(UPDATE_D); do \
 		sh $$script; \
@@ -42,6 +40,3 @@ clean:
 		rm -f $(MSCS_INIT_D); \
 	fi
 	rm -f $(MSCTL) $(MSCS) $(MSCS_COMPLETION)
-
-$(MSCS_HOME):
-	mkdir -p -m 755 $(MSCS_HOME)
