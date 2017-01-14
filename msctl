@@ -1037,7 +1037,11 @@ start() {
     # <world>-original directory within <world> we didn't stop cleanly.
     if [ -d "$WORLDS_LOCATION/$1/$1-original" ]; then
       # Remove the symlink to the world-file mirror image.
-      rm -r "$WORLDS_LOCATION/$1/$1"
+      # if recently restored from backup, this symlink may or may not exist
+      if [ -L "$WORLDS_LOCATION/$1/$1" ]; then
+        rm -r "$WORLDS_LOCATION/$1/$1"
+      fi
+
       # Move the world files back to their original path name.
       mv "$WORLDS_LOCATION/$1/$1-original" "$WORLDS_LOCATION/$1/$1"
     fi
@@ -1094,7 +1098,7 @@ stop() {
   sendCommand $1 "end"
   # Synchronize the mirror image of the world prior to closing, if
   # required.
-  if [ $ENABLE_MIRROR -eq 1 ] && [ -d $MIRROR_PATH ]; then
+  if [ $ENABLE_MIRROR -eq 1 ] && [ -L "$WORLDS_LOCATION/$1" ] && [ -d $WORLDS_LOCATION/$1/$1-original ]; then
     syncMirrorImage $1
     # Remove the symlink to the world-file mirror image.
     rm -r "$WORLDS_LOCATION/$1/$1"
@@ -1125,13 +1129,23 @@ forceStop() {
 # @return A 0 if backup successful, a 1 otherwise
 # ---------------------------------------------------------------------------
 worldBackup() {
+  local EXCLUDE_OPTION
   # Make sure that the backup location exists.
   if ! mkdir -p "$BACKUP_LOCATION"; then
     echo "Error creating backup dir $BACKUP_LOCATION"
     return 1
   fi
+  # Synchronize the mirror image of the world prior to closing, if
+  # required.
+  if [ $ENABLE_MIRROR -eq 1 ] && [ -L "$WORLDS_LOCATION/$1" ] && [ -d $WORLDS_LOCATION/$1/$1-original ]; then
+    syncMirrorImage $1
+  fi
+  # Determine if we need to exclude the mirrored symlink or not
+  if [ -L "$WORLDS_LOCATION/$1/$1" ]; then
+    EXCLUDE_OPTION="--exclude $WORLDS_LOCATION/$1/$1"
+  fi
   # Create the backup.
-  if ! $RDIFF_BACKUP -v5 --print-statistics "$WORLDS_LOCATION/$1" "$BACKUP_LOCATION/$1" >> "$BACKUP_LOG"; then
+  if ! $RDIFF_BACKUP -v5 --print-statistics $EXCLUDE_OPTION "$WORLDS_LOCATION/$1" "$BACKUP_LOCATION/$1" >> "$BACKUP_LOG"; then
     echo "Error doing backup of world $1"
     return 1
   fi
