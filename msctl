@@ -1137,10 +1137,16 @@ stop() {
 # @param 1 The world server to forcibly stop.
 # ---------------------------------------------------------------------------
 forceStop() {
+  local WAIT
   # Try to stop the server cleanly first.
   sendCommand $1 "stop"
   sendCommand $1 "end"
-  sleep 20
+  # Wait for the server to shut down.
+  WAIT=0
+  while serverRunning $1 && [ $WAIT -le 20 ]; do
+    WAIT=$(($WAIT+1))
+    sleep 1
+  done;
   # Kill the process id of the world server.
   kill -9 $(getJavaPID "$1") > /dev/null 2>&1
   # Properly clean up.
