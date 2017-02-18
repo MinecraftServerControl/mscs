@@ -1107,11 +1107,14 @@ start() {
 # @param 1 The world server to stop.
 # ---------------------------------------------------------------------------
 stop() {
-  local WORLD NUM
+  # Tell the server to stop.
   sendCommand $1 "stop"
   sendCommand $1 "end"
-  # Synchronize the mirror image of the world prior to closing, if
-  # required.
+  # Wait for the server to shut down.
+  while serverRunning $1; do
+    sleep 1
+  done;
+  # Synchronize the mirror image of the world prior to closing, if required.
   if [ $ENABLE_MIRROR -eq 1 ] && [ -L "$WORLDS_LOCATION/$1/$1" ] && [ -d "$MIRROR_PATH/$1" ]; then
     syncMirrorImage $1
     # Remove the symlink to the world-file mirror image.
@@ -1132,10 +1135,13 @@ stop() {
 # ---------------------------------------------------------------------------
 forceStop() {
   # Try to stop the server cleanly first.
-  stop "$1"
+  sendCommand $1 "stop"
+  sendCommand $1 "end"
   sleep 10
   # Kill the process id of the world server.
   kill -9 $(getJavaPID "$1") > /dev/null 2>&1
+  # Properly clean up.
+  stop $1
 }
 
 # ---------------------------------------------------------------------------
