@@ -1012,18 +1012,21 @@ serverConsole() {
 # ---------------------------------------------------------------------------
 start() {
   local EULA PID SERVER_COMMAND WORLD_DIR
+  WORLD_DIR="$WORLDS_LOCATION/$1"
   # Make sure that the server software exists.
   updateServerSoftware "$1"
   # Make sure that the world's directory exists.
-  WORLD_DIR="$WORLDS_LOCATION/$1"
   mkdir -p "$WORLD_DIR"
   # If the original level exists but the actual level doesn't,
-  # we probably just restored a backup.
-  if [ -d "$WORLD_DIR/$1-original" ] && [ ! -e "$WORLD_DIR/$1" ]; then
+  # we probably restored a backup.
+  if [ -d "$WORLD_DIR/$1-original" ] && [ ! -e "$WORLD_DIR/$1" ] && [ ! -L "$WORLD_DIR/$1" ]; then
     # Restore the original world files.
     mv "$WORLD_DIR/$1-original" "$WORLD_DIR/$1"
   fi;
-  mkdir -p "$WORLD_DIR/$1"
+  # Make sure that the level directory exists.
+  if [ ! -e "$WORLD_DIR/$1" ] && [ ! -L "$WORLD_DIR/$1" ]; then
+    mkdir -p "$WORLD_DIR/$1"
+  fi;
   # Make sure the EULA has been set to true.
   EULA=$(getEULAValue "$1")
   if [ $EULA != "true" ]; then
