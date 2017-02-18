@@ -980,7 +980,7 @@ watchLog() {
 # ---------------------------------------------------------------------------
 syncMirrorImage() {
   # Sync the world server.
-  cp -Ru "$WORLDS_LOCATION/$1/$1/"* "$WORLDS_LOCATION/$1/$1-original"
+  rsync -a --delete "$WORLDS_LOCATION/$1/$1/" "$WORLDS_LOCATION/$1/$1-original"
   if [ $? -ne 0 ]; then
     printf "Error synchronizing mirror images for world $1.\n"
     exit 1
