@@ -1019,9 +1019,9 @@ start() {
   mkdir -p "$WORLD_DIR"
   # If the original level exists but the actual level doesn't,
   # we probably just restored a backup.
-  if [ -d "$WORLDS_LOCATION/$1/$1-original" ] && [ ! -e "$WORLDS_LOCATION/$1/$1" ]; then
+  if [ -d "$WORLD_DIR/$1-original" ] && [ ! -e "$WORLD_DIR/$1" ]; then
     # Restore the original world files.
-    mv "$WORLDS_LOCATION/$1/$1-original" "$WORLDS_LOCATION/$1/$1"
+    mv "$WORLD_DIR/$1-original" "$WORLD_DIR/$1"
   fi;
   mkdir -p "$WORLD_DIR/$1"
   # Make sure the EULA has been set to true.
@@ -1039,31 +1039,31 @@ start() {
     mkdir -p "$MIRROR_PATH"
     # If the symlink exists but the target doesn't, the
     # mirror was removed somehow. This is bad.
-    if [ -L "$WORLDS_LOCATION/$1/$1" ] && [ ! -d "$MIRROR_PATH/$1" ]; then
+    if [ -L "$WORLD_DIR/$1" ] && [ ! -d "$MIRROR_PATH/$1" ]; then
       # Remove the symlink to the mirror image.
-      rm -f "$WORLDS_LOCATION/$1/$1"
+      rm -f "$WORLD_DIR/$1"
       # Restore the original world files.
-      mv "$WORLDS_LOCATION/$1/$1-original" "$WORLDS_LOCATION/$1/$1"
+      mv "$WORLD_DIR/$1-original" "$WORLD_DIR/$1"
       # Send notification.
       printf "Warning, the mirror for %s was removed, restored latest world.\n" $1
     fi;
     # If the symlink still exists, the server was stopped outside of mscs.
     # SO DONT RESET THE MIRROR, just keep using it.
-    if [ ! -L "$WORLDS_LOCATION/$1/$1" ]; then
+    if [ ! -L "$WORLD_DIR/$1" ]; then
       # Remove the mirror directory just in case.
       rm -Rf "$MIRROR_PATH/$1"
       # Copy the world files over to the mirror.
-      cp -a "$WORLDS_LOCATION/$1/$1" "$MIRROR_PATH/$1"
+      cp -a "$WORLD_DIR/$1" "$MIRROR_PATH/$1"
       if [ $? -ne 0 ]; then
         printf "Error copying world data, could not copy to %s.\n" $MIRROR_PATH/$1
         exit 1
       fi
       # Remove the world file backup directory just in case.
-      rm -Rf "$WORLDS_LOCATION/$1/$1-original"
+      rm -Rf "$WORLD_DIR/$1-original"
       # Rename the original world file directory.
-      mv "$WORLDS_LOCATION/$1/$1" "$WORLDS_LOCATION/$1/$1-original"
+      mv "$WORLD_DIR/$1" "$WORLD_DIR/$1-original"
       # Create a symlink from the world file directory's original name to the mirrored files.
-      ln -s "$MIRROR_PATH/$1" "$WORLDS_LOCATION/$1/$1"
+      ln -s "$MIRROR_PATH/$1" "$WORLD_DIR/$1"
     fi
   fi
   # Change to the world's directory.
