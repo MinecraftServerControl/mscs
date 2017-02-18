@@ -1117,7 +1117,7 @@ stop() {
 forceStop() {
   # Try to stop the server cleanly first.
   stop "$1"
-  sleep 5
+  sleep 10
   # Kill the process id of the world server.
   kill -9 $(getJavaPID "$1") > /dev/null 2>&1
 }
