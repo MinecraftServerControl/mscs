@@ -1098,10 +1098,12 @@ stop() {
   sendCommand $1 "end"
   # Synchronize the mirror image of the world prior to closing, if
   # required.
-  if [ $ENABLE_MIRROR -eq 1 ] && [ -L "$WORLDS_LOCATION/$1" ] && [ -d $WORLDS_LOCATION/$1/$1-original ]; then
+  if [ $ENABLE_MIRROR -eq 1 ] && [ -L "$WORLDS_LOCATION/$1/$1" ] && [ -d "$MIRROR_PATH/$1" ]; then
     syncMirrorImage $1
     # Remove the symlink to the world-file mirror image.
-    rm -r "$WORLDS_LOCATION/$1/$1"
+    rm -f "$WORLDS_LOCATION/$1/$1"
+    # Remove the world-file mirror image folder.
+    rm -Rf "$MIRROR_PATH/$1"
     # Move the world files back to their original path name.
     mv "$WORLDS_LOCATION/$1/$1-original" "$WORLDS_LOCATION/$1/$1"
   fi
