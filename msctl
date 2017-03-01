@@ -46,6 +46,7 @@ PERL=$(which perl)
 PYTHON=$(which python)
 WGET=$(which wget)
 RDIFF_BACKUP=$(which rdiff-backup)
+RSYNC=$(which rsync)
 SOCAT=$(which socat)
 
 # Script Usage
@@ -980,7 +981,7 @@ watchLog() {
 # ---------------------------------------------------------------------------
 syncMirrorImage() {
   # Sync the world server.
-  rsync -a --delete "$WORLDS_LOCATION/$1/$1/" "$WORLDS_LOCATION/$1/$1-original"
+  $RSYNC -a --delete "$WORLDS_LOCATION/$1/$1/" "$WORLDS_LOCATION/$1/$1-original"
   if [ $? -ne 0 ]; then
     printf "Error synchronizing mirror images for world $1.\n"
     exit 1
@@ -1734,6 +1735,12 @@ if [ ! -e "$RDIFF_BACKUP" ]; then
   echo "ERROR: rdiff-backup not found!"
   echo "Try installing this with:"
   echo "sudo apt-get install rdiff-backup"
+  exit 1
+fi
+if [ ! -e "$RSYNC" ]; then
+  echo "ERROR: rsync not found!"
+  echo "Try installing this with:"
+  echo "sudo apt-get install rsync"
   exit 1
 fi
 if [ ! -e "$SOCAT" ]; then
