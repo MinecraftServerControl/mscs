@@ -75,6 +75,7 @@ requirements that this script has that may not already be in place:
 * GNU Wget     - Allows the script to download software updates via the
                  internet.
 * rdiff-backup - Allows the script to efficiently run backups.
+* rsync        - Allows the script to efficiently make copies of files.
 * Socat        - Allows the script to communicate with the Minecraft server.
 * Iptables     - Although not explicitly required, a good firewall should be
                  installed.
@@ -82,7 +83,7 @@ requirements that this script has that may not already be in place:
 If you are running Debian or Ubuntu, you can make sure that these are
 installed by running:
 
-    sudo apt-get install default-jre perl libjson-perl python make wget rdiff-backup socat iptables
+    sudo apt-get install default-jre perl libjson-perl python make wget rdiff-backup rsync socat iptables
 
 ### Configuring the firewall / NAT
 If you have a firewall installed on your computer, or a router using NAT
