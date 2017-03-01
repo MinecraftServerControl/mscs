@@ -980,7 +980,7 @@ watchLog() {
 # ---------------------------------------------------------------------------
 syncMirrorImage() {
   # Sync the world server.
-  cp -Ru "$WORLDS_LOCATION/$1/$1/"* "$WORLDS_LOCATION/$1/$1-original"
+  rsync -a --delete "$WORLDS_LOCATION/$1/$1/" "$WORLDS_LOCATION/$1/$1-original"
   if [ $? -ne 0 ]; then
     printf "Error synchronizing mirror images for world $1.\n"
     exit 1
@@ -1012,11 +1012,21 @@ serverConsole() {
 # ---------------------------------------------------------------------------
 start() {
   local EULA PID SERVER_COMMAND WORLD_DIR
+  WORLD_DIR="$WORLDS_LOCATION/$1"
   # Make sure that the server software exists.
   updateServerSoftware "$1"
   # Make sure that the world's directory exists.
-  WORLD_DIR="$WORLDS_LOCATION/$1"
   mkdir -p "$WORLD_DIR"
+  # If the original level exists but the actual level doesn't,
+  # we probably restored a backup.
+  if [ -d "$WORLD_DIR/$1-original" ] && [ ! -e "$WORLD_DIR/$1" ] && [ ! -L "$WORLD_DIR/$1" ]; then
+    # Restore the original world files.
+    mv "$WORLD_DIR/$1-original" "$WORLD_DIR/$1"
+  fi;
+  # Make sure that the level directory exists.
+  if [ ! -e "$WORLD_DIR/$1" ] && [ ! -L "$WORLD_DIR/$1" ]; then
+    mkdir -p "$WORLD_DIR/$1"
+  fi;
   # Make sure the EULA has been set to true.
   EULA=$(getEULAValue "$1")
   if [ $EULA != "true" ]; then
@@ -1028,29 +1038,36 @@ start() {
   rotateLog "$1"
   # Make a mirror image of the world directory if requested.
   if [ $ENABLE_MIRROR -eq 1 ]; then
-    mkdir -p "$MIRROR_PATH/$1"
-    if [ $? -ne 0 ]; then
-      printf "Error copying world data, path %s not found.\n" $MIRROR_PATH/$1
-      exit 1
-    fi
-    # Check for a clean dismount from the previous server run.  If we have a
-    # <world>-original directory within <world> we didn't stop cleanly.
-    if [ -d "$WORLDS_LOCATION/$1/$1-original" ]; then
-      # Remove the symlink to the world-file mirror image.
-      # if recently restored from backup, this symlink may or may not exist
-      if [ -L "$WORLDS_LOCATION/$1/$1" ]; then
-        rm -r "$WORLDS_LOCATION/$1/$1"
+    # Make sure the mirror master folder exists.
+    mkdir -p "$MIRROR_PATH"
+    # If the symlink exists but the target doesn't, the
+    # mirror was removed somehow. This is bad.
+    if [ -L "$WORLD_DIR/$1" ] && [ ! -d "$MIRROR_PATH/$1" ]; then
+      # Remove the symlink to the mirror image.
+      rm -f "$WORLD_DIR/$1"
+      # Restore the original world files.
+      mv "$WORLD_DIR/$1-original" "$WORLD_DIR/$1"
+      # Send notification.
+      printf "Warning, the mirror for %s was removed, restored latest world.\n" $1
+    fi;
+    # If the symlink still exists, the server was stopped outside of mscs.
+    # SO DONT RESET THE MIRROR, just keep using it.
+    if [ ! -L "$WORLD_DIR/$1" ]; then
+      # Remove the mirror directory just in case.
+      rm -Rf "$MIRROR_PATH/$1"
+      # Copy the world files over to the mirror.
+      cp -a "$WORLD_DIR/$1" "$MIRROR_PATH/$1"
+      if [ $? -ne 0 ]; then
+        printf "Error copying world data, could not copy to %s.\n" $MIRROR_PATH/$1
+        exit 1
       fi
-
-      # Move the world files back to their original path name.
-      mv "$WORLDS_LOCATION/$1/$1-original" "$WORLDS_LOCATION/$1/$1"
+      # Remove the world file backup directory just in case.
+      rm -Rf "$WORLD_DIR/$1-original"
+      # Rename the original world file directory.
+      mv "$WORLD_DIR/$1" "$WORLD_DIR/$1-original"
+      # Create a symlink from the world file directory's original name to the mirrored files.
+      ln -s "$MIRROR_PATH/$1" "$WORLD_DIR/$1"
     fi
-    # Copy the world files over to the mirror.
-    cp -R "$WORLDS_LOCATION/$1/$1/"* "$MIRROR_PATH/$1"
-    # Rename the original world file directory.
-    mv "$WORLDS_LOCATION/$1/$1" "$WORLDS_LOCATION/$1/$1-original"
-    # Create a symlink from the world file directory's original name to the mirrored files.
-    ln -s "$MIRROR_PATH/$1/" "$WORLDS_LOCATION/$1/$1"
   fi
   # Change to the world's directory.
   cd $WORLD_DIR
@@ -1093,15 +1110,20 @@ start() {
 # @param 1 The world server to stop.
 # ---------------------------------------------------------------------------
 stop() {
-  local WORLD NUM
+  # Tell the server to stop.
   sendCommand $1 "stop"
   sendCommand $1 "end"
-  # Synchronize the mirror image of the world prior to closing, if
-  # required.
-  if [ $ENABLE_MIRROR -eq 1 ] && [ -L "$WORLDS_LOCATION/$1" ] && [ -d $WORLDS_LOCATION/$1/$1-original ]; then
+  # Wait for the server to shut down.
+  while serverRunning $1; do
+    sleep 1
+  done;
+  # Synchronize the mirror image of the world prior to closing, if required.
+  if [ $ENABLE_MIRROR -eq 1 ] && [ -L "$WORLDS_LOCATION/$1/$1" ] && [ -d "$MIRROR_PATH/$1" ]; then
     syncMirrorImage $1
     # Remove the symlink to the world-file mirror image.
-    rm -r "$WORLDS_LOCATION/$1/$1"
+    rm -f "$WORLDS_LOCATION/$1/$1"
+    # Remove the world-file mirror image folder.
+    rm -Rf "$MIRROR_PATH/$1"
     # Move the world files back to their original path name.
     mv "$WORLDS_LOCATION/$1/$1-original" "$WORLDS_LOCATION/$1/$1"
   fi
@@ -1115,11 +1137,20 @@ stop() {
 # @param 1 The world server to forcibly stop.
 # ---------------------------------------------------------------------------
 forceStop() {
+  local WAIT
   # Try to stop the server cleanly first.
-  stop "$1"
-  sleep 5
+  sendCommand $1 "stop"
+  sendCommand $1 "end"
+  # Wait for the server to shut down.
+  WAIT=0
+  while serverRunning $1 && [ $WAIT -le 20 ]; do
+    WAIT=$(($WAIT+1))
+    sleep 1
+  done;
   # Kill the process id of the world server.
   kill -9 $(getJavaPID "$1") > /dev/null 2>&1
+  # Properly clean up.
+  stop $1
 }
 
 # ---------------------------------------------------------------------------
@@ -1137,7 +1168,7 @@ worldBackup() {
   fi
   # Synchronize the mirror image of the world prior to closing, if
   # required.
-  if [ $ENABLE_MIRROR -eq 1 ] && [ -L "$WORLDS_LOCATION/$1" ] && [ -d $WORLDS_LOCATION/$1/$1-original ]; then
+  if [ $ENABLE_MIRROR -eq 1 ] && [ -L "$WORLDS_LOCATION/$1/$1" ] && [ -d "$MIRROR_PATH/$1" ]; then
     syncMirrorImage $1
   fi
   # Determine if we need to exclude the mirrored symlink or not
