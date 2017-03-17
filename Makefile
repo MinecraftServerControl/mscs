@@ -7,10 +7,12 @@ MSCS_INIT_D := /etc/init.d/mscs
 MSCS_SERVICE := /etc/systemd/system/mscs.service
 MSCS_COMPLETION := /etc/bash_completion.d/mscs
 
+UPDATE_D := $(wildcard update.d/*)
+
 .PHONY: install update clean
 
 install: update
-	adduser --system --group --home $(MSCS_HOME) --quiet $(MSCS_USER)
+	useradd --system --user-group --create-home -K UMASK=0022 --home $(MSCS_HOME) $(MSCS_USER)
 	if which systemctl; then \
 		systemctl -f enable mscs.service; \
 	else \
@@ -25,6 +27,9 @@ update:
 	if which systemctl; then \
 		install -m 0644 mscs.service $(MSCS_SERVICE); \
 	fi
+	@for script in $(UPDATE_D); do \
+		sh $$script; \
+	done; true;
 
 clean:
 	if which systemctl; then \

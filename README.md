@@ -1,109 +1,81 @@
-Minecraft Server Control Script
-=============================
+<p align="center">
+  <img src="mscs-logo.png" />
+</p>
 
-A powerful command-line control script for UNIX and Linux powered Minecraft servers.
-
-
-## Index
-* [Features](#features)
+# Index
+* [Overview](#overview)
+* [Prerequisites for installation](#prerequisites-for-installation)
+  * [Required programs](#required-programs)
+  * [Configuring the firewall / NAT](#configuring-the-firewall--nat)
+  * [Mapping software](#mapping-software)
 * [Installation](#installation)
-* [Usage](#usage)
-* [Server Customization](#server-customization)
-* [License](LICENSE)
+  * [Downloading the script](#downloading-the-script)
+  * [Configuration](#configuration)
+  * [Updating MSCS](#updating-mscs)
+* [Getting started guide](#getting-started-guide)
+  * [Creating a new world](#creating-a-new-world)
+  * [Importing an existing world](#importing-an-existing-world)
+    * [Renaming world folder](#renaming-world-folder)
+  * [Adjusting global server properties](#adjusting-global-server-properties)
+    * [Default global server properties](#default-global-server-properties)
+  * [Adjusting world properties](#adjusting-world-properties)
+    * [Default world properties](#default-world-properties)
+    * [Enabling Forge, BungeeCord, and other server software](#enabling-forge-bungeecord-and-other-server-software)
+* [Scheduling backups and other tasks](#scheduling-backups-and-other-tasks)
+  * [Scheduling backups](#scheduling-backups)
+  * [Removing backups after X days](#removing-backups-after-x-days)
+  * [Scheduling restarts](#scheduling-restarts)
+  * [Scheduling mapping](#scheduling-mapping)
+* [Mapping the world](#mapping-the-world)
+	* [Adjusting map/mapping settings](#adjusting-mapmapping-settings)
+* [Command reference](#command-reference)
+  * [Examples](#examples)
 * [Issues](#issues)
+  * [Troubleshooting](#troubleshooting)
+* [License](LICENSE)
+* [Disclaimer](#disclaimer)
 
+## Overview
+**M**inecraft **S**erver **C**ontrol **S**cript (**MSCS**)
+is a server-management script for UNIX and Linux powered Minecraft servers.
 
-## Features
+Features include:
+
 * Run multiple Minecraft worlds.
 * Start, stop, and restart single or multiple worlds.
 * Create, delete, disable, and enable worlds.
-* Includes support for additional server types: [Forge](http://www.minecraftforge.net/), [BungeeCord](http://www.spigotmc.org/wiki/bungeecord/), [SpigotMC](http://www.spigotmc.org/wiki/spigot/), etc.
+* Includes support for additional server types: [Forge]
+(http://www.minecraftforge.net/),
+[BungeeCord](http://www.spigotmc.org/wiki/bungeecord/),
+[SpigotMC](http://www.spigotmc.org/wiki/spigot/), etc.
 * Users automatically notified of important server events.
-* Uses the Minecraft [Query protocol](http://wiki.vg/Query) to keep track of current server conditions.
-* LSB and systemd compatible init script, allows for seamless integration with your server's startup and shutdown sequences.
-* Map worlds using the [Minecraft Overviewer](http://overviewer.org/) mapping software.
-* Backup worlds, and remove backups older than X days.
+* LSB and systemd compatible init script,
+allows for seamless integration with your server's startup and shutdown
+sequences.
+* Map worlds using the [Minecraft Overviewer](http://overviewer.org/)
+ mapping software.
+* Automatically backup worlds, remove backups older than X days,
+and restart worlds.
 * Update the server and client software automatically.
 * Send commands to a world server from the command line.
 
-See the [Usage](#usage) section below for a description on how to use these features.
+## Prerequisites for installation
+Ensure that you have done the following before installing MSCS:
 
-
-## Installation
-
-### Download
-You can download the script from the following locations:
-
-* Get the latest stable [release](https://github.com/sandain/MinecraftServerControlScript/releases).
-
-* Get the development version as a [zip file](https://github.com/sandain/MinecraftServerControlScript/archive/master.zip):
-
-        wget https://github.com/sandain/MinecraftServerControlScript/archive/master.zip
-
-* Make a clone of the [git repository](https://github.com/sandain/MinecraftServerControlScript.git):
-
-        git clone https://github.com/sandain/MinecraftServerControlScript.git
-
-### Configuration
-To get your server to run the script on startup, and cleanly down the server
-on shutdown, the `mscs` script must be copied to `/usr/local/bin/`,
-have its execute permissions set, and the system must be instructed to use
-the script on startup and shutdown.  For Bash programmable completion
-support, the `mscs.completion` script must be copied to
-`/etc/bash_completion.d/`.  For security reasons, the script uses a user
-account named `minecraft` rather than `root` and the account must be created
-before the script is used.
-
-This can all be done automatically with the included Makefile in Debian and
-Ubuntu like environments by running:
-
-    sudo make install
-
-You can manually add the `minecraft` user and install the script with the
-following commands:
-
-    sudo adduser --system --group --home /opt/mscs --quiet minecraft
-    sudo install -m 0755 msctl /usr/local/bin/msctl
-    sudo install -m 0755 mscs /usr/local/bin/mscs
-
-To manually link the script to your server's startup and shutdown sequences
-when using systemd (ie. Ubuntu 15.04+):
-
-    sudo install -m 0644 mscs.service /etc/systemd/system/mscs.service
-    sudo systemctl -f enable mscs.service
-
-To manually link the script to a server using a SysV-style init system (or something
-compatible like Upstart in Ubuntu 14.10):
-
-    sudo ln -s /usr/local/bin/mscs /etc/init.d/mscs
-    sudo update-rc.d mscs defaults
-
-To manually add Bash Completion support:
-
-    sudo install -m 0644 mscs.completion /etc/bash_completion.d/mscs
-
-The Minecraft server software will be automatically downloaded to the
-following location on the first run:
-
-    /opt/mscs/server/
-
-### EULA
-As of Minecraft version 1.7.10, Mojang requires that users of their software read and agree to their [EULA](https://account.mojang.com/documents/minecraft_eula).  After you have read through the document, you need to modify the `eula.txt` file in your world's folder, changing the value of the `eula` variable from `false` to `true`.
-
-    #By changing the setting below to TRUE you are indicating your agreement to our EULA (https://account.mojang.com/documents/minecraft_eula).
-    eula=true
-
-### Requirements
+### Required Programs
 We've made an attempt to utilize only features that are normally installed in
-most Linux and UNIX environments in this script, but there are a few
+most Linux and UNIX environments in this script. However, there may be a few
 requirements that this script has that may not already be in place:
 * Java JRE     - The Minecraft server software requires this.
 * Perl         - Most, if not all, Unix and Linux like systems have this
                  preinstalled.
+* libjson-perl - Allows the script to read JSON formatted data.
 * Python       - Required by the Minecraft Overviewer mapping software.
+* GNU Make     - Allows you to use the Makefile to simplify installation.
 * GNU Wget     - Allows the script to download software updates via the
                  internet.
 * rdiff-backup - Allows the script to efficiently run backups.
+* rsync        - Allows the script to efficiently make copies of files.
 * Socat        - Allows the script to communicate with the Minecraft server.
 * Iptables     - Although not explicitly required, a good firewall should be
                  installed.
@@ -111,38 +83,433 @@ requirements that this script has that may not already be in place:
 If you are running Debian or Ubuntu, you can make sure that these are
 installed by running:
 
-    sudo apt-get install default-jre perl python wget rdiff-backup socat iptables
+    sudo apt-get install default-jre perl libjson-perl python make wget rdiff-backup rsync socat iptables
 
-### Mapping Software
+### Configuring the firewall / NAT
+If you have a firewall installed on your computer, or a router using NAT
+installed in your network, you will need to route some ports to your server.
+Instructions on how to accomplish this are beyond the scope of this document,
+but here are some things you will need to know:
+* The default port for the Minecraft server is: `25565`.
+* If you wish to run multiple world servers using this script, you may
+  want to open a range of ports (for example `25565 - 25575`).
+* If you are using [BungeeCord](http://www.spigotmc.org/wiki/bungeecord/),
+  you will most likely need to only open the default port: `25565`.
+
+See the [iptables.rules](iptables.rules) file for a very basic set of rules
+that you can use with the Iptables firewall.
+
+### Mapping software
 The script uses the [Minecraft Overviewer](http://overviewer.org) mapping
 software to generate maps of your worlds.  Minecraft Overviewer is a
 command-line tool for rendering high-resolution maps of Minecraft worlds. It
 generates a set of static html and image files and uses the Google Maps API to
 display a nice interactive map.
 
-You can [download](http://overviewer.org/downloads) premade binaries for
+If you wish to use the mapping software, you can [download]
+(http://overviewer.org/downloads) premade binaries for
 supported systems, or build your own binary from source if needed.
 
 Repositories for automatic installation are also available:
 * [Debian/Ubuntu](http://overviewer.org/debian/info)
 * [RHEL/CentOS/Fedora](http://overviewer.org/rpms/info)
 
-### Firewall / NAT
-If you have a firewall installed on your computer, or a router using NAT
-installed in your network, you will need to route some ports to your server.
-Instructions on how to accomplish this are beyond the scope of this post, but
-here are some things you will need to know:
-* The default port for the Minecraft server is: `25565`.
-* If you wish to run multiple world servers using this script, you will
-  want to open a range of ports (for example `25565 - 25575`).
+## Installation
+### Downloading the script
+The easiest way to download the script is to make a clone of the [git
+repository](https://github.com/MinecraftServerControl/mscs.git).
+You must have git installed first. To install git:
 
-See the [iptables.rules](iptables.rules)
-file for a very basic set of rules that you can use with the Iptables firewall.
+    sudo apt-get install git
+
+Then:
+
+    git clone https://github.com/MinecraftServerControl/mscs.git
+
+Note that it will be downloaded into the current directory which you are
+working in.
+
+##### Other ways to download
+
+* Get the latest stable [release]
+(https://github.com/MinecraftServerControl/mscs/releases).
+
+* Get the development version as a [zip file]
+(https://github.com/MinecraftServerControl/mscs/archive/master.zip):
+
+    wget https://github.com/MinecraftServerControl/mscs/archive/master.zip
+
+### Configuration
+
+Navigate to the `mscs` directory that you just downloaded.  Configuration can
+be done with the included Makefile in Debian and Ubuntu like environments by
+running:
+
+    sudo make install
+
+This will give the user you created in the config (by default, the user is
+called `minecraft`) access to write in the `/opt/mscs` folder.
+
+If you get a permission error, please see the [troubleshooting]
+(#troubleshooting) section.
+
+#### Manual Configuration
+If you wish to configure the script manually, please visit the [wiki page]
+(https://github.com/MinecraftServerControl/mscs/wiki/Manual-Configuration).
+
+### Updating MSCS
+Periodically Minecraft Server Control Script is updated to address bug fixes
+and add new features. The easiest way to fetch the latest update, assuming you
+used [the easiest way to install the script](#downloading-the-script), first
+`cd` into the folder where you downloaded MSCS. Then, type:
+
+    git pull
+
+You can alternatively use [one of the other methods](#other-ways-to-download)
+to download the latest version.  Just `cd` into the folder containing the MSCS
+download to continue.
+
+Once you have the latest version of MSCS downloaded, type:
+
+    sudo make update
+
+## Getting started guide
+So you successfully installed the script--great!
+
+At first, you probably want to [create a new world](#creating-a-new-world) or
+[import an existing world](#importing-an-existing-world) into the script.
+
+Then, you might want to adjust the
+[world properties](#adjusting-world-properties), adjust the
+[global server properties](#adjusting-global-server-properties), and enable any
+other [server software](#enabling-forge-bungeecord-and-other-server-software)
+as needed.
+
+### Creating a new world
+The command to create a new world is:
+
+    mscs create [world] [port] <ip>
+
+Where `world` is the name of the world you specify,
+and `port` is the server port (by default, use `25565`).
+`ip` is optional and will be used if you wish to bind a world server to a
+specific network interface (e.g. `127.0.0.1` to enforce local access only).
+
+Afterwards, start the server via `mscs start [world]` where `world` is the
+name of the world. The world will then shut down because you have to accept
+the EULA.
+
+The EULA can be found in `/opt/mscs/worlds/myWorld` where `myWorld`
+is the name given to the world you created.
+
+After accepting the EULA simply start the server using the same command above,
+and you're all set!
+
+### Importing an existing world
+
+You just need to create a new directory in the worlds folder for the world you
+wish to import. Suppose the world you wish to import is called `alpha`, you
+would create a new folder in `/opt/mscs/worlds` with the same name as the
+world, then copy the data files over to that new directory.
+
+IMPORTANT: make sure the world that you are importing is not currently
+running.
+
+If the directory containing the world `alpha` you wish to import looks like
+this:
+
+    $ ls
+    alpha
+    banned-ips.txt
+    banned-players.txt
+    crash-reports
+    logs
+    ops.txt
+    server.properties
+    white-list.txt
+
+You can just copy your world into the worlds directory:
+
+    mkdir /opt/mscs/worlds/alpha
+    cp -R * /opt/mscs/worlds/alpha
+
+After you've copied the world files, you will want to [create a world entry
+into MSCS](#creating-a-new-world) using the name of the world and the port
+that you wish the world to use:
+
+    mscs create alpha 25565
 
 
-## Usage
+#### Renaming world folder
+If you would like to rename the `alpha` folder
+(the one that is the parent folder of the actual world) to a different name,
+follow the steps below.
 
-### Permissions
+IMPORTANT: make sure the world that you are importing is not currently
+running.
+
+In this example we want to rename the `alpha` folder to `vanillaMC`:
+
+    mkdir /opt/mscs/worlds/vanillaMC
+    cp -R * /opt/mscs/worlds/vanillaMC
+    mv /opt/mscs/worlds/vanillaMC/alpha /opt/mscs/worlds/vanillaMC/vanillaMC
+
+After you've set up the file structure, [you can now create a world entry
+into MSCS](#creating-a-new-world) using the name of the world and the port
+that you wish the world to use:
+
+    mscs create vanillaMC 25565
+
+### Adjusting global server properties
+Default values in the script can be overridden by adding certain properties to one
+of the `mscs.defaults` files. The `mscs.defaults` files can be found found in one
+of three places depending on how the script is being used. When using the `mscs`
+script, the `mscs.defaults` file can be found at `/opt/mscs/mscs.defaults`. When
+using the `msctl` script in [multi-user mode](https://github.com/MinecraftServerControl/mscs/wiki/Configuring-MSCS-for-multiple-users), the `mscs.defaults` file can be found at either `$HOME/mscs.defaults` or `$HOME/.config/mscs/mscs.defaults`.
+
+For more information on the various properties, see the [wiki page](https://github.com/MinecraftServerControl/mscs/wiki/Global-Server-Settings).
+
+The following properties are available:
+* mscs-location                - Location of the mscs files.
+* mscs-worlds-location         - Location of world files.
+* mscs-versions-url            - URL to download the version_manifest.json file.
+* mscs-versions-json           - Location of the version_manifest.json file.
+* mscs-versions-duration       - Length in minutes to keep the version_manifest.json file before updating.
+* mscs-lockfile-duration       - Length in minutes to keep lock files before removing.
+* mscs-detailed-listing        - Properties to return for detailed listings.
+* mscs-default-world           - Default world name.
+* mscs-default-port            - Default Port.
+* mscs-default-ip              - Default IP address.
+* mscs-default-version-type    - Default version type (release or snapshot).
+* mscs-default-client-version  - Default version of the client software.
+* mscs-default-client-jar      - Default .jar file for the client software.
+* mscs-default-client-url      - Default download URL for the client software.
+* mscs-default-client-location - Default location of the client .jar file.
+* mscs-default-server-version  - Default version of the server software.
+* mscs-default-server-jar      - Default .jar file for the server software.
+* mscs-default-server-url      - Default download URL for the server software.
+* mscs-default-server-args     - Default arguments to for a world server.
+* mscs-default-initial-memory  - Default initial amount of memory for a world server.
+* mscs-default-maximum-memory  - Default maximum amount of memory for a world server.
+* mscs-default-server-location - Default location of the server .jar file.
+* mscs-default-server-command  - Default command to run for a world server.
+* mscs-backup-location         - Location to store backup files.
+* mscs-backup-log              - Lcation of the backup log file.
+* mscs-backup-duration         - Length in days that backups survive.
+* mscs-log-duration            - Length in days that logs survive.
+* mscs-enable-mirror           - Enable the mirror option by default for worlds (default disabled).
+* mscs-mirror-path             - Default path for the mirror files.
+* mscs-overviewer-bin          - Location of Overviewer.
+* mscs-overviewer-url          - URL for Overviewer.
+* mscs-maps-location           - Location of Overviewer generated map files.
+* mscs-maps-url                - URL for accessing Overviewer generated maps.
+
+The following variables may be used in some of the above properties:
+* $JAVA                - The Java virtual machine.
+* $CURRENT_VERSION     - The current Mojang Minecraft release version.
+* $CLIENT_VERSION      - The version of the client software.
+* $SERVER_VERSION      - The version of the server software.
+* $SERVER_JAR          - The .jar file to run for the server.
+* $SERVER_ARGS         - The arguments to the server.
+* $INITIAL_MEMORY      - The initial amount of memory for the server.
+* $MAXIMUM_MEMORY      - The maximum amount of memory for the server.
+* $SERVER_LOCATION     - The location of the server .jar file.
+
+#### Default global server properties
+Below are the default global server properties. You can add one, none, or all
+of the properties below to one of the `mscs.defaults` files and adjust it to
+your liking.
+
+    mscs-location=/opt/mscs
+    mscs-worlds-location=/opt/mscs/worlds
+    mscs-versions-url=https://launchermeta.mojang.com/mc/game/version_manifest.json
+    mscs-versions-json=/opt/mscs/version_manifest.json
+    mscs-versions-duration=1440
+    mscs-lockfile-duration=1440
+    mscs-default-world=world
+    mscs-default-port=25565
+    mscs-default-ip=
+    mscs-default-version-type=release
+    mscs-default-client-version=$CURRENT_VERSION
+    mscs-default-client-jar=$CLIENT_VERSION.jar
+    mscs-default-client-url=https://s3.amazonaws.com/Minecraft.Download/versions/$CLIENT_VERSION/$CLIENT_VERSION.jar
+    mscs-default-client-location=/opt/mscs/.minecraft/versions/$CLIENT_VERSION
+    mscs-default-server-version=$CURRENT_VERSION
+    mscs-default-server-jar=minecraft_server.$SERVER_VERSION.jar
+    mscs-default-server-url=https://s3.amazonaws.com/Minecraft.Download/versions/$SERVER_VERSION/minecraft_server.$SERVER_VERSION.jar
+    mscs-default-server-args=nogui
+    mscs-default-initial-memory=128M
+    mscs-default-maximum-memory=2048M
+    mscs-default-server-location=/opt/mscs/server
+    mscs-default-server-command=$JAVA -Xms$INITIAL_MEMORY -Xmx$MAXIMUM_MEMORY -jar $SERVER_LOCATION/$SERVER_JAR $SERVER_ARGS
+    mscs-backup-location=/opt/mscs/backups
+    mscs-backup-log=/opt/mscs/backups/backup.log
+    mscs-backup-duration=15
+    mscs-log-duration=15
+    mscs-detailed-listing=motd server-ip server-port max-players level-type online-mode
+    mscs-enable-mirror=0
+    mscs-mirror-path=/dev/shm/mscs
+    mscs-overviewer-bin=/usr/bin/overviewer.py
+    mscs-overviewer-url=http://overviewer.org
+    mscs-maps-location=/opt/mscs/maps
+    mscs-maps-url=http://minecraft.server.com/maps
+
+### Adjusting world properties
+Each world server can override the default values in a similar manner by
+adding certain properties to the world's `mscs.properties` file. The
+`mscs.properties` file can be found in every world folder (for instance, if
+you had a world called `myWorld`, the path would be
+`/opt/mscs/worlds/myWorld/mscs.properties`). This file allows you to adjust
+many different properties for each world you have.  By default, the file only
+has one line in it: `mscs-enabled=true`.
+
+The following properties are available:
+* mscs-enabled - Enable the world server (true or false).
+* mscs-version-type - Assign the version type (release or snapshot).
+* mscs-client-version - Assign the version of the client software.
+* mscs-client-jar - Assign the .jar file for the client software.
+* mscs-client-url - Assign the download URL for the client software.
+* mscs-client-location - Assign the location of the client .jar file.
+* mscs-server-version - Assign the version of the server software.
+* mscs-server-jar - Assign the .jar file for the server software.
+* mscs-server-url - Assign the download URL for the server software.
+* mscs-server-args - Assign the arguments to the server.
+* mscs-initial-memory - Assign the initial amount of memory for the server.
+* mscs-maximum-memory - Assign the maximum amount of memory for the server.
+* mscs-server-location - Assign the location of the server .jar file.
+* mscs-server-command - Assign the command to run for the server.
+
+The following variables may be used in some of the values of the above keys:
+* $JAVA - The Java virtual machine.
+* $CURRENT_VERSION - The current Mojang Minecraft release version.
+* $CLIENT_VERSION - The version of the client software.
+* $SERVER_VERSION - The version of the server software.
+* $SERVER_JAR - The .jar file to run for the server.
+* $SERVER_ARGS - The arguments to the server.
+* $INITIAL_MEMORY - The initial amount of memory for the server.
+* $MAXIMUM_MEMORY - The maximum amount of memory for the server.
+* $SERVER_LOCATION - The location of the server .jar file.
+
+#### Default world properties
+Below are the default properties for the world. You can add one, none, or all
+of the properties below to the `mscs.properties` file and adjust it to your
+liking.
+
+    mscs-enabled=true
+    mscs-version-type=release
+    mscs-client-version=$CURRENT_VERSION
+    mscs-client-jar=$CLIENT_VERSION.jar
+    mscs-client-url=https://s3.amazonaws.com/Minecraft.Download/versions/$CLIENT_VERSION/$CLIENT_VERSION.jar
+    mscs-client-location=/opt/mscs/.minecraft/versions/$CLIENT_VERSION
+    mscs-server-version=$CURRENT_VERSION
+    mscs-server-jar=minecraft_server.$SERVER_VERSION.jar
+    mscs-server-url=https://s3.amazonaws.com/Minecraft.Download/versions/$SERVER_VERSION/minecraft_server.$SERVER_VERSION.jar
+    mscs-server-args=nogui
+    mscs-initial-memory=128M
+    mscs-maximum-memory=2048M
+    mscs-server-location=/opt/mscs/server
+    mscs-server-command=$JAVA -Xms$INITIAL_MEMORY -Xmx$MAXIMUM_MEMORY -jar $SERVER_LOCATION/$SERVER_JAR $SERVER_ARGS
+
+#### Enabling Forge, BungeeCord, and other server software
+Please visit the [wiki](https://github.com/MinecraftServerControl/mscs/wiki/Server-Customization-Examples)
+for additional information.
+
+## Scheduling backups and other tasks
+All MSCS tasks can be automated using [**cron**](https://en.wikipedia.org/wiki/Cron),
+a scheduler software that can run programs on a set interval of time. Whether
+it be backups, restarts, mapping, or any other `mscs` command, it can be
+scheduled using `cron`.
+
+### Scheduling backups
+Below is an example of one way you could setup backups via `cron` to backup a
+world every 2 hours:
+
+Edit the crontab file for the `minecraft` user using `sudo`:
+
+    sudo crontab -e -u minecraft
+
+Page down until you get to an empty line. Then paste the following:
+
+    # Define PATH
+    PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+
+    # Run mscs backups
+    0 */2 * * *  mscs backup myWorld
+
+* We define the PATH because `cron` doesn't do it for us.
+
+* `0 */2 * * *` is the time interval to backup. This particular expression
+  means backup every 2 hours. You can change this to 3, 4, 5, etc to backup
+  every X amount of hours. You can also backup according to days, minutes,
+  seconds, the time of the day, and more. See [the wiki page](https://github.com/MinecraftServerControl/mscs/wiki/Backup-and-Restore)
+  for more information.
+
+* `myWorld` is the name of the world you wish to backup. Omitting this will
+  backup all worlds.
+
+* The backups will be saved in `/opt/mscs/backups`.
+
+### Removing backups after X days
+You can specify how long to keep backups by changing the
+`mscs-backup-duration` property in the `mscs.defaults` file (see
+[adjusting global server properties](#adjusting-global-server-properties)
+).
+
+### Scheduling restarts
+You can schedule restarts for the server following the same method as outlined
+in [scheduling backups](#scheduling-backups). Simply change the scheduled
+command to:
+
+    mscs restart <world>
+
+Where `<world>` is the name of the world you wish to restart (omit for all
+worlds).
+
+### Scheduling mapping
+You can also schedule mapping using the same method outlined in
+[scheduling backups](#scheduling-backups). Simply replace the command with:
+
+    mscs map <world>
+
+Where `<world>` is the name of the world you wish to map (omit for all
+worlds).
+
+## Mapping the world
+Minecraft Server Control Script uses [Overviewer]
+(http://docs.overviewer.org/en/latest/) to generate maps. After [installing]
+(#mapping-software), modify the settings (if necessary) found in the
+`mscs.defaults` file (see [adjusting global server properties]
+(#adjusting-global-server-properties)):
+
+    mscs-overviewer-bin=/usr/bin/overviewer.py
+    mscs-overviewer-url=http://overviewer.org
+    mscs-maps-location=/opt/mscs/maps
+    mscs-maps-url=my.minecraftserver.com
+
+
+After you've tinkered the settings to your liking, run:
+
+    mscs map <world>
+
+Where `<world>` is the name of the world you would like to get mapped.
+Omit the world name to map all worlds.
+By default maps are saved into `/opt/mscs/maps`.
+
+### Adjusting map/mapping settings
+
+You can individually adjust the properties that Overviewer will use for each
+world by editing the world's `overviewer-settings.py` file. Properties here
+include the output path of the map (i.e. you can change this to your web
+server directory), and render settings. Please visit
+[their website](http://docs.overviewer.org/en/latest/config/) for information
+on config.
+
+In order for the map to update new changes in the world,
+you need to run Overviewer periodically.
+Please see [scheduling mapping](#scheduling-mapping).
+
+## Command Reference
+
 All commands below assume that you are running them as either the `minecraft`
 user or as `root` (through sudo).
 
@@ -151,7 +518,7 @@ will be started using the `minecraft` user instead for security purposes.
 
     sudo mscs [option]
 
-### Options
+````
 * start [world]
 
     Start the Minecraft world server.  Start all worlds by default.
@@ -259,17 +626,23 @@ will be started using the `minecraft` user instead for security purposes.
 
     Update the client and server software packages.
 
+* query [world]
+
+    Run a detailed Query on the Minecraft world server.
+````
+
 ### Examples
 
 To start all of the world servers, issue the command:
 
     sudo mscs start
 
-To create a world named alpha, issue the command:
+To create a world named `alpha` on the default port `25565`, issue the
+command:
 
     sudo mscs create alpha 25565
 
-To start just the world named alpha, issue the command:
+To start just the world named `alpha`, issue the command:
 
     sudo mscs start alpha
 
@@ -280,119 +653,6 @@ To send a command to a world server, issue the command:
 ie.
 
     sudo mscs send alpha say Hello world!
-
-
-### Import Existing Worlds
-
-You just need to create a new directory in the worlds folder for the world you wish to import.
-Suppose the world you wish to import is called `alpha`, you would create a new folder in
-`/opt/mscs/worlds`, then copy the data files over to that directory.
-
-If the directory containing the world `alpha` you wish to import looks like this:
-
-    $ ls
-    alpha
-    banned-ips.txt
-    banned-players.txt
-    crash-reports
-    logs
-    ops.txt
-    server.properties
-    white-list.txt
-
-You can just copy your world into the worlds directory:
-
-    mkdir /opt/mscs/worlds/alpha
-    cp -R * /opt/mscs/worlds/alpha
-
-Make sure you check `server-port` and `query.port` in `server.properties` to make sure it does not overlap with other servers created by the MSCS script. Also ensure that `enable-query` is set to `true`.  If you do not have `enable-query` and a `query.port` set, you will not be able to check the status of the world with the script.
-
-
-## Server Customization
-
-The default values in the script can be overwritten by modifying the
-`/etc/default/mscs` file.
-
-For example, to modify the default MAPS_URL variable, add the following line
-to the file:
-
-    MAPS_URL="http://server.com/minecraft/maps"
-
-The server settings for each world can be customized by adding certain
-key/value pairs to the world's `mscs.properties` file.
-
-The following keys are available:
-* mscs-enabled - Enable or disable the world server.
-* mscs-version-type - Assign the version type (release or snapshot).
-* mscs-client-version - Assign the version of the client software.
-* mscs-client-jar - Assign the .jar file for the client software.
-* mscs-client-url - Assign the download URL for the client software.
-* mscs-client-location - Assign the location of the client .jar file.
-* mscs-server-version - Assign the version of the server software.
-* mscs-server-jar - Assign the .jar file for the server software.
-* mscs-server-url - Assign the download URL for the server software.
-* mscs-server-args - Assign the arguments to the server.
-* mscs-initial-memory - Assign the initial amount of memory for the server.
-* mscs-maximum-memory - Assign the maximum amount of memory for the server.
-* mscs-server-location - Assign the location of the server .jar file.
-* mscs-server-command - Assign the command to run for the server.
-
-The following variables may be used in some of the values of the above keys:
-* $JAVA - The Java virtual machine.
-* $CURRENT_VERSION - The current Mojang Minecraft release version.
-* $CLIENT_VERSION - The version of the client software.
-* $SERVER_VERSION - The version of the server software.
-* $SERVER_JAR - The .jar file to run for the server.
-* $SERVER_ARGS - The arguments to the server.
-* $INITIAL_MEMORY - The initial amount of memory for the server.
-* $MAXIMUM_MEMORY - The maximum amount of memory for the server.
-* $SERVER_LOCATION - The location of the server .jar file.
-
-### Example key/value pairs
-
-Equivalent to the default values:
-
-    mscs-enabled=true
-    mscs-version-type=release
-    mscs-client-version=$CURRENT_VERSION
-    mscs-client-jar=$CLIENT_VERSION.jar
-    mscs-client-url=https://s3.amazonaws.com/Minecraft.Download/versions/$CLIENT_VERSION/$CLIENT_VERSION.jar
-    mscs-client-location=/opt/mscs/client/$CLIENT_VERSION
-    mscs-server-version=$CURRENT_VERSION
-    mscs-server-jar=minecraft_server.$SERVER_VERSION.jar
-    mscs-server-url=https://s3.amazonaws.com/Minecraft.Download/versions/$SERVER_VERSION/minecraft_server.$SERVER_VERSION.jar
-    mscs-server-args=nogui
-    mscs-initial-memory=128M
-    mscs-maximum-memory=2048M
-    mscs-server-location=/opt/mscs/server
-    mscs-server-command=$JAVA -Xms$INITIAL_MEMORY -Xmx$MAXIMUM_MEMORY -jar $SERVER_LOCATION/$SERVER_JAR $SERVER_ARGS
-
-Run a Minecraft version 1.6.4 server:
-
-    mscs-client-version=1.6.4
-    mscs-server-version=1.6.4
-
-Use Forge to run a 1.8.4 server (requires additional setup):
-
-    mscs-client-version=1.8.4
-    mscs-server-version=1.8.4
-    mscs-server-jar=forge-1.8-11.14.1.1419-universal.jar
-    mscs-server-url=http://files.minecraftforge.net/maven/net/minecraftforge/forge/1.8-11.14.1.1419/forge-1.8-11.14.1.1419-universal.jar
-
-Use the latest BungeeCord successful build (requires additional setup):
-
-    mscs-server-jar=BungeeCord.jar
-    mscs-server-url=http://ci.md-5.net/job/BungeeCord/lastSuccessfulBuild/artifact/bootstrap/target/BungeeCord.jar
-
-### Additional documentation
-
-More examples and documentation on server customization can be found on the [wiki](https://github.com/sandain/MinecraftServerControlScript/wiki/Server-Customization-Examples) page.
-
-
-## License
-
-See [LICENSE](LICENSE)
-
 
 ## Issues
 
@@ -406,4 +666,28 @@ work out a solution with you.
 
 Support thread:  http://www.minecraftforum.net/viewtopic.php?f=10&t=129833
 
-Github Issues:  https://github.com/sandain/MinecraftServerControlScript/issues
+Github Issues:  https://github.com/MinecraftServerControl/mscs/issues
+
+### Troubleshooting
+
+#### Permission denied when attempting to run `mscs create ...`
+
+Type
+
+    chmod -R u+w /opt/mscs
+    chown -R minecraft:minecraft /opt/mscs
+
+To give the `minecraft` user the correct permissions needed to create/modify
+folders.
+
+## License
+
+See [LICENSE](LICENSE)
+
+## Disclaimer
+
+Minecraft is a trademark of Mojang Synergies AB, a subsidiary of Microsoft
+Studios.  MSCS and MSC-GUI are designed to ease the use of the Mojang produced
+Minecraft server software on Linux and UNIX servers.  MSCS and MSC-GUI are
+independently developed by open software enthusiasts with no support or
+implied warranty provided by either Mojang or Microsoft.
