@@ -27,7 +27,9 @@
   * [Scheduling restarts](#scheduling-restarts)
   * [Scheduling mapping](#scheduling-mapping)
 * [Mapping the world](#mapping-the-world)
-	* [Adjusting map/mapping settings](#adjusting-mapmapping-settings)
+  * [Installing Overviewer](#installing-overviewer)
+  * [Configuring Overviewer](#configuring-overviewer)
+    * [Changing the Default Rendering Settings](#changing-the-default-rendering-settings)
 * [Command reference](#command-reference)
   * [Examples](#examples)
 * [Issues](#issues)
@@ -44,8 +46,7 @@ Features include:
 * Run multiple Minecraft worlds.
 * Start, stop, and restart single or multiple worlds.
 * Create, delete, disable, and enable worlds.
-* Includes support for additional server types: [Forge]
-(http://www.minecraftforge.net/),
+* Includes support for additional server types: [Forge](http://www.minecraftforge.net/),
 [BungeeCord](http://www.spigotmc.org/wiki/bungeecord/),
 [SpigotMC](http://www.spigotmc.org/wiki/spigot/), etc.
 * Users automatically notified of important server events.
@@ -106,13 +107,7 @@ command-line tool for rendering high-resolution maps of Minecraft worlds. It
 generates a set of static html and image files and uses the Google Maps API to
 display a nice interactive map.
 
-If you wish to use the mapping software, you can [download]
-(http://overviewer.org/downloads) premade binaries for
-supported systems, or build your own binary from source if needed.
-
-Repositories for automatic installation are also available:
-* [Debian/Ubuntu](http://overviewer.org/debian/info)
-* [RHEL/CentOS/Fedora](http://overviewer.org/rpms/info)
+To setup mapping with MSCS, please see [Mapping the world](#mapping-the-world).
 
 ## Installation
 ### Downloading the script
@@ -262,10 +257,13 @@ that you wish the world to use:
 
 ### Adjusting global server properties
 Default values in the script can be overridden by adding certain properties to one
-of the `mscs.defaults` files. The `mscs.defaults` files can be found found in one
+of the `mscs.defaults` files. The `mscs.defaults` files needs to be created in one
 of three places depending on how the script is being used. When using the `mscs`
-script, the `mscs.defaults` file can be found at `/opt/mscs/mscs.defaults`. When
-using the `msctl` script in [multi-user mode](https://github.com/MinecraftServerControl/mscs/wiki/Configuring-MSCS-for-multiple-users), the `mscs.defaults` file can be found at either `$HOME/mscs.defaults` or `$HOME/.config/mscs/mscs.defaults`.
+script, the `mscs.defaults` file __**will need to be created*__ at `/opt/mscs/mscs.defaults`. When
+using the `msctl` script in [multi-user mode](https://github.com/MinecraftServerControl/mscs/wiki/Configuring-MSCS-for-multiple-users), the `mscs.defaults` file __**needs to be created at either**__ `$HOME/mscs.defaults` or `$HOME/.config/mscs/mscs.defaults`.
+
+Once you create the file at the appropriate location listed above, you can copy/paste 
+as many of the below properties as your heart desires to override any of the default properties. 
 
 For more information on the various properties, see the [wiki page](https://github.com/MinecraftServerControl/mscs/wiki/Global-Server-Settings).
 
@@ -301,6 +299,7 @@ The following properties are available:
 * mscs-mirror-path             - Default path for the mirror files.
 * mscs-overviewer-bin          - Location of Overviewer.
 * mscs-overviewer-url          - URL for Overviewer.
+* mscs-overviewer-key          - Google API key for Overviewer.
 * mscs-maps-location           - Location of Overviewer generated map files.
 * mscs-maps-url                - URL for accessing Overviewer generated maps.
 
@@ -351,6 +350,7 @@ your liking.
     mscs-mirror-path=/dev/shm/mscs
     mscs-overviewer-bin=/usr/bin/overviewer.py
     mscs-overviewer-url=http://overviewer.org
+    mscs-overviewer-key=
     mscs-maps-location=/opt/mscs/maps
     mscs-maps-url=http://minecraft.server.com/maps
 
@@ -475,38 +475,70 @@ Where `<world>` is the name of the world you wish to map (omit for all
 worlds).
 
 ## Mapping the world
-Minecraft Server Control Script uses [Overviewer]
-(http://docs.overviewer.org/en/latest/) to generate maps. After [installing]
-(#mapping-software), modify the settings (if necessary) found in the
-`mscs.defaults` file (see [adjusting global server properties]
-(#adjusting-global-server-properties)):
+Minecraft Server Control Script uses [Overviewer](http://docs.overviewer.org/en/latest/) to generate maps. 
+
+### Installing Overviewer
+
+Overviewer has pretty straightforward documentation to download and install the software:
+
+* [Debian/Ubuntu](http://overviewer.org/debian/info)
+* [RHEL/CentOS/Fedora](http://overviewer.org/rpms/info)
+
+*Once you follow the install page, come back here for further instructions.
+Don't read the "Running the Overviewer" section, as it will differ in MSCS.*
+
+You can also [download](http://overviewer.org/downloads) premade binaries for
+supported systems, or build your own binary from source if needed.
+
+### Configuring Overviewer
+
+Overviewer requires a free Google API key. You can obtain one 
+[here](https://developers.google.com/maps/documentation/javascript/get-api-key). 
+On the webpage, Select the blue "Get a Key" button. Then, follow the prompts.
+You can create a new project or use the already-made "My Project" to obtain
+the API key--it doesn't matter. Copy this key, you'll need it. 
+
+If you haven't already, create a `mscs.defaults` file and 
+paste the following default values 
+(see [adjusting global server properties](#adjusting-global-server-properties)):
 
     mscs-overviewer-bin=/usr/bin/overviewer.py
     mscs-overviewer-url=http://overviewer.org
+    mscs-overviewer-key=PASTE-YOUR-KEY-HERE
     mscs-maps-location=/opt/mscs/maps
     mscs-maps-url=my.minecraftserver.com
+    
+* `mscs-overviewer-bin`: The overviewer file. If you did the default Overviewer installation, 
+   leave this untouched.
+* `mscs-overviewer-url`: A clickable link for users in chat to view the overviewer website.
+* `mscs-overviewer-key`: Your Google API Key. *If you don't enter this, Overviewer won't work.*
+* `mscs-maps-location`: The location to store the generated maps. Change this value
+   to your web-server folder, e.g. `var/www/` (or symlink your web-server folder to this value).
+* `mscs-maps-url`: The link to be displayed in chat to view the maps when mapping is complete. 
 
-
-After you've tinkered the settings to your liking, run:
+After you've changed the settings, run:
 
     mscs map <world>
 
 Where `<world>` is the name of the world you would like to get mapped.
 Omit the world name to map all worlds.
-By default maps are saved into `/opt/mscs/maps`.
 
-### Adjusting map/mapping settings
+If you get a `Permission denied` type of error, please see the [Troubleshooting section](#troubleshooting).
 
-You can individually adjust the properties that Overviewer will use for each
-world by editing the world's `overviewer-settings.py` file. Properties here
-include the output path of the map (i.e. you can change this to your web
-server directory), and render settings. Please visit
-[their website](http://docs.overviewer.org/en/latest/config/) for information
-on config.
-
-In order for the map to update new changes in the world,
+Please note that in order for the map to update new changes in the world,
 you need to run Overviewer periodically.
-Please see [scheduling mapping](#scheduling-mapping).
+Please see [scheduling mapping](#scheduling-mapping) for more information.
+
+#### Changing the Default Rendering Settings
+By default, we've set up MSCS to render the overworld, the nether, the end, and cave systems 
+with Overviewer's "normal" render settings. However, Overviewer has many different render 
+modes which you can apply to as many or as few dimensions of your world(s) as you like.
+
+All you have to do is change the config file, which is located at 
+`/opt/mscs/worlds/myWorld/overviewer_settings.py`, where `myWorld` is the name of your world.
+
+To view more information on render modes and how to customize the config file, 
+[click here](http://docs.overviewer.org/en/latest/config/#examples).
 
 ## Command Reference
 
@@ -676,6 +708,16 @@ Type
 
     chmod -R u+w /opt/mscs
     chown -R minecraft:minecraft /opt/mscs
+
+To give the `minecraft` user the correct permissions needed to create/modify
+folders.
+
+#### Permission denied when attempting to run `mscs map ...`
+
+Type
+
+    chmod -R u+w /opt/mscs/maps
+    chown -R minecraft:minecraft /opt/mscs/maps
 
 To give the `minecraft` user the correct permissions needed to create/modify
 folders.
