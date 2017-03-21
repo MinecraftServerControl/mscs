@@ -259,7 +259,7 @@ that you wish the world to use:
 Default values in the script can be overridden by adding certain properties to one
 of the `mscs.defaults` files. The `mscs.defaults` files needs to be created in one
 of three places depending on how the script is being used. When using the `mscs`
-script, the `mscs.defaults` file __**will need to be created*__ at `/opt/mscs/mscs.defaults`. When
+script, the `mscs.defaults` file __**will need to be created**__ at `/opt/mscs/mscs.defaults`. When
 using the `msctl` script in [multi-user mode](https://github.com/MinecraftServerControl/mscs/wiki/Configuring-MSCS-for-multiple-users), the `mscs.defaults` file __**needs to be created at either**__ `$HOME/mscs.defaults` or `$HOME/.config/mscs/mscs.defaults`.
 
 Once you create the file at the appropriate location listed above, you can copy/paste 
@@ -508,8 +508,7 @@ paste the following default values
     mscs-maps-location=/opt/mscs/maps
     mscs-maps-url=my.minecraftserver.com
     
-* `mscs-overviewer-bin`: The overviewer file. If you did the default Overviewer installation, 
-   leave this untouched.
+* `mscs-overviewer-bin`: This is the location for the Overviewer binary.                                                                                                                       If you manually installed Overviewer to another location, you                can enter the location here.
 * `mscs-overviewer-url`: A clickable link for users in chat to view the overviewer website.
 * `mscs-overviewer-key`: Your Google API Key. *If you don't enter this, Overviewer won't work.*
 * `mscs-maps-location`: The location to store the generated maps. Change this value
