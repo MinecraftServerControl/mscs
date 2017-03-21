@@ -1394,7 +1394,19 @@ overviewer() {
   $OVERVIEWER_BIN --config=$SETTINGS_FILE >> $LOG_FILE 2>&1
   $OVERVIEWER_BIN --config=$SETTINGS_FILE --genpoi >> $LOG_FILE 2>&1
 
-  # Add the Google API key to the index.html. 
+  # Add the Google API key to the Overviewer index.html source files.
+  for f in $(find /usr/ -name "index.html" -print | grep overviewer_core/data/web_assets)
+  do
+      if [ "$(grep "$TestString" "$f")" ] ; then
+          if [ -z "$(grep "$TestString$AddString" "$f")" ] ; then
+                  if [ ! -h "$f" ] ; then
+                      sed -i "s/\?sensor=false/&\&key=$OVERVIEWER_KEY/g" "$f"
+                  fi
+          fi
+      fi
+  done
+
+  # Add the Google API key to the index.html in the maps folder. 
   sed -i 's/\?sensor=false/&\&key='"$OVERVIEWER_KEY"'/g' "$MAPS_LOCATION/$1/index.html"
 
   # Announce the location to access the world map to players.
