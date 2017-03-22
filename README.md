@@ -508,7 +508,7 @@ paste the following default values
     mscs-maps-location=/opt/mscs/maps
     mscs-maps-url=my.minecraftserver.com
     
-* `mscs-overviewer-bin`: This is the location for the Overviewer binary.                                                                                                                       If you manually installed Overviewer to another location, you                can enter the location here.
+* `mscs-overviewer-bin`: This is the location for the Overviewer binary.                                                                                                                       If you manually installed Overviewer to another location, you can enter the location here.
 * `mscs-overviewer-url`: A clickable link for users in chat to view the overviewer website.
 * `mscs-overviewer-key`: Your Google API Key. *If you don't enter this, Overviewer won't work.*
 * `mscs-maps-location`: The location to store the generated maps. Change this value
@@ -522,7 +522,7 @@ After you've changed the settings, run:
 Where `<world>` is the name of the world you would like to get mapped.
 Omit the world name to map all worlds.
 
-If you get a `Permission denied` type of error, please see the [Troubleshooting section](#troubleshooting).
+If you get a `Permission denied` error, please see the [Troubleshooting section](#troubleshooting).
 
 Please note that in order for the map to update new changes in the world,
 you need to run Overviewer periodically.
