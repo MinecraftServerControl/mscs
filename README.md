@@ -484,8 +484,8 @@ Overviewer has pretty straightforward documentation to download and install the 
 * [Debian/Ubuntu](http://overviewer.org/debian/info)
 * [RHEL/CentOS/Fedora](http://overviewer.org/rpms/info)
 
-*Once you follow the install page, come back here for further instructions.
-Don't read the "Running the Overviewer" section, as it will differ in MSCS.*
+> __NOTE:__ Once you follow the install page, come back here for further instructions.
+> Don't read the "Running the Overviewer" section, as it will differ in MSCS.
 
 You can also [download](http://overviewer.org/downloads) premade binaries for
 supported systems, or build your own binary from source if needed.
