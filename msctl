@@ -1083,9 +1083,9 @@ start() {
     exit 1
   fi
   # Start the server.
-  sh -c "tail -f --pid=\$$ $WORLD_DIR/console.in | {
+  nohup sh -c "tail -f --pid=\$$ $WORLD_DIR/console.in | {
     $SERVER_COMMAND mscs-world=$1 > $WORLD_DIR/console.out 2>&1; kill \$$;
-  }" &
+  }" > /dev/null 2>&1 &
   # Verify the server is running.
   if [ $? -ne 0 ]; then
     printf "Error starting the server.\n"
@@ -1099,7 +1099,10 @@ start() {
   fi
   # Start the Query handler if enabled.
   if [ "$(getServerPropertiesValue $1 'enable-query')" = "true" ]; then
-    queryStart "$1" &
+    queryStart "$1"
+    # Sleep for a second to workaround issue with ssh using the forced
+    # pseudo-terminal allocation command line option.
+    sleep 1
   fi
   # Create a PID file for the world server.
   echo $PID > "$WORLDS_LOCATION/$1.pid"
@@ -1428,25 +1431,27 @@ overviewer() {
 # @param 1 The world server to start a Query handler for.
 # ---------------------------------------------------------------------------
 queryStart() {
-  local WORLD_DIR SERVER_IP QUERY_PORT
+  local WORLD_DIR SERVER_IP SERVER_PID QUERY_PORT
   # Grab the location of the world's directory.
   WORLD_DIR="$WORLDS_LOCATION/$1"
   # Determine the IP address and port used by the query server.
   SERVER_IP=$(getServerPropertiesValue $1 'server-ip' '127.0.0.1')
   QUERY_PORT=$(getServerPropertiesValue $1 'query.port')
+  SERVER_PID=$(getJavaPID $1)
   # Delete any old query.in or query.out buffer files.
   rm -Rf "$WORLD_DIR/query.in" "$WORLD_DIR/query.out"
-  # Give the server a moment to start before initializing the
-  # Query handler.
-  sleep 20
   # Initialize the query.in and query.out buffer files.
   printf '' > "$WORLD_DIR/query.in"
   printf '' > "$WORLD_DIR/query.out"
   # Start a tail process to watch for changes to the query.in file to pipe
   # to the Minecraft query server via socat.  The response from the query
-  # server is piped into the query.out file.
-  tail -f --pid=$(getJavaPID $1) "$WORLD_DIR/query.in" | \
-    $SOCAT - UDP:$SERVER_IP:$QUERY_PORT > "$WORLD_DIR/query.out"
+  # server is piped into the query.out file.  Give the server a moment to
+  # start before initializing the Query handler.
+  nohup sh -c "
+    sleep 20;
+    tail -f --pid=$SERVER_PID \"$WORLD_DIR/query.in\" |
+    $SOCAT - UDP:$SERVER_IP:$QUERY_PORT > \"$WORLD_DIR/query.out\"
+  " > /dev/null 2>&1 &
   # Verify the connection to the query server worked.
   if [ $? -ne 0 ]; then
     printf "Error connecting to the query server.\n"
