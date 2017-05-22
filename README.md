@@ -449,6 +449,14 @@ Page down until you get to an empty line. Then paste the following:
 
 * The backups will be saved in `/opt/mscs/backups`.
 
+If you're running multiple cron jobs (i.e. mapping the world, creating backups, etc) that may overlap eachother, it's a good idea to use a package called `flock` that will prevent the jobs from overlapping so errors aren't thrown. It should be installed on all linux systems by default.
+    
+Continuing the example above, make your entry look like so:
+
+     0 */2 * * *  flock -n /tmp/fcj.lockfile /usr/local/bin/mscs backup myWorld
+    
+This will create a lockfile in `/tmp/fcj.lockfile` (it doesn't matter where the location is, you can keep this path or change it to your liking). Simply remember to append `flock -n <filename>` to every cron job you create.
+
 ### Removing backups after X days
 You can specify how long to keep backups by changing the
 `mscs-backup-duration` property in the `mscs.defaults` file (see
