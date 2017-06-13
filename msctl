@@ -541,8 +541,11 @@ updateVersionsJSON() {
     cp -p "$VERSIONS_JSON" "$VERSIONS_JSON.bak"
     # Delete the version_manifest.json file if it is old.
     find "$VERSIONS_JSON" -mmin +"$VERSIONS_DURATION" -delete
-    if [ ! -s $VERSIONS_JSON ]; then
-      printf "The version manifest was out of date, it has been removed.\n"
+    if [ -s $VERSIONS_JSON ]; then
+      printf "The cached copy of the version manifest is up to date.\n"
+      printf "Use the force-update option to ensure a new copy is downloaded.\n"
+    else
+      printf "The version manifest cache was out of date, it has been removed.\n"
     fi
   fi
   # Download the version_manifest.json file if it does not exist.
