@@ -2034,14 +2034,12 @@ OVERVIEWER_URL=$(getDefaultsValue 'mscs-overviewer-url' 'http://overviewer.org')
 MAPS_LOCATION=$(getDefaultsValue 'mscs-maps-location' $LOCATION'/maps')
 MAPS_URL=$(getDefaultsValue 'mscs-maps-url' 'http://minecraft.server.com/maps')
 
-# Grab the latest version information.
-# ---------------------------------------------------------------------------
-updateVersionsJSON
-
 # Respond to the command line arguments.
 # ---------------------------------------------------------------------------
 case "$1" in
   start)
+    # Grab the latest version information.
+    updateVersionsJSON
     # Figure out which worlds to start.
     WORLDS=$(getEnabledWorlds)
     if [ -z "$WORLDS" ]; then
@@ -2110,6 +2108,8 @@ case "$1" in
     printf ".\n"
   ;;
   restart|reload|force-restart|force-reload)
+    # Grab the latest version information.
+    updateVersionsJSON
     # Figure out which worlds to restart.
     if isWorldEnabled "$2"; then
       WORLDS="$2"
@@ -2213,6 +2213,8 @@ case "$1" in
     printf ".\n"
   ;;
   enable)
+    # Grab the latest version information.
+    updateVersionsJSON
     # Get list of disabled worlds.
     if ! isWorldAvailable "$2"; then
       printf "World not found, unable to enable world '$2'.\n"
@@ -2492,6 +2494,8 @@ case "$1" in
     fi
   ;;
   update)
+    # Grab the latest version information.
+    updateVersionsJSON
     # Figure out which worlds to update.
     if isWorldEnabled "$2"; then
       WORLDS="$2"
@@ -2542,6 +2546,8 @@ case "$1" in
     printf ".\n"
   ;;
   map|overviewer)
+    # Grab the latest version information.
+    updateVersionsJSON
     # Make sure that the Minecraft Overviewer software exists.
     if [ ! -e "$OVERVIEWER_BIN" ]; then
       printf "Minecraft Overviewer software not found.\n"
