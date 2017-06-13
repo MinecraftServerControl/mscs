@@ -1869,7 +1869,7 @@ fi
 #   mscs-worlds-location=/opt/mscs/worlds
 #   mscs-versions-url=https://launchermeta.mojang.com/mc/game/version_manifest.json
 #   mscs-versions-json=/opt/mscs/version_manifest.json
-#   mscs-versions-duration=1440
+#   mscs-versions-duration=30
 #   mscs-lockfile-duration=1440
 #   mscs-default-world=world
 #   mscs-default-port=25565
@@ -1985,7 +1985,7 @@ WORLDS_LOCATION=$(getDefaultsValue 'mscs-worlds-location' $LOCATION'/worlds')
 # The location to store the version_manifest.json file.
 VERSIONS_JSON=$(getDefaultsValue 'mscs-versions-json' $LOCATION'/version_manifest.json')
 # The duration (in minutes) to keep the version_manifest.json file before updating.
-VERSIONS_DURATION=$(getDefaultsValue 'mscs-versions-duration' '1440')
+VERSIONS_DURATION=$(getDefaultsValue 'mscs-versions-duration' '30')
 # The duration (in minutes) to keep lock files before removing.
 LOCKFILE_DURATION=$(getDefaultsValue 'mscs-lockfile-duration' '1440')
 
