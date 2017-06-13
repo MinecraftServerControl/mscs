@@ -142,6 +142,10 @@ Actions:
     Update the server software for the Minecraft world server.  Update
     server software for all worlds by default.
 
+  force-update <world>
+    Refresh version information prior to running update for the world server,
+    regardless of how recently the version information was updated.
+
   query <world>
     Run a detailed Query on the Minecraft world server.
 
@@ -2493,7 +2497,11 @@ case "$1" in
       exit 1
     fi
   ;;
-  update)
+  update|force-update)
+    # Handle the force option.
+    if [ "$(echo \"$1\" | cut -d '-' -f1)" = "force" ]; then
+      rm -f $VERSIONS_JSON
+    fi
     # Grab the latest version information.
     updateVersionsJSON
     # Figure out which worlds to update.
