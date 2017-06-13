@@ -529,17 +529,9 @@ setServerPropertiesValue() {
 }
 
 # ---------------------------------------------------------------------------
-# Get the current Minecraft version number.
-#
-# @param 1 The world server.
-# @return The current Minecraft version number.
+# Update the version_manifest.json file.
 # ---------------------------------------------------------------------------
-getCurrentMinecraftVersion() {
-  local VERSION TYPE
-  # Make sure the server software directory exists.
-  mkdir -p "$DEFAULT_SERVER_LOCATION"
-  # Determine the version type for the current world.
-  TYPE=$(getMSCSValue "$1" "mscs-version-type" "$DEFAULT_VERSION_TYPE")
+updateVersionsJSON() {
   if [ -s $VERSIONS_JSON ]; then
     # Make a backup copy of the version_manifest.json file.
     cp -p "$VERSIONS_JSON" "$VERSIONS_JSON.bak"
@@ -559,6 +551,18 @@ getCurrentMinecraftVersion() {
       fi
     fi
   fi
+}
+
+# ---------------------------------------------------------------------------
+# Get the current Minecraft version number.
+#
+# @param 1 The world server.
+# @return The current Minecraft version number.
+# ---------------------------------------------------------------------------
+getCurrentMinecraftVersion() {
+  local VERSION TYPE
+  # Determine the version type for the current world.
+  TYPE=$(getMSCSValue "$1" "mscs-version-type" "$DEFAULT_VERSION_TYPE")
   # Extract the current version information.
   VERSION=$($PERL -0777ne '
     use JSON;
@@ -2029,6 +2033,10 @@ OVERVIEWER_BIN=$(getDefaultsValue 'mscs-overviewer-bin' $(which overviewer.py))
 OVERVIEWER_URL=$(getDefaultsValue 'mscs-overviewer-url' 'http://overviewer.org')
 MAPS_LOCATION=$(getDefaultsValue 'mscs-maps-location' $LOCATION'/maps')
 MAPS_URL=$(getDefaultsValue 'mscs-maps-url' 'http://minecraft.server.com/maps')
+
+# Grab the latest version information.
+# ---------------------------------------------------------------------------
+updateVersionsJSON
 
 # Respond to the command line arguments.
 # ---------------------------------------------------------------------------
