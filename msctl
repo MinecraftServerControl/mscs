@@ -541,16 +541,20 @@ updateVersionsJSON() {
     cp -p "$VERSIONS_JSON" "$VERSIONS_JSON.bak"
     # Delete the version_manifest.json file if it is old.
     find "$VERSIONS_JSON" -mmin +"$VERSIONS_DURATION" -delete
+    if [ ! -s $VERSIONS_JSON ]; then
+      printf "The version manifest was out of date, it has been removed.\n"
+    fi
   fi
   # Download the version_manifest.json file if it does not exist.
   if [ ! -s $VERSIONS_JSON ]; then
+    printf "Downloading current Minecraft version manifest.\n"
     $WGET --no-use-server-timestamps -qO "$VERSIONS_JSON" "$MINECRAFT_VERSIONS_URL"
     if [ $? -ne 0 ]; then
       if [ -s $VERSIONS_JSON.bak ]; then
-        printf "Error downloading the Minecraft version_manifest.json file, using an old copy.\n"
+        printf "Error downloading the version manifest, using a backup.\n"
         cp -p "$VERSIONS_JSON.bak" "$VERSIONS_JSON"
       else
-        printf "Error downloading the Minecraft version_manifest.json file.\n"
+        printf "Error downloading the version manifest, exiting.\n"
         exit 1
       fi
     fi
