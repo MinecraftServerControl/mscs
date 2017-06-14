@@ -2508,6 +2508,8 @@ case "$1" in
     # Handle the force option.
     if [ "$1" = "force-update" ]; then
       if [ -s $VERSIONS_JSON ]; then
+        # Make a backup copy of the version_manifest.json file.
+        cp -fp "$VERSIONS_JSON" "$VERSIONS_JSON.bak"
         printf "Removing cached version manifest.\n"
       fi
       rm -f $VERSIONS_JSON
