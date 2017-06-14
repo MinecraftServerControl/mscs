@@ -12,7 +12,7 @@ _mscs() {
   OPTS="
     backup console create delete disable enable force-restart force-stop list
     list-backups logrotate map new overviewer remove restart restore-backup
-    broadcast send show start status stop sync update watch usage
+    broadcast send show start status stop sync update force-update watch usage
   "
 
   LIST_OPTS="enabled disabled running stopped"
@@ -30,7 +30,7 @@ _mscs() {
         COMPREPLY=($(compgen -W "$WORLDS" -- ${COMP_WORDS[COMP_CWORD]}))
       ;;
       disable|sync|send|watch|logrotate|backup|map|overviewer|\
-      list-backups|restore-backup)
+      list-backups|restore-backup|update|force-update)
         WORLDS=$(list_worlds enabled)
         COMPREPLY=($(compgen -W "$WORLDS" -- ${COMP_WORDS[COMP_CWORD]}))
       ;;
