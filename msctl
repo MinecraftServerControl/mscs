@@ -142,6 +142,10 @@ Actions:
     Update the server software for the Minecraft world server.  Update
     server software for all worlds by default.
 
+  force-update <world>
+    Refresh version information prior to running update for the world server,
+    regardless of how recently the version information was updated.
+
   query <world>
     Run a detailed Query on the Minecraft world server.
 
@@ -529,6 +533,38 @@ setServerPropertiesValue() {
 }
 
 # ---------------------------------------------------------------------------
+# Update the version_manifest.json file.
+# ---------------------------------------------------------------------------
+updateVersionsJSON() {
+  if [ -s $VERSIONS_JSON ]; then
+    # Make a backup copy of the version_manifest.json file.
+    cp -p "$VERSIONS_JSON" "$VERSIONS_JSON.bak"
+    # Delete the version_manifest.json file if it is old.
+    find "$VERSIONS_JSON" -mmin +"$VERSIONS_DURATION" -delete
+    if [ -s $VERSIONS_JSON ]; then
+      printf "The cached copy of the version manifest is up to date.\n"
+      printf "Use the force-update option to ensure a new copy is downloaded.\n"
+    else
+      printf "The version manifest cache was out of date, it has been removed.\n"
+    fi
+  fi
+  # Download the version_manifest.json file if it does not exist.
+  if [ ! -s $VERSIONS_JSON ]; then
+    printf "Downloading current Minecraft version manifest.\n"
+    $WGET --no-use-server-timestamps -qO "$VERSIONS_JSON" "$MINECRAFT_VERSIONS_URL"
+    if [ $? -ne 0 ]; then
+      if [ -s $VERSIONS_JSON.bak ]; then
+        printf "Error downloading the version manifest, using a backup.\n"
+        cp -p "$VERSIONS_JSON.bak" "$VERSIONS_JSON"
+      else
+        printf "Error downloading the version manifest, exiting.\n"
+        exit 1
+      fi
+    fi
+  fi
+}
+
+# ---------------------------------------------------------------------------
 # Get the current Minecraft version number.
 #
 # @param 1 The world server.
@@ -536,29 +572,8 @@ setServerPropertiesValue() {
 # ---------------------------------------------------------------------------
 getCurrentMinecraftVersion() {
   local VERSION TYPE
-  # Make sure the server software directory exists.
-  mkdir -p "$DEFAULT_SERVER_LOCATION"
   # Determine the version type for the current world.
   TYPE=$(getMSCSValue "$1" "mscs-version-type" "$DEFAULT_VERSION_TYPE")
-  if [ -s $VERSIONS_JSON ]; then
-    # Make a backup copy of the version_manifest.json file.
-    cp -p "$VERSIONS_JSON" "$VERSIONS_JSON.bak"
-    # Delete the version_manifest.json file if it is old.
-    find "$VERSIONS_JSON" -mmin +"$VERSIONS_DURATION" -delete
-  fi
-  # Download the version_manifest.json file if it does not exist.
-  if [ ! -s $VERSIONS_JSON ]; then
-    $WGET --no-use-server-timestamps -qO "$VERSIONS_JSON" "$MINECRAFT_VERSIONS_URL"
-    if [ $? -ne 0 ]; then
-      if [ -s $VERSIONS_JSON.bak ]; then
-        printf "Error downloading the Minecraft version_manifest.json file, using an old copy.\n"
-        cp -p "$VERSIONS_JSON.bak" "$VERSIONS_JSON"
-      else
-        printf "Error downloading the Minecraft version_manifest.json file.\n"
-        exit 1
-      fi
-    fi
-  fi
   # Extract the current version information.
   VERSION=$($PERL -0777ne '
     use JSON;
@@ -1865,7 +1880,7 @@ fi
 #   mscs-worlds-location=/opt/mscs/worlds
 #   mscs-versions-url=https://launchermeta.mojang.com/mc/game/version_manifest.json
 #   mscs-versions-json=/opt/mscs/version_manifest.json
-#   mscs-versions-duration=1440
+#   mscs-versions-duration=30
 #   mscs-lockfile-duration=1440
 #   mscs-default-world=world
 #   mscs-default-port=25565
@@ -1981,7 +1996,7 @@ WORLDS_LOCATION=$(getDefaultsValue 'mscs-worlds-location' $LOCATION'/worlds')
 # The location to store the version_manifest.json file.
 VERSIONS_JSON=$(getDefaultsValue 'mscs-versions-json' $LOCATION'/version_manifest.json')
 # The duration (in minutes) to keep the version_manifest.json file before updating.
-VERSIONS_DURATION=$(getDefaultsValue 'mscs-versions-duration' '1440')
+VERSIONS_DURATION=$(getDefaultsValue 'mscs-versions-duration' '30')
 # The duration (in minutes) to keep lock files before removing.
 LOCKFILE_DURATION=$(getDefaultsValue 'mscs-lockfile-duration' '1440')
 
@@ -2034,6 +2049,8 @@ MAPS_URL=$(getDefaultsValue 'mscs-maps-url' 'http://minecraft.server.com/maps')
 # ---------------------------------------------------------------------------
 case "$1" in
   start)
+    # Grab the latest version information.
+    updateVersionsJSON
     # Figure out which worlds to start.
     WORLDS=$(getEnabledWorlds)
     if [ -z "$WORLDS" ]; then
@@ -2102,6 +2119,8 @@ case "$1" in
     printf ".\n"
   ;;
   restart|reload|force-restart|force-reload)
+    # Grab the latest version information.
+    updateVersionsJSON
     # Figure out which worlds to restart.
     if isWorldEnabled "$2"; then
       WORLDS="$2"
@@ -2205,6 +2224,8 @@ case "$1" in
     printf ".\n"
   ;;
   enable)
+    # Grab the latest version information.
+    updateVersionsJSON
     # Get list of disabled worlds.
     if ! isWorldAvailable "$2"; then
       printf "World not found, unable to enable world '$2'.\n"
@@ -2483,7 +2504,18 @@ case "$1" in
       exit 1
     fi
   ;;
-  update)
+  update|force-update)
+    # Handle the force option.
+    if [ "$1" = "force-update" ]; then
+      if [ -s $VERSIONS_JSON ]; then
+        # Make a backup copy of the version_manifest.json file.
+        cp -fp "$VERSIONS_JSON" "$VERSIONS_JSON.bak"
+        printf "Removing cached version manifest.\n"
+      fi
+      rm -f $VERSIONS_JSON
+    fi
+    # Grab the latest version information.
+    updateVersionsJSON
     # Figure out which worlds to update.
     if isWorldEnabled "$2"; then
       WORLDS="$2"
@@ -2534,6 +2566,8 @@ case "$1" in
     printf ".\n"
   ;;
   map|overviewer)
+    # Grab the latest version information.
+    updateVersionsJSON
     # Make sure that the Minecraft Overviewer software exists.
     if [ ! -e "$OVERVIEWER_BIN" ]; then
       printf "Minecraft Overviewer software not found.\n"

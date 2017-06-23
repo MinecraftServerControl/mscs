@@ -622,9 +622,15 @@ will be started using the `minecraft` user instead for security purposes.
     Run the Minecraft Overviewer mapping software on the Minecraft world.
     Map all worlds by default.
 
-* update
+* update [world]
 
-    Update the client and server software packages.
+    Update the server software for the Minecraft world server.  Update
+    server software for all worlds by default.
+
+* force-update [world]
+
+    Refresh version information prior to running update for the world server,
+    regardless of how recently the version information was updated.
 
 * query [world]
 
