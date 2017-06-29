@@ -288,13 +288,13 @@ The following properties are available:
 * mscs-default-server-version  - Default version of the server software.
 * mscs-default-server-jar      - Default .jar file for the server software.
 * mscs-default-server-url      - Default download URL for the server software.
-* mscs-default-server-args     - Default arguments to for a world server.
+* mscs-default-server-args     - Default arguments for a world server.
 * mscs-default-initial-memory  - Default initial amount of memory for a world server.
 * mscs-default-maximum-memory  - Default maximum amount of memory for a world server.
 * mscs-default-server-location - Default location of the server .jar file.
 * mscs-default-server-command  - Default command to run for a world server.
 * mscs-backup-location         - Location to store backup files.
-* mscs-backup-log              - Lcation of the backup log file.
+* mscs-backup-log              - Location of the backup log file.
 * mscs-backup-duration         - Length in days that backups survive.
 * mscs-log-duration            - Length in days that logs survive.
 * mscs-enable-mirror           - Enable the mirror option by default for worlds (default disabled).
