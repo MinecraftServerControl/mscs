@@ -1717,8 +1717,8 @@ worldStatus() {
 # Begin.
 # ---------------------------------------------------------------------------
 
-# Make sure that Java, Perl, libjson-perl, Python, Wget, Rdiff-backup, and
-# Socat are installed.
+# Make sure that Java, Perl, libjson-perl, Python, Wget, Rdiff-backup, Rsync,
+# and Socat are installed.
 # ---------------------------------------------------------------------------
 if [ ! -e "$JAVA" ]; then
   echo "ERROR: Java not found!"
@@ -2500,7 +2500,7 @@ case "$1" in
     elif worldBackup "$2"; then
       worldBackupRestore "$2" "$3"
     else
-      echo "Current world's state backup failed. Restore cancelled."
+      echo "Current world's state backup failed. Restore canceled."
       exit 1
     fi
   ;;
