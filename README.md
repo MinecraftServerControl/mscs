@@ -324,7 +324,7 @@ your liking.
     mscs-worlds-location=/opt/mscs/worlds
     mscs-versions-url=https://launchermeta.mojang.com/mc/game/version_manifest.json
     mscs-versions-json=/opt/mscs/version_manifest.json
-    mscs-versions-duration=1440
+    mscs-versions-duration=30
     mscs-lockfile-duration=1440
     mscs-default-world=world
     mscs-default-port=25565
