@@ -160,6 +160,136 @@ Options:
 EOF
 }
 
+mscs_defaults() {
+  cat <<EOF
+; MSCS defaults file for adjusting global server properties.
+
+; Default values in the script can be overridden by adding certain properties
+; to one of the `mscs.defaults` files. The `mscs.defaults` files can be found
+; found in one of three places depending on how the script is being used. When
+; using the `mscs` script, the `mscs.defaults` file can be found at
+; `/opt/mscs/mscs.defaults`. When using the `msctl` script in multi-user mode,
+; the `mscs.defaults` file can be found at either `$HOME/mscs.defaults` or
+; `$HOME/.config/mscs/mscs.defaults`.
+
+; Uncomment key=value pairs (remove the #) to customize the value for your
+; configuration. The values shown are the default values used in the script.
+
+; Location of the mscs files.
+# mscs-location=/opt/mscs
+
+; Location of world files.
+# mscs-worlds-location=/opt/mscs/worlds
+
+; URL to download the version_manifest.json file.
+# mscs-versions-url=https://launchermeta.mojang.com/mc/game/version_manifest.json
+
+; Location of the version_manifest.json file.
+# mscs-versions-json=/opt/mscs/version_manifest.json
+
+; Length in minutes to keep the version_manifest.json file before updating.
+# mscs-versions-duration=30
+
+; Length in minutes to keep lock files before removing.
+# mscs-lockfile-duration=1440
+
+; Properties to return for detailed listings.
+# mscs-detailed-listing=motd server-ip server-port max-players level-type online-mode
+
+; Default world name.
+# mscs-default-world=world
+
+; Default Port.
+# mscs-default-port=25565
+
+; Default IP address. Leave this blank unless you want to bind all world
+; servers to a single network interface by default.
+# mscs-default-ip=
+
+; Default version type (release or snapshot).
+# mscs-default-version-type=release
+
+; Default version of the client software. You can use the $CURRENT_VERSION
+; variable to access the latest version based on the version type selected.
+# mscs-default-client-version=$CURRENT_VERSION
+
+; Default .jar file for the client software. The $CLIENT_VERSION variable
+; allows access to the client version selected.
+# mscs-default-client-jar=$CLIENT_VERSION.jar
+
+; Default download URL for the client software. The $CLIENT_VERSION variable
+; allows access to the client version selected.
+# mscs-default-client-url=https://s3.amazonaws.com/Minecraft.Download/versions/$CLIENT_VERSION/$CLIENT_VERSION.jar
+
+; Default location of the client .jar file. The $CLIENT_VERSION variable
+; allows access to the client version selected.
+# mscs-default-client-location=/opt/mscs/.minecraft/versions/$CLIENT_VERSION
+
+; Default version of the server software. You can use the $CURRENT_VERSION
+; variable to access the latest version based on the version type selected.
+# mscs-default-server-version=$CURRENT_VERSION
+
+; Default .jar file for the server software. The $SERVER_VERSION variable
+; allows access to the server version selected.
+# mscs-default-server-jar=minecraft_server.$SERVER_VERSION.jar
+
+; Default download URL for the server software. The $SERVER_VERSION variable
+; allows access to the server version selected.
+# mscs-default-server-url=https://s3.amazonaws.com/Minecraft.Download/versions/$SERVER_VERSION/minecraft_server.$SERVER_VERSION.jar
+
+; Default arguments for a world server.
+# mscs-default-server-args=nogui
+
+; Default initial amount of memory for a world server.
+# mscs-default-initial-memory=128M
+
+; Default maximum amount of memory for a world server.
+# mscs-default-maximum-memory=2048M
+
+; Default location of the server .jar file.
+# mscs-default-server-location=/opt/mscs/server
+
+; Default command to run for a world server. You can use the $JAVA variable to
+; access the results of `which java`. The $INITIAL_MEMORY and $MAXIMUM_MEMORY
+; variables provide access to the amounts of memory selected. The
+; $SERVER_LOCATION and $SERVER_JAR variables provide access to the location
+; and file name of the server software selected. The $SERVER_ARGS variable
+; provides access to the arguments for the world server selected.
+# mscs-default-server-command=$JAVA -Xms$INITIAL_MEMORY -Xmx$MAXIMUM_MEMORY -jar $SERVER_LOCATION/$SERVER_JAR $SERVER_ARGS
+
+; Location to store backup files.
+# mscs-backup-location=/opt/mscs/backups
+
+; Location of the backup log file.
+# mscs-backup-log=/opt/mscs/backups/backup.log
+
+; Length in days that backups survive.
+# mscs-backup-duration=15
+
+; Length in days that logs survive.
+# mscs-log-duration=15
+
+; Enable the mirror option by default for worlds (default disabled). Change
+; to a 1 to enable.
+# mscs-enable-mirror=0
+
+; Default path for the mirror files.
+# mscs-mirror-path=/dev/shm/mscs
+
+; Location of Overviewer.
+# mscs-overviewer-bin=/usr/bin/overviewer.py
+
+; URL for Overviewer.
+# mscs-overviewer-url=http://overviewer.org
+
+; Location of Overviewer generated map files.
+# mscs-maps-location=/opt/mscs/maps
+
+; URL for accessing Overviewer generated maps.
+# mscs-maps-url=http://minecraft.server.com/maps
+EOF
+}
+
 # ---------------------------------------------------------------------------
 # Internal Methods
 # ---------------------------------------------------------------------------
@@ -410,16 +540,16 @@ getValue() {
     KEY=$($PERL -ne '
       # Remove single and double quotes plus CR and LF.
       $_ =~ s/[\x22\x27\r\n]//g;
-      # Remove comments.
-      $_ =~ s/^\s*\x23.*//;
+      # Remove comments that begin with # or ;.
+      $_ =~ s/^\s*[\x23\x3B].*//;
       # Extract the key.
       if ($_ =~ /^\s*('$2')\s*=\s*.*$/i) { print lc $1; }
     ' $1)
     VALUE=$($PERL -ne '
       # Remove single and double quotes plus CR and LF.
       $_ =~ s/[\x22\x27\r\n]//g;
-      # Remove comments.
-      $_ =~ s/^\s*\x23.*//;
+      # Remove comments that begin with # or ;.
+      $_ =~ s/^\s*[\x23\x3B].*//;
       # Extract the value.
       if ($_ =~ /^\s*'$2'\s*=\s*(.*)$/i) { print $1; }
     ' $1)
@@ -1814,7 +1944,8 @@ done
 # ---------------------------------------------------------------------------
 # Override the default values by adding them to one of the following files. If
 # none of the files exist, the default values in the script will be used (see
-# below). Possible files are checked in the following order:
+# below) and an example file will be created at `$HOME/mscs.defaults`.
+# Possible files are checked in the following order:
 #   command line option "-c".
 #   $HOME/mscs.defaults
 #   $HOME/.config/mscs/mscs.defaults
@@ -1825,6 +1956,10 @@ elif [ -r "$HOME/mscs.defaults" ]; then
 elif [ -r "$HOME/.config/mscs/mscs.defaults" ]; then
   MSCS_DEFAULTS="$HOME/.config/mscs/mscs.defaults"
 fi
+if [ ! -r "$MSCS_DEFAULTS" ]; then
+  mscs_defaults > $MSCS_DEFAULTS
+fi
+
 # Default values in the script can be overridden by adding certain key/value
 # pairs to one of the mscs.defaults files mentioned above. Default values in
 # the script will be used unless overridden in one these files.
