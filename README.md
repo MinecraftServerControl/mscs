@@ -27,7 +27,8 @@
   * [Scheduling restarts](#scheduling-restarts)
   * [Scheduling mapping](#scheduling-mapping)
 * [Installing Overviewer (the mapping software)](#installing-overviewer-the-mapping-software)
-	* [Adjusting map/mapping settings](#adjusting-mapmapping-settings)
+	* [Configuring Overviewer](#configuring-overviewer)
+	* [Changing the default rendering settings](#changing-the-default-rendering-settings)
 * [Command reference](#command-reference)
   * [Examples](#examples)
 * [Issues](#issues)
@@ -517,7 +518,7 @@ Please note that in order for the map to update new changes in the world,
 you need to run Overviewer periodically.
 Please see [scheduling mapping](#scheduling-mapping) for more information.
 
-### Changing the Default Rendering Settings
+### Changing the default rendering settings
 
 By default, we've set up MSCS to render the overworld, the nether, the end, and cave systems 
 with Overviewer's "normal" render settings. However, Overviewer has many different render 
