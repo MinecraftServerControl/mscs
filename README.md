@@ -708,6 +708,16 @@ Type
 To give the `minecraft` user the correct permissions needed to create/modify
 folders.
 
+#### Permission denied when attempting to run `mscs map ...`
+
+Type
+
+    chmod -R u+w /opt/mscs/maps
+    chown -R minecraft:minecraft /opt/mscs/maps
+
+To give the `minecraft` user the correct permissions needed to create/modify
+folders.
+
 ## License
 
 See [LICENSE](LICENSE)
