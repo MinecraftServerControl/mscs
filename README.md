@@ -26,7 +26,7 @@
   * [Removing backups after X days](#removing-backups-after-x-days)
   * [Scheduling restarts](#scheduling-restarts)
   * [Scheduling mapping](#scheduling-mapping)
-* [Setting up mapping)(#setting-up-mapping)
+* [Setting up mapping](#setting-up-mapping)
   * [Installing Overviewer (the mapping software)](#installing-overviewer-the-mapping-software)
   * [Configuring overviewer](#configuring-overviewer)
   * [Changing the default rendering settings](#changing-the-default-rendering-settings)
