@@ -26,7 +26,7 @@
   * [Removing backups after X days](#removing-backups-after-x-days)
   * [Scheduling restarts](#scheduling-restarts)
   * [Scheduling mapping](#scheduling-mapping)
-* [Mapping the world](#mapping-the-world)
+* [Installing Overviewer (the mapping software)](#installing-overviewer-the-mapping-software)
 	* [Adjusting map/mapping settings](#adjusting-mapmapping-settings)
 * [Command reference](#command-reference)
   * [Examples](#examples)
@@ -106,13 +106,7 @@ command-line tool for rendering high-resolution maps of Minecraft worlds. It
 generates a set of static html and image files and uses the Google Maps API to
 display a nice interactive map.
 
-If you wish to use the mapping software, you can [download]
-(http://overviewer.org/downloads) premade binaries for
-supported systems, or build your own binary from source if needed.
-
-Repositories for automatic installation are also available:
-* [Debian/Ubuntu](http://overviewer.org/debian/info)
-* [RHEL/CentOS/Fedora](http://overviewer.org/rpms/info)
+Please see 
 
 ## Installation
 ### Downloading the script
@@ -474,39 +468,66 @@ You can also schedule mapping using the same method outlined in
 Where `<world>` is the name of the world you wish to map (omit for all
 worlds).
 
-## Mapping the world
-Minecraft Server Control Script uses [Overviewer]
-(http://docs.overviewer.org/en/latest/) to generate maps. After [installing]
-(#mapping-software), modify the settings (if necessary) found in the
-`mscs.defaults` file (see [adjusting global server properties]
-(#adjusting-global-server-properties)):
+## Installing Overviewer (the mapping software)
 
-    mscs-overviewer-bin=/usr/bin/overviewer.py
-    mscs-overviewer-url=http://overviewer.org
-    mscs-maps-location=/opt/mscs/maps
-    mscs-maps-url=my.minecraftserver.com
+Overviewer is the mapping software that MSCS uses. 
+It has pretty straightforward documentation to download and install the software:
 
+* [Debian/Ubuntu](http://overviewer.org/debian/info)
+* [RHEL/CentOS/Fedora](http://overviewer.org/rpms/info)
 
-After you've tinkered the settings to your liking, run:
+> __NOTE:__ Once you follow the install page, come back here for further instructions.
+> Don't read the "Running the Overviewer" section, as it will differ in MSCS.
+
+You can also [download](http://overviewer.org/downloads) premade binaries for
+supported systems, or build your own binary from source if needed.
+
+### Configuring Overviewer
+
+Overviewer currently requires a free Google API key. You can obtain one 
+[here](https://developers.google.com/maps/documentation/javascript/get-api-key). 
+On the webpage, Select the blue "Get a Key" button. Then, follow the prompts.
+You can create a new project or use the already-made "My Project" to obtain
+the API key--it doesn't matter. Copy this key, you'll need it. Then,
+download the script found [here](https://github.com/Zeromusta/docker-spigot-overviewer/blob/master/rootfs/usr/local/bin/ov_keyfix)
+and paste your API key into the `AddString="&key="` line, so that it looks like `AddString="&key=00000000000000000"` where the
+zeroes are your API key. Once you've ran this file, Overviewer should work. You also want to run this whenever Overviewer is updated.
+
+In the `mscs.defaults` file (one will be created if you haven't created one manually), 
+you'll find various Overviewer mapping settings which you change to your liking.
+We've listed the map-related settings below:
+(see [adjusting global server properties](#adjusting-global-server-properties) if you're confused where the file is)
+    
+* `mscs-overviewer-bin`: This is the location for the Overviewer binary.                                                                                                                       If you manually installed Overviewer to another location, you can enter the location here.
+* `mscs-overviewer-url`: A clickable link for users in chat to view the overviewer website.
+* `mscs-maps-location`: The location to store the generated maps. Change this value
+   to your web-server folder, e.g. `var/www/` (or symlink your web-server folder to this value).
+* `mscs-maps-url`: The link to be displayed in chat to view the maps when mapping is complete. 
+
+After you've changed the settings, run:
 
     mscs map <world>
 
 Where `<world>` is the name of the world you would like to get mapped.
 Omit the world name to map all worlds.
-By default maps are saved into `/opt/mscs/maps`.
 
-### Adjusting map/mapping settings
+If you get a `Permission denied` error, please see the [Troubleshooting section](#troubleshooting).
 
-You can individually adjust the properties that Overviewer will use for each
-world by editing the world's `overviewer-settings.py` file. Properties here
-include the output path of the map (i.e. you can change this to your web
-server directory), and render settings. Please visit
-[their website](http://docs.overviewer.org/en/latest/config/) for information
-on config.
-
-In order for the map to update new changes in the world,
+Please note that in order for the map to update new changes in the world,
 you need to run Overviewer periodically.
-Please see [scheduling mapping](#scheduling-mapping).
+Please see [scheduling mapping](#scheduling-mapping) for more information.
+
+### Changing the Default Rendering Settings
+
+By default, we've set up MSCS to render the overworld, the nether, the end, and cave systems 
+with Overviewer's "normal" render settings. However, Overviewer has many different render 
+modes which you can apply to as many or as few dimensions of your world(s) as you like.
+
+All you have to do is change the config file, which is located at 
+`/opt/mscs/worlds/myWorld/overviewer_settings.py`, where `myWorld` is the name of your world.
+
+To view more information on render modes and how to customize the config file, 
+[click here](http://docs.overviewer.org/en/latest/config/#examples).
 
 ## Command Reference
 
