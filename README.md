@@ -102,12 +102,8 @@ that you can use with the Iptables firewall.
 
 ### Mapping software
 The script uses the [Minecraft Overviewer](http://overviewer.org) mapping
-software to generate maps of your worlds.  Minecraft Overviewer is a
-command-line tool for rendering high-resolution maps of Minecraft worlds. It
-generates a set of static html and image files and uses the Google Maps API to
-display a nice interactive map.
-
-Please see 
+software to generate maps of your worlds. Please see [Setting up mapping](#setting-up-mapping)
+for installation and configuration instructions.
 
 ## Installation
 ### Downloading the script
