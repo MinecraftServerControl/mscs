@@ -1956,7 +1956,7 @@ elif [ -r "$HOME/mscs.defaults" ]; then
 elif [ -r "$HOME/.config/mscs/mscs.defaults" ]; then
   MSCS_DEFAULTS="$HOME/.config/mscs/mscs.defaults"
 fi
-if [ ! -r "$MSCS_DEFAULTS" ]; then
+if [ ! -s "$MSCS_DEFAULTS" ]; then
   mscs_defaults > $MSCS_DEFAULTS
 fi
 
