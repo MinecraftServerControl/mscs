@@ -46,8 +46,7 @@ Features include:
 * Run multiple Minecraft worlds.
 * Start, stop, and restart single or multiple worlds.
 * Create, delete, disable, and enable worlds.
-* Includes support for additional server types: [Forge]
-(http://www.minecraftforge.net/),
+* Includes support for additional server types: [Forge](http://www.minecraftforge.net/),
 [BungeeCord](http://www.spigotmc.org/wiki/bungeecord/),
 [SpigotMC](http://www.spigotmc.org/wiki/spigot/), etc.
 * Users automatically notified of important server events.
