@@ -122,11 +122,11 @@ working in.
 
 ##### Other ways to download
 
-* Get the latest stable [release]
-(https://github.com/MinecraftServerControl/mscs/releases).
+* Get the latest stable 
+[release](https://github.com/MinecraftServerControl/mscs/releases).
 
-* Get the development version as a [zip file]
-(https://github.com/MinecraftServerControl/mscs/archive/master.zip):
+* Get the development version as a 
+[zip file](https://github.com/MinecraftServerControl/mscs/archive/master.zip):
 
     wget https://github.com/MinecraftServerControl/mscs/archive/master.zip
 
@@ -141,12 +141,12 @@ running:
 This will give the user you created in the config (by default, the user is
 called `minecraft`) access to write in the `/opt/mscs` folder.
 
-If you get a permission error, please see the [troubleshooting]
-(#troubleshooting) section.
+If you get a permission error, please see the 
+[troubleshooting](#troubleshooting) section.
 
 #### Manual Configuration
-If you wish to configure the script manually, please visit the [wiki page]
-(https://github.com/MinecraftServerControl/mscs/wiki/Manual-Configuration).
+If you wish to configure the script manually, please visit the 
+[wiki page](https://github.com/MinecraftServerControl/mscs/wiki/Manual-Configuration).
 
 ### Updating MSCS
 Periodically Minecraft Server Control Script is updated to address bug fixes
