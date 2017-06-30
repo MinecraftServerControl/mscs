@@ -26,8 +26,9 @@
   * [Removing backups after X days](#removing-backups-after-x-days)
   * [Scheduling restarts](#scheduling-restarts)
   * [Scheduling mapping](#scheduling-mapping)
-* [Installing Overviewer (the mapping software)](#installing-overviewer-the-mapping-software)
-	* [Configuring Overviewer](#configuring-overviewer)
+  * [Setting up mapping)(#setting-up-mapping)
+        * [Installing Overviewer (the mapping software)](#installing-overviewer-the-mapping-software)
+	* [Configuring overviewer](#configuring-overviewer)
 	* [Changing the default rendering settings](#changing-the-default-rendering-settings)
 * [Command reference](#command-reference)
   * [Examples](#examples)
@@ -469,7 +470,9 @@ You can also schedule mapping using the same method outlined in
 Where `<world>` is the name of the world you wish to map (omit for all
 worlds).
 
-## Installing Overviewer (the mapping software)
+## Setting up mapping
+
+### Installing Overviewer (the mapping software)
 
 Overviewer is the mapping software that MSCS uses. 
 It has pretty straightforward documentation to download and install the software:
