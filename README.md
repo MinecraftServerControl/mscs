@@ -261,11 +261,13 @@ that you wish the world to use:
     mscs create vanillaMC 25565
 
 ### Adjusting global server properties
-Default values in the script can be overridden by adding certain properties to one
-of the `mscs.defaults` files. The `mscs.defaults` files can be found found in one
-of three places depending on how the script is being used. When using the `mscs`
-script, the `mscs.defaults` file can be found at `/opt/mscs/mscs.defaults`. When
-using the `msctl` script in [multi-user mode](https://github.com/MinecraftServerControl/mscs/wiki/Configuring-MSCS-for-multiple-users), the `mscs.defaults` file can be found at either `$HOME/mscs.defaults` or `$HOME/.config/mscs/mscs.defaults`.
+Default values in the script can be overridden by adding certain properties to
+one of the `mscs.defaults` files. An example `mscs.defaults` file will be
+created as needed in one of three places depending on how the script is being
+used. When using the `mscs` script, the `mscs.defaults` file can be found at
+`/opt/mscs/mscs.defaults`. When using the `msctl` script in [multi-user mode](https://github.com/MinecraftServerControl/mscs/wiki/Configuring-MSCS-for-multiple-users),
+the `mscs.defaults` file can be found at either `$HOME/mscs.defaults` or
+`$HOME/.config/mscs/mscs.defaults`.
 
 For more information on the various properties, see the [wiki page](https://github.com/MinecraftServerControl/mscs/wiki/Global-Server-Settings).
 
