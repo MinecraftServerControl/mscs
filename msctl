@@ -1956,10 +1956,10 @@ elif [ -r "$HOME/mscs.defaults" ]; then
 elif [ -r "$HOME/.config/mscs/mscs.defaults" ]; then
   MSCS_DEFAULTS="$HOME/.config/mscs/mscs.defaults"
 fi
+# Generate the example `mscs.defaults` if it is missing or empty.
 if [ ! -s "$MSCS_DEFAULTS" ]; then
   mscs_defaults > $MSCS_DEFAULTS
 fi
-
 # Default values in the script can be overridden by adding certain key/value
 # pairs to one of the mscs.defaults files mentioned above. Default values in
 # the script will be used unless overridden in one these files.
