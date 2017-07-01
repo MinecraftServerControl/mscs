@@ -1411,6 +1411,22 @@ overviewer() {
   # Generate the map and POI.
   $OVERVIEWER_BIN --config=$SETTINGS_FILE >> $LOG_FILE 2>&1
   $OVERVIEWER_BIN --config=$SETTINGS_FILE --genpoi >> $LOG_FILE 2>&1
+
+  # Add the Google API key to the Overviewer index.html source files.
+  for f in $(find /usr/ -name "index.html" -print | grep overviewer_core/data/web_assets)
+  do
+      if [ "$(grep "$TestString" "$f")" ] ; then
+          if [ -z "$(grep "$TestString$AddString" "$f")" ] ; then
+                  if [ ! -h "$f" ] ; then
+                      sed -i "s/\?sensor=false/&\&key=$OVERVIEWER_KEY/g" "$f"
+                  fi
+          fi
+      fi
+  done
+
+  # Add the Google API key to the index.html in the maps folder. 
+  sed -i 's/\?sensor=false/&\&key='"$OVERVIEWER_KEY"'/g' "$MAPS_LOCATION/$1/index.html"
+
   # Announce the location to access the world map to players.
   if serverRunning $1; then
     if [ $VERSION_TEST -ge 0 ]; then
@@ -1861,6 +1877,7 @@ fi
 #   mscs-mirror-path             - Default path for the mirror files.
 #   mscs-overviewer-bin          - Location of Overviewer.
 #   mscs-overviewer-url          - URL for Overviewer.
+#   mscs-overviewer-key          - Google API key for Overviewer. 
 #   mscs-maps-location           - Location of Overviewer generated map files.
 #   mscs-maps-url                - URL for accessing Overviewer generated maps.
 #
@@ -1907,6 +1924,7 @@ fi
 #   mscs-mirror-path=/dev/shm/mscs
 #   mscs-overviewer-bin=/usr/bin/overviewer.py
 #   mscs-overviewer-url=http://overviewer.org
+#   mscs-overviewer-key=
 #   mscs-maps-location=/opt/mscs/maps
 #   mscs-maps-url=http://minecraft.server.com/maps
 
@@ -2042,6 +2060,7 @@ MIRROR_PATH=$(getDefaultsValue 'mscs-mirror-path' '/dev/shm/mscs')
 # ---------------------------------------------------------------------------
 OVERVIEWER_BIN=$(getDefaultsValue 'mscs-overviewer-bin' $(which overviewer.py))
 OVERVIEWER_URL=$(getDefaultsValue 'mscs-overviewer-url' 'http://overviewer.org')
+OVERVIEWER_KEY=$(getDefaultsValue 'mscs-overviewer-key' '')
 MAPS_LOCATION=$(getDefaultsValue 'mscs-maps-location' $LOCATION'/maps')
 MAPS_URL=$(getDefaultsValue 'mscs-maps-url' 'http://minecraft.server.com/maps')
 
