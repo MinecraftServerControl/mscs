@@ -21,8 +21,9 @@
   * [Adjusting world properties](#adjusting-world-properties)
     * [Default world properties](#default-world-properties)
     * [Enabling Forge, BungeeCord, and other server software](#enabling-forge-bungeecord-and-other-server-software)
-* [Scheduling backups and other tasks](#scheduling-backups-and-other-tasks)
+* [Performing backups and other tasks](#performing-backups-and-other-tasks)
   * [Scheduling backups](#scheduling-backups)
+  * [Viewing and restoring backups](#viewing-and-restoring-backups)
   * [Removing backups after X days](#removing-backups-after-x-days)
   * [Scheduling restarts](#scheduling-restarts)
   * [Scheduling mapping](#scheduling-mapping)
@@ -67,7 +68,8 @@ Ensure that you have done the following before installing MSCS:
 We've made an attempt to utilize only features that are normally installed in
 most Linux and UNIX environments in this script. However, there may be a few
 requirements that this script has that may not already be in place:
-* Java JRE     - The Minecraft server software requires this.
+* Java JRE     - The Minecraft server software requires this. 
+                 **As of Minecraft 1.12, Java 8 is required.**
 * Perl         - Most, if not all, Unix and Linux like systems have this
                  preinstalled.
 * libjson-perl - Allows the script to read JSON formatted data.
@@ -407,7 +409,7 @@ liking.
 Please visit the [wiki](https://github.com/MinecraftServerControl/mscs/wiki/Server-Customization-Examples)
 for additional information.
 
-## Scheduling backups and other tasks
+## Performing backups and other tasks
 All MSCS tasks can be automated using [**cron**](https://en.wikipedia.org/wiki/Cron),
 a scheduler software that can run programs on a set interval of time. Whether
 it be backups, restarts, mapping, or any other `mscs` command, it can be
@@ -440,7 +442,9 @@ Page down until you get to an empty line. Then paste the following:
 * `myWorld` is the name of the world you wish to backup. Omitting this will
   backup all worlds.
 
-* The backups will be saved in `/opt/mscs/backups`.
+### Viewing and restoring backups
+
+Once you've [scheduled backups](#scheduling-backups), you can view the backups creating by running the `mscs list-backups` command, and restore a backup using the `mscs restore-backup` command. 
 
 ### Removing backups after X days
 You can specify how long to keep backups by changing the
@@ -459,7 +463,7 @@ Where `<world>` is the name of the world you wish to restart (omit for all
 worlds).
 
 ### Scheduling mapping
-You can also schedule mapping using the same method outlined in
+Once you've [set up mapping](#setting-up-mapping), you can schedule the world(s) to be mapped periodically using the same method outlined in
 [scheduling backups](#scheduling-backups). Simply replace the command with:
 
     mscs map <world>
