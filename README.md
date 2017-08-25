@@ -444,7 +444,7 @@ Page down until you get to an empty line. Then paste the following:
 
 ### Viewing and restoring backups
 
-Once you've [scheduled backups](#scheduling-backups), you can view the backups creating by running the `mscs list-backups` command, and restore a backup using the `mscs restore-backup` command. 
+Once you've [scheduled backups](#scheduling-backups), you can view the backups created by running the `mscs list-backups` command, and restore a backup using the `mscs restore-backup` command. 
 
 ### Removing backups after X days
 You can specify how long to keep backups by changing the
