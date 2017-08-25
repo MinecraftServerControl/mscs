@@ -463,7 +463,7 @@ Where `<world>` is the name of the world you wish to restart (omit for all
 worlds).
 
 ### Scheduling mapping
-You can also schedule mapping using the same method outlined in
+Once you've [set up mapping](#setting-up-mapping), you can schedule the world(s) to be mapped periodically using the same method outlined in
 [scheduling backups](#scheduling-backups). Simply replace the command with:
 
     mscs map <world>
