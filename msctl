@@ -1076,7 +1076,7 @@ removeLockFile() {
 # @param 1 The world server generating the log to rotate.
 # ---------------------------------------------------------------------------
 rotateLog() {
-  local WORLD_DIR DATE LOG NUMBER
+  local WORLD_DIR DATE LOG NUM
   WORLD_DIR="$WORLDS_LOCATION/$1"
   # Make sure the log directory exists.
   mkdir -p "$WORLD_DIR/logs"
@@ -1094,9 +1094,8 @@ rotateLog() {
     cp /dev/null "$WORLD_DIR/server.log"
     # Rotate the files in the world's logs directory.
     for LOG in $(ls -r $WORLD_DIR/logs/$DATE-*.log.gz); do
-      NUMBER=$(echo $LOG | cut -d "." -f 1 | cut -d "-" -f 4)
-      NUMBER=$(($NUMBER+1))
-      mv -f $LOG "$WORLD_DIR/logs/$DATE-$NUMBER.log.gz"
+      NUM=$(echo $LOG | $PERL -ne 'print ($1 + 1) if ($_ =~ /'$DATE'-(\d+)/)')
+      mv -f $LOG "$WORLD_DIR/logs/$DATE-$NUM.log.gz"
     done
   fi
 }
