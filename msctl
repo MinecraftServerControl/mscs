@@ -41,7 +41,6 @@ PROG=$(basename $0)
 # Required Software
 # ---------------------------------------------------------------------------
 # Detect its presence and location for later.
-JAVA=$(which java)
 PERL=$(which perl)
 PYTHON=$(which python)
 WGET=$(which wget)
@@ -973,6 +972,7 @@ getServerCommand() {
   local CURRENT_VERSION SERVER_VERSION SERVER_JAR SERVER_LOCATION
   local SERVER_ARGS INITIAL_MEMORY MAXIMUM_MEMORY
   local DEFAULT_ARGS DEFAULT_INIT_MEM DEFAULT_MAX_MEM DEFAULT_COMMAND
+  local DEFAULT_JAVAVM JAVA JAVA_VERSION VERSION_TEST
   CURRENT_VERSION=$(getCurrentMinecraftVersion "$1")
   if [ $? -ne 0 ]; then
     printf "$CURRENT_VERSION\n"
@@ -993,6 +993,54 @@ getServerCommand() {
     printf "$SERVER_LOCATION\n"
     exit 1
   fi
+  # Get the location of the Java virtual machine, use the default value if not provided.
+  DEFAULT_JAVAVM=$(getDefaultsValue "mscs-default-java" "$DEFAULT_JAVA")
+  JAVA=$(getMSCSValue "$1" "mscs-java" "$DEFAULT_JAVAVM")
+  if [ ! -e "$JAVA" ]; then
+    echo "ERROR: java not found!"
+    echo "Try installing this with:"
+    echo "sudo apt-get install default-jre"
+    exit 1
+  fi
+  # Verify that the Java virtual machine supports the server version.
+  JAVA_VERSION=$($JAVA -version 2>&1 | $PERL -ne 'if ($_ =~ /version\s"([\d\.]+)\.\d+\_\d+"/) { print $1 }')
+  case $JAVA_VERSION in
+    1.9)
+      # Java 9 supports all server versions.
+    ;;
+    1.8)
+      # Java 8 supports all server versions.
+    ;;
+    1.7)
+      # Support for Java 7 ended with version 1.12.
+      VERSION_TEST=$(compareMinecraftVersions $SERVER_VERSION 1.12.1)
+      if [ $VERSION_TEST -ge 0 ]; then
+        echo "Error: Server version $SERVER_VERSION not supported by Java 7."
+        exit 1
+      fi
+    ;;
+    1.6)
+      # Support for Java 6 ended with version 1.12.
+      VERSION_TEST=$(compareMinecraftVersions $SERVER_VERSION 1.12.1)
+      if [ $VERSION_TEST -ge 0 ]; then
+        echo "Error: Server version $SERVER_VERSION not supported by Java 6."
+        exit 1
+      fi
+    ;;
+    1.5)
+      # Support for Java 5 ended with version 1.6.
+      VERSION_TEST=$(compareMinecraftVersions $SERVER_VERSION 1.6.1)
+      if [ $VERSION_TEST -ge 0 ]; then
+        echo "Error: Server version $SERVER_VERSION not supported by Java 5."
+        exit 1
+      fi
+    ;;
+    *)
+      # Java version not recognized.
+      echo "ERROR: java version not recognized!"
+      exit 1
+    ;;
+  esac
   # Get the server arguments, use the default value if not provided.
   DEFAULT_ARGS=$(getDefaultsValue "mscs-default-server-args" "$DEFAULT_SERVER_ARGS")
   SERVER_ARGS=$(getMSCSValue "$1" "mscs-server-args" "$DEFAULT_ARGS")
@@ -1854,15 +1902,9 @@ worldStatus() {
 # Begin.
 # ---------------------------------------------------------------------------
 
-# Make sure that Java, Perl, libjson-perl, Python, Wget, Rdiff-backup, Rsync,
+# Make sure that Perl, libjson-perl, Python, Wget, Rdiff-backup, Rsync,
 # and Socat are installed.
 # ---------------------------------------------------------------------------
-if [ ! -e "$JAVA" ]; then
-  echo "ERROR: Java not found!"
-  echo "Try installing this with:"
-  echo "sudo apt-get install default-jre"
-  exit 1
-fi
 if [ ! -e "$PERL" ]; then
   echo "ERROR: Perl not found!"
   echo "Try installing this with:"
@@ -1993,6 +2035,7 @@ fi
 #   mscs-default-server-args     - Default arguments to for a world server.
 #   mscs-default-initial-memory  - Default initial amount of memory for a world server.
 #   mscs-default-maximum-memory  - Default maximum amount of memory for a world server.
+#   mscs-default-java            - Default location of the java virtual machine.
 #   mscs-default-server-location - Default location of the server .jar file.
 #   mscs-default-server-command  - Default command to run for a world server.
 #   mscs-backup-location         - Location to store backup files.
@@ -2038,6 +2081,7 @@ fi
 #   mscs-default-server-args=nogui
 #   mscs-default-initial-memory=128M
 #   mscs-default-maximum-memory=2048M
+#   mscs-default-java=/usr/bin/java
 #   mscs-default-server-location=/opt/mscs/server
 #   mscs-default-server-command=$JAVA -Xms$INITIAL_MEMORY -Xmx$MAXIMUM_MEMORY -jar $SERVER_LOCATION/$SERVER_JAR $SERVER_ARGS
 #   mscs-backup-location=/opt/mscs/backups
@@ -2083,6 +2127,7 @@ DEFAULT_SERVER_URL='https://s3.amazonaws.com/Minecraft.Download/versions/$SERVER
 DEFAULT_SERVER_ARGS='nogui'
 DEFAULT_INITIAL_MEMORY='128M'
 DEFAULT_MAXIMUM_MEMORY='2048M'
+DEFAULT_JAVA=$(which java)
 DEFAULT_SERVER_LOCATION=$LOCATION'/server'
 DEFAULT_SERVER_COMMAND='$JAVA -Xms$INITIAL_MEMORY -Xmx$MAXIMUM_MEMORY -jar $SERVER_LOCATION/$SERVER_JAR $SERVER_ARGS'
 # Each world server can override the default values in a similar manner by
@@ -2101,6 +2146,7 @@ DEFAULT_SERVER_COMMAND='$JAVA -Xms$INITIAL_MEMORY -Xmx$MAXIMUM_MEMORY -jar $SERV
 #   mscs-server-args     - Assign the arguments to the server.
 #   mscs-initial-memory  - Assign the initial amount of memory for the server.
 #   mscs-maximum-memory  - Assign the maximum amount of memory for the server.
+#   mscs-java            - Assign the location of the java virtual machine.
 #   mscs-server-location - Assign the location of the server .jar file.
 #   mscs-server-command  - Assign the command to run for the server.
 #
@@ -2128,6 +2174,7 @@ DEFAULT_SERVER_COMMAND='$JAVA -Xms$INITIAL_MEMORY -Xmx$MAXIMUM_MEMORY -jar $SERV
 #   mscs-server-args=nogui
 #   mscs-initial-memory=128M
 #   mscs-maximum-memory=2048M
+#   mscs-java=/usr/bin/java
 #   mscs-server-location=/opt/mscs/server
 #   mscs-server-command=$JAVA -Xms$INITIAL_MEMORY -Xmx$MAXIMUM_MEMORY -jar $SERVER_LOCATION/$SERVER_JAR $SERVER_ARGS
 

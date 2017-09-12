@@ -286,6 +286,7 @@ The following properties are available:
 * mscs-default-server-args     - Default arguments for a world server.
 * mscs-default-initial-memory  - Default initial amount of memory for a world server.
 * mscs-default-maximum-memory  - Default maximum amount of memory for a world server.
+* mscs-default-java            - Default location of the java virtual machine.
 * mscs-default-server-location - Default location of the server .jar file.
 * mscs-default-server-command  - Default command to run for a world server.
 * mscs-backup-location         - Location to store backup files.
@@ -335,6 +336,7 @@ your liking.
     mscs-default-server-args=nogui
     mscs-default-initial-memory=128M
     mscs-default-maximum-memory=2048M
+    mscs-default-java=/usr/bin/java
     mscs-default-server-location=/opt/mscs/server
     mscs-default-server-command=$JAVA -Xms$INITIAL_MEMORY -Xmx$MAXIMUM_MEMORY -jar $SERVER_LOCATION/$SERVER_JAR $SERVER_ARGS
     mscs-backup-location=/opt/mscs/backups
@@ -371,6 +373,7 @@ The following properties are available:
 * mscs-server-args - Assign the arguments to the server.
 * mscs-initial-memory - Assign the initial amount of memory for the server.
 * mscs-maximum-memory - Assign the maximum amount of memory for the server.
+* mscs-java - Assign the location of the java virtual machine.
 * mscs-server-location - Assign the location of the server .jar file.
 * mscs-server-command - Assign the command to run for the server.
 
@@ -402,6 +405,7 @@ liking.
     mscs-server-args=nogui
     mscs-initial-memory=128M
     mscs-maximum-memory=2048M
+    mscs-java=/usr/bin/java
     mscs-server-location=/opt/mscs/server
     mscs-server-command=$JAVA -Xms$INITIAL_MEMORY -Xmx$MAXIMUM_MEMORY -jar $SERVER_LOCATION/$SERVER_JAR $SERVER_ARGS
 
