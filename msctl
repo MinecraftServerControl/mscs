@@ -701,9 +701,10 @@ updateVersionsJSON() {
 # @return The current Minecraft version number.
 # ---------------------------------------------------------------------------
 getCurrentMinecraftVersion() {
-  local VERSION TYPE
+  local VERSION TYPE DEFAULT_TYPE
   # Determine the version type for the current world.
-  TYPE=$(getMSCSValue "$1" "mscs-version-type" "$DEFAULT_VERSION_TYPE")
+  DEFAULT_TYPE=$(getDefaultsValue "mscs-default-version-type" "$DEFAULT_VERSION_TYPE")
+  TYPE=$(getMSCSValue "$1" "mscs-version-type" "$DEFAULT_TYPE")
   # Extract the current version information.
   VERSION=$($PERL -0777ne '
     use JSON;
@@ -741,14 +742,15 @@ getMinecraftVersionReleaseTime() {
 # @return CLIENT_VERSION
 # ---------------------------------------------------------------------------
 getClientVersion() {
-  local CURRENT_VERSION
+  local CURRENT_VERSION DEFAULT_VERSION
   CURRENT_VERSION=$(getCurrentMinecraftVersion "$1")
   if [ $? -ne 0 ]; then
     printf "$CURRENT_VERSION\n"
     exit 1
   fi
   # Get the client version, use the default version if not provided.
-  getMSCSValue "$1" "mscs-client-version" "$DEFAULT_CLIENT_VERSION" |
+  DEFAULT_VERSION=$(getDefaultsValue "mscs-default-client-version" "$DEFAULT_CLIENT_VERSION")
+  getMSCSValue "$1" "mscs-client-version" "$DEFAULT_VERSION" |
   $PERL -ne '
     $current_version="'$CURRENT_VERSION'";
     $_ =~ s/\$CURRENT_VERSION/$current_version/g;
@@ -763,7 +765,7 @@ getClientVersion() {
 # @return CLIENT_JAR
 # ---------------------------------------------------------------------------
 getClientJar() {
-  local CURRENT_VERSION CLIENT_VERSION
+  local CURRENT_VERSION CLIENT_VERSION DEFAULT_JAR
   CURRENT_VERSION=$(getCurrentMinecraftVersion "$1")
   if [ $? -ne 0 ]; then
     printf "$CURRENT_VERSION\n"
@@ -775,7 +777,8 @@ getClientJar() {
     exit 1
   fi
   # Get the client jar, use the default value if not provided.
-  getMSCSValue "$1" "mscs-client-jar" "$DEFAULT_CLIENT_JAR" |
+  DEFAULT_JAR=$(getDefaultsValue "mscs-default-client-jar" "$DEFAULT_CLIENT_JAR")
+  getMSCSValue "$1" "mscs-client-jar" "$DEFAULT_JAR" |
   $PERL -ne '
     $current_version="'$CURRENT_VERSION'";
     $client_version="'$CLIENT_VERSION'";
@@ -792,7 +795,7 @@ getClientJar() {
 # @return CLIENT_LOCATION
 # ---------------------------------------------------------------------------
 getClientLocation() {
-  local CURRENT_VERSION CLIENT_VERSION
+  local CURRENT_VERSION CLIENT_VERSION DEFAULT_LOCATION
   CURRENT_VERSION=$(getCurrentMinecraftVersion "$1")
   if [ $? -ne 0 ]; then
     printf "$CURRENT_VERSION\n"
@@ -804,7 +807,8 @@ getClientLocation() {
     exit 1
   fi
   # Get the client location, use the default value if not provided.
-  getMSCSValue "$1" "mscs-client-location" "$DEFAULT_CLIENT_LOCATION" |
+  DEFAULT_LOCATION=$(getDefaultsValue "mscs-default-client-location" "$DEFAULT_CLIENT_LOCATION")
+  getMSCSValue "$1" "mscs-client-location" "$DEFAULT_LOCATION" |
   $PERL -ne '
     $current_version="'$CURRENT_VERSION'";
     $client_version="'$CLIENT_VERSION'";
@@ -821,7 +825,7 @@ getClientLocation() {
 # @return CLIENT_URL
 # ---------------------------------------------------------------------------
 getClientURL() {
-  local CURRENT_VERSION CLIENT_VERSION
+  local CURRENT_VERSION CLIENT_VERSION DEFAULT_URL
   CURRENT_VERSION=$(getCurrentMinecraftVersion "$1")
   if [ $? -ne 0 ]; then
     printf "$CURRENT_VERSION\n"
@@ -833,7 +837,8 @@ getClientURL() {
     exit 1
   fi
   # Get the client download URL, use the default value if not provided.
-  getMSCSValue "$1" "mscs-client-url" "$DEFAULT_CLIENT_URL" |
+  DEFAULT_URL=$(getDefaultsValue "mscs-default-client-url" "$DEFAULT_CLIENT_URL")
+  getMSCSValue "$1" "mscs-client-url" "$DEFAULT_URL" |
   $PERL -ne '
     $current_version="'$CURRENT_VERSION'";
     $client_version="'$CLIENT_VERSION'";
@@ -851,14 +856,15 @@ getClientURL() {
 # @return SERVER_VERSION
 # ---------------------------------------------------------------------------
 getServerVersion() {
-  local CURRENT_VERSION
+  local CURRENT_VERSION DEFAULT_VERSION
   CURRENT_VERSION=$(getCurrentMinecraftVersion "$1")
   if [ $? -ne 0 ]; then
     printf "$CURRENT_VERSION\n"
     exit 1
   fi
   # Get the server version, use the default version if not provided.
-  getMSCSValue "$1" "mscs-server-version" "$DEFAULT_SERVER_VERSION" |
+  DEFAULT_VERSION=$(getDefaultsValue "mscs-default-server-version" "$DEFAULT_SERVER_VERSION")
+  getMSCSValue "$1" "mscs-server-version" "$DEFAULT_VERSION" |
   $PERL -ne '
     $current_version="'$CURRENT_VERSION'";
     $_ =~ s/\$CURRENT_VERSION/$current_version/g;
@@ -873,7 +879,7 @@ getServerVersion() {
 # @return SERVER_JAR
 # ---------------------------------------------------------------------------
 getServerJar() {
-  local CURRENT_VERSION SERVER_VERSION SERVER_JAR
+  local CURRENT_VERSION SERVER_VERSION SERVER_JAR DEFAULT_JAR
   CURRENT_VERSION=$(getCurrentMinecraftVersion "$1")
   if [ $? -ne 0 ]; then
     printf "$CURRENT_VERSION\n"
@@ -885,7 +891,8 @@ getServerJar() {
     exit 1
   fi
   # Get the server jar, use the default value if not provided.
-  getMSCSValue "$1" "mscs-server-jar" "$DEFAULT_SERVER_JAR" |
+  DEFAULT_JAR=$(getDefaultsValue "mscs-default-server-jar" "$DEFAULT_SERVER_JAR")
+  getMSCSValue "$1" "mscs-server-jar" "$DEFAULT_JAR" |
   $PERL -ne '
     $current_version="'$CURRENT_VERSION'";
     $server_version="'$SERVER_VERSION'";
@@ -902,7 +909,7 @@ getServerJar() {
 # @return SERVER_LOCATION
 # ---------------------------------------------------------------------------
 getServerLocation() {
-  local CURRENT_VERSION SERVER_VERSION
+  local CURRENT_VERSION SERVER_VERSION DEFAULT_LOCATION
   CURRENT_VERSION=$(getCurrentMinecraftVersion "$1")
   if [ $? -ne 0 ]; then
     printf "$CURRENT_VERSION\n"
@@ -914,7 +921,8 @@ getServerLocation() {
     exit 1
   fi
   # Get the server location, use the default value if not provided.
-  getMSCSValue "$1" "mscs-server-location" "$DEFAULT_SERVER_LOCATION" |
+  DEFAULT_LOCATION=$(getDefaultsValue "mscs-default-server-location" "$DEFAULT_SERVER_LOCATION")
+  getMSCSValue "$1" "mscs-server-location" "$DEFAULT_LOCATION" |
   $PERL -ne '
     $current_version="'$CURRENT_VERSION'";
     $server_version="'$SERVER_VERSION'";
@@ -931,7 +939,7 @@ getServerLocation() {
 # @return SERVER_URL
 # ---------------------------------------------------------------------------
 getServerURL() {
-  local CURRENT_VERSION SERVER_VERSION
+  local CURRENT_VERSION SERVER_VERSION DEFAULT_URL
   CURRENT_VERSION=$(getCurrentMinecraftVersion "$1")
   if [ $? -ne 0 ]; then
     printf "$CURRENT_VERSION\n"
@@ -943,7 +951,8 @@ getServerURL() {
     exit 1
   fi
   # Get the server download URL, use the default value if not provided.
-  getMSCSValue "$1" "mscs-server-url" "$DEFAULT_SERVER_URL" |
+  DEFAULT_URL=$(getDefaultsValue "mscs-default-server-url" "$DEFAULT_SERVER_URL")
+  getMSCSValue "$1" "mscs-server-url" "$DEFAULT_URL" |
   $PERL -ne '
     $current_version="'$CURRENT_VERSION'";
     $server_version="'$SERVER_VERSION'";
@@ -963,6 +972,7 @@ getServerURL() {
 getServerCommand() {
   local CURRENT_VERSION SERVER_VERSION SERVER_JAR SERVER_LOCATION
   local SERVER_ARGS INITIAL_MEMORY MAXIMUM_MEMORY
+  local DEFAULT_ARGS DEFAULT_INIT_MEM DEFAULT_MAX_MEM DEFAULT_COMMAND
   CURRENT_VERSION=$(getCurrentMinecraftVersion "$1")
   if [ $? -ne 0 ]; then
     printf "$CURRENT_VERSION\n"
@@ -984,19 +994,17 @@ getServerCommand() {
     exit 1
   fi
   # Get the server arguments, use the default value if not provided.
-  SERVER_ARGS=$(
-    getMSCSValue "$1" "mscs-server-args" "$DEFAULT_SERVER_ARGS"
-  )
+  DEFAULT_ARGS=$(getDefaultsValue "mscs-default-server-args" "$DEFAULT_SERVER_ARGS")
+  SERVER_ARGS=$(getMSCSValue "$1" "mscs-server-args" "$DEFAULT_ARGS")
   # Get the initial memory, use the default value if not provided.
-  INITIAL_MEMORY=$(
-    getMSCSValue "$1" "mscs-initial-memory" "$DEFAULT_INITIAL_MEMORY"
-  )
+  DEFAULT_INIT_MEM=$(getDefaultsValue "mscs-default-initial-memory" "$DEFAULT_INITIAL_MEMORY")
+  INITIAL_MEMORY=$(getMSCSValue "$1" "mscs-initial-memory" "$DEFAULT_INIT_MEM")
   # Get the maximum memory, use the default value if not provided.
-  MAXIMUM_MEMORY=$(
-    getMSCSValue "$1" "mscs-maximum-memory" "$DEFAULT_MAXIMUM_MEMORY"
-  )
+  DEFAULT_MAX_MEM=$(getDefaultsValue "mscs-default-maximum-memory" "$DEFAULT_MAXIMUM_MEMORY")
+  MAXIMUM_MEMORY=$(getMSCSValue "$1" "mscs-maximum-memory" "$DEFAULT_MAX_MEM")
   # Get the server command, use the default value if not provided.
-  getMSCSValue "$1" "mscs-server-command" "$DEFAULT_SERVER_COMMAND" |
+  DEFAULT_COMMAND=$(getDefaultsValue "mscs-default-server-command" "$DEFAULT_SERVER_COMMAND")
+  getMSCSValue "$1" "mscs-server-command" "$DEFAULT_COMMAND" |
   $PERL -ne '
     $java = "'$JAVA'";
     $current_version="'$CURRENT_VERSION'";
@@ -2061,22 +2069,22 @@ MINECRAFT_VERSIONS_URL=$(getDefaultsValue 'mscs-versions-url' 'https://launcherm
 # Minecraft Server Settings
 # ---------------------------------------------------------------------------
 # Settings used if not provided in the world's mscs.properties file.
-DEFAULT_WORLD=$(getDefaultsValue 'mscs-default-world' 'world')
-DEFAULT_PORT=$(getDefaultsValue 'mscs-default-port' '25565')
-DEFAULT_IP=$(getDefaultsValue 'mscs-default-ip' '')
-DEFAULT_VERSION_TYPE=$(getDefaultsValue 'mscs-default-version-type' 'release')
-DEFAULT_CLIENT_VERSION=$(getDefaultsValue 'mscs-default-client-version' '$CURRENT_VERSION')
-DEFAULT_CLIENT_JAR=$(getDefaultsValue 'mscs-default-client-jar' '$CLIENT_VERSION.jar')
-DEFAULT_CLIENT_URL=$(getDefaultsValue 'mscs-default-client-url' 'https://s3.amazonaws.com/Minecraft.Download/versions/$CLIENT_VERSION/$CLIENT_VERSION.jar')
-DEFAULT_CLIENT_LOCATION=$(getDefaultsValue 'mscs-default-client-location' $HOME'/.minecraft/versions/$CLIENT_VERSION')
-DEFAULT_SERVER_VERSION=$(getDefaultsValue 'mscs-default-server-version' '$CURRENT_VERSION')
-DEFAULT_SERVER_JAR=$(getDefaultsValue 'mscs-default-server-jar' 'minecraft_server.$SERVER_VERSION.jar')
-DEFAULT_SERVER_URL=$(getDefaultsValue 'mscs-default-server-url' 'https://s3.amazonaws.com/Minecraft.Download/versions/$SERVER_VERSION/minecraft_server.$SERVER_VERSION.jar')
-DEFAULT_SERVER_ARGS=$(getDefaultsValue 'mscs-default-server-args' 'nogui')
-DEFAULT_INITIAL_MEMORY=$(getDefaultsValue 'mscs-default-initial-memory' '128M')
-DEFAULT_MAXIMUM_MEMORY=$(getDefaultsValue 'mscs-default-maximum-memory' '2048M')
-DEFAULT_SERVER_LOCATION=$(getDefaultsValue 'mscs-default-server-location' $LOCATION'/server')
-DEFAULT_SERVER_COMMAND=$(getDefaultsValue 'mscs-default-server-command' '$JAVA -Xms$INITIAL_MEMORY -Xmx$MAXIMUM_MEMORY -jar $SERVER_LOCATION/$SERVER_JAR $SERVER_ARGS')
+DEFAULT_WORLD='world'
+DEFAULT_PORT='25565'
+DEFAULT_IP=''
+DEFAULT_VERSION_TYPE='release'
+DEFAULT_CLIENT_VERSION='$CURRENT_VERSION'
+DEFAULT_CLIENT_JAR='$CLIENT_VERSION.jar'
+DEFAULT_CLIENT_URL='https://s3.amazonaws.com/Minecraft.Download/versions/$CLIENT_VERSION/$CLIENT_VERSION.jar'
+DEFAULT_CLIENT_LOCATION=$HOME'/.minecraft/versions/$CLIENT_VERSION'
+DEFAULT_SERVER_VERSION='$CURRENT_VERSION'
+DEFAULT_SERVER_JAR='minecraft_server.$SERVER_VERSION.jar'
+DEFAULT_SERVER_URL='https://s3.amazonaws.com/Minecraft.Download/versions/$SERVER_VERSION/minecraft_server.$SERVER_VERSION.jar'
+DEFAULT_SERVER_ARGS='nogui'
+DEFAULT_INITIAL_MEMORY='128M'
+DEFAULT_MAXIMUM_MEMORY='2048M'
+DEFAULT_SERVER_LOCATION=$LOCATION'/server'
+DEFAULT_SERVER_COMMAND='$JAVA -Xms$INITIAL_MEMORY -Xmx$MAXIMUM_MEMORY -jar $SERVER_LOCATION/$SERVER_JAR $SERVER_ARGS'
 # Each world server can override the default values in a similar manner by
 # adding certain key/value pairs to the world's mscs.properties file.
 #
@@ -2303,9 +2311,11 @@ case "$1" in
         printf ".\n"
       fi
     elif [ -z "$(getAvailableWorlds)" ]; then
-      printf 'Creating default world "%s" at default port %s' \
-        $DEFAULT_WORLD $DEFAULT_PORT
-      createWorld "$DEFAULT_WORLD" "$DEFAULT_PORT"
+      WORLD=$(getDefaultsValue 'mscs-default-world' "$DEFAULT_WORLD")
+      PORT=$(getDefaultsValue 'mscs-default-port' "$DEFAULT_PORT")
+      IP=$(getDefaultsValue 'mscs-default-ip' "$DEFAULT_IP")
+      printf 'Creating default world "%s" at default port %s' "$WORLD" "$PORT"
+      createWorld "$WORLD" "$PORT" "$IP"
       printf ".\n"
     fi
   ;;
