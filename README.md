@@ -696,9 +696,9 @@ post a copy of the error message and a note detailing the operating
 environment where the error occurs to the support thread, and we will try to
 work out a solution with you.
 
-Support thread:  http://www.minecraftforum.net/viewtopic.php?f=10&t=129833
-
 Github Issues:  https://github.com/MinecraftServerControl/mscs/issues
+
+Old support thread:  http://www.minecraftforum.net/viewtopic.php?f=10&t=129833
 
 ### Troubleshooting
 
