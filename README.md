@@ -507,7 +507,7 @@ replacing MYKEY with the key you obtained above.
 
 You will also need to update other `index.html` source locations of
 where Overviewer is installed with your API key. 
-Run the following command to find those sources (courtsey of [Zeromusta](https://github.com/overviewer/Minecraft-Overviewer/issues/1308#issuecomment-271848826):
+Run the following command to find those sources (command courtesy of [Zeromusta](https://github.com/overviewer/Minecraft-Overviewer/issues/1308#issuecomment-271848826)):
 
     find /usr/ -name "index.html" -print | grep overviewer_core/data/web_assets
 
