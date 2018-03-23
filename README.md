@@ -491,20 +491,32 @@ supported systems, or build your own binary from source if needed.
 
 Overviewer currently requires a free Google API key. You can obtain one 
 [here](https://developers.google.com/maps/documentation/javascript/get-api-key). 
-On the webpage, Select the blue "Get a Key" button.
+On the webpage, select the blue "Get a Key" button.
 You can create a new project or use the already-made "My Project" to obtain
 the API key--it doesn't matter.
 
 Then, edit line 14 of `/opt/mscs/maps/<world>/index.html` to replace
 
-    <script type="text/javascript" src="https://maps.google.com/maps/api/js?sensor=false"></script>
+    <script type="text/javascript" src="https://maps.google.com/maps/api/js"></script>
     
 with
 
-    <script type="text/javascript" src="https://maps.google.com/maps/api/js?key=MYKEY&sensor=false"></script>
+    <script type="text/javascript" src="https://maps.google.com/maps/api/js?key=MYKEY"></script>
     
 replacing MYKEY with the key you obtained above.
-  
+
+You will also need to update other `index.html` source locations of
+where Overviewer is installed with your API key. 
+Run the following command to find those sources (command courtesy of [Zeromusta](https://github.com/overviewer/Minecraft-Overviewer/issues/1308#issuecomment-271848826)):
+
+    find /usr/ -name "index.html" -print | grep overviewer_core/data/web_assets
+
+In my case, there was 3 locations, so I updated the 14th line of each `index.html`
+to include my API key as described above. 
+
+You will need to repeat these above steps everytime Overviewer is updated (or, until they
+add a fix for this). 
+
 In the `mscs.defaults` file (one will be created if you haven't created one manually), 
 you'll find various Overviewer mapping settings which you change to your liking.
 We've listed the map-related settings below:
