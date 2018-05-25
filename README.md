@@ -491,12 +491,31 @@ supported systems, or build your own binary from source if needed.
 
 Overviewer currently requires a free Google API key. You can obtain one 
 [here](https://developers.google.com/maps/documentation/javascript/get-api-key). 
-On the webpage, Select the blue "Get a Key" button. Then, follow the prompts.
+On the webpage, select the blue "Get a Key" button.
 You can create a new project or use the already-made "My Project" to obtain
-the API key--it doesn't matter. Copy this key, you'll need it. Then,
-download the script found [here](https://github.com/Zeromusta/docker-spigot-overviewer/blob/master/rootfs/usr/local/bin/ov_keyfix)
-and paste your API key into the `AddString="&key="` line, so that it looks like `AddString="&key=00000000000000000"` where the
-zeroes are your API key. Once you've ran this file, Overviewer should work. You also want to run this whenever Overviewer is updated.
+the API key--it doesn't matter.
+
+Then, edit line 14 of `/opt/mscs/maps/<world>/index.html` to replace
+
+    <script type="text/javascript" src="https://maps.google.com/maps/api/js"></script>
+    
+with
+
+    <script type="text/javascript" src="https://maps.google.com/maps/api/js?key=MYKEY"></script>
+    
+replacing MYKEY with the key you obtained above.
+
+You will also need to update other `index.html` source locations of
+where Overviewer is installed with your API key. 
+Run the following command to find those sources (command courtesy of [Zeromusta](https://github.com/overviewer/Minecraft-Overviewer/issues/1308#issuecomment-271848826)):
+
+    find /usr/ -name "index.html" -print | grep overviewer_core/data/web_assets
+
+In my case, there was 3 locations, so I updated the 14th line of each `index.html`
+to include my API key as described above. 
+
+You will need to repeat these above steps everytime Overviewer is updated (or, until they
+add a fix for this). 
 
 In the `mscs.defaults` file (one will be created if you haven't created one manually), 
 you'll find various Overviewer mapping settings which you change to your liking.
