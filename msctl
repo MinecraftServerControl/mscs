@@ -821,7 +821,7 @@ getClientLocation() {
 # @return CLIENT_URL
 # ---------------------------------------------------------------------------
 getClientURL() {
-  local CURRENT_VERSION CLIENT_VERSION
+  local CURRENT_VERSION CLIENT_VERSION URL
   CURRENT_VERSION=$(getCurrentMinecraftVersion "$1")
   if [ $? -ne 0 ]; then
     printf "$CURRENT_VERSION\n"
@@ -834,14 +834,31 @@ getClientURL() {
   fi
   # Get the client download URL, use the default value if not provided.
   getMSCSValue "$1" "mscs-client-url" "$DEFAULT_CLIENT_URL" |
-  $PERL -ne '
+  URL=$($PERL -ne '
     $current_version="'$CURRENT_VERSION'";
     $client_version="'$CLIENT_VERSION'";
     $_ =~ s/\$CURRENT_VERSION/$current_version/g;
     $_ =~ s/\$CLIENT_VERSION/$client_version/g;
     $_ =~ s/\\\:/\:/g;
     print;
-  '
+  ')
+  # If the download URL was not specified, extract it from the version
+  # manifest.
+  if [ -z "$URL" ]; then
+    URL=$($PERL -0777ne '
+      use JSON;
+      use LWP::Simple;
+      my $json = decode_json ($_);
+      my $url;
+      foreach $ver (@{$json->{versions}}) {
+        $url = $ver->{url} if ($ver->{id} eq "'$CLIENT_VERSION'");
+      }
+      return if ($url eq "");
+      $json = decode_json (get ($url));
+      print $json->{downloads}{client}{url};
+    ' $VERSIONS_JSON)
+  fi
+  echo "$URL"
 }
 
 # ---------------------------------------------------------------------------
@@ -931,7 +948,7 @@ getServerLocation() {
 # @return SERVER_URL
 # ---------------------------------------------------------------------------
 getServerURL() {
-  local CURRENT_VERSION SERVER_VERSION
+  local CURRENT_VERSION SERVER_VERSION URL
   CURRENT_VERSION=$(getCurrentMinecraftVersion "$1")
   if [ $? -ne 0 ]; then
     printf "$CURRENT_VERSION\n"
@@ -944,14 +961,31 @@ getServerURL() {
   fi
   # Get the server download URL, use the default value if not provided.
   getMSCSValue "$1" "mscs-server-url" "$DEFAULT_SERVER_URL" |
-  $PERL -ne '
+  URL=$($PERL -ne '
     $current_version="'$CURRENT_VERSION'";
     $server_version="'$SERVER_VERSION'";
     $_ =~ s/\$CURRENT_VERSION/$current_version/g;
     $_ =~ s/\$SERVER_VERSION/$server_version/g;
     $_ =~ s/\\\:/\:/g;
     print;
-  '
+  ')
+  # If the download URL was not specified, extract it from the version
+  # manifest.
+  if [ -z "$URL" ]; then
+    URL=$($PERL -0777ne '
+      use JSON;
+      use LWP::Simple;
+      my $json = decode_json ($_);
+      my $url;
+      foreach $ver (@{$json->{versions}}) {
+        $url = $ver->{url} if ($ver->{id} eq "'$SERVER_VERSION'");
+      }
+      return if ($url eq "");
+      $json = decode_json (get ($url));
+      print $json->{downloads}{server}{url};
+    ' $VERSIONS_JSON)
+  fi
+  echo "$URL"
 }
 
 # ---------------------------------------------------------------------------
@@ -1411,6 +1445,9 @@ updateClientSoftware() {
     printf "$CLIENT_URL\n"
     exit 1
   fi
+echo $CLIENT_JAR
+echo $CLIENT_LOCATION
+echo $CLIENT_URL
   # Make sure the client software directory exists.
   mkdir -p "$CLIENT_LOCATION"
   # Download the client jar if it is missing.
@@ -2030,11 +2067,11 @@ fi
 #   mscs-default-version-type=release
 #   mscs-default-client-version=$CURRENT_VERSION
 #   mscs-default-client-jar=$CLIENT_VERSION.jar
-#   mscs-default-client-url=https://s3.amazonaws.com/Minecraft.Download/versions/$CLIENT_VERSION/$CLIENT_VERSION.jar
+#   mscs-default-client-url=
 #   mscs-default-client-location=/opt/mscs/.minecraft/versions/$CLIENT_VERSION
 #   mscs-default-server-version=$CURRENT_VERSION
 #   mscs-default-server-jar=minecraft_server.$SERVER_VERSION.jar
-#   mscs-default-server-url=https://s3.amazonaws.com/Minecraft.Download/versions/$SERVER_VERSION/minecraft_server.$SERVER_VERSION.jar
+#   mscs-default-server-url=
 #   mscs-default-server-args=nogui
 #   mscs-default-initial-memory=128M
 #   mscs-default-maximum-memory=2048M
@@ -2075,11 +2112,11 @@ DEFAULT_IP=$(getDefaultsValue 'mscs-default-ip' '')
 DEFAULT_VERSION_TYPE=$(getDefaultsValue 'mscs-default-version-type' 'release')
 DEFAULT_CLIENT_VERSION=$(getDefaultsValue 'mscs-default-client-version' '$CURRENT_VERSION')
 DEFAULT_CLIENT_JAR=$(getDefaultsValue 'mscs-default-client-jar' '$CLIENT_VERSION.jar')
-DEFAULT_CLIENT_URL=$(getDefaultsValue 'mscs-default-client-url' 'https://s3.amazonaws.com/Minecraft.Download/versions/$CLIENT_VERSION/$CLIENT_VERSION.jar')
+DEFAULT_CLIENT_URL=$(getDefaultsValue 'mscs-default-client-url' '')
 DEFAULT_CLIENT_LOCATION=$(getDefaultsValue 'mscs-default-client-location' $HOME'/.minecraft/versions/$CLIENT_VERSION')
 DEFAULT_SERVER_VERSION=$(getDefaultsValue 'mscs-default-server-version' '$CURRENT_VERSION')
 DEFAULT_SERVER_JAR=$(getDefaultsValue 'mscs-default-server-jar' 'minecraft_server.$SERVER_VERSION.jar')
-DEFAULT_SERVER_URL=$(getDefaultsValue 'mscs-default-server-url' 'https://s3.amazonaws.com/Minecraft.Download/versions/$SERVER_VERSION/minecraft_server.$SERVER_VERSION.jar')
+DEFAULT_SERVER_URL=$(getDefaultsValue 'mscs-default-server-url' '')
 DEFAULT_SERVER_ARGS=$(getDefaultsValue 'mscs-default-server-args' 'nogui')
 DEFAULT_INITIAL_MEMORY=$(getDefaultsValue 'mscs-default-initial-memory' '128M')
 DEFAULT_MAXIMUM_MEMORY=$(getDefaultsValue 'mscs-default-maximum-memory' '2048M')
@@ -2120,11 +2157,11 @@ DEFAULT_SERVER_COMMAND=$(getDefaultsValue 'mscs-default-server-command' '$JAVA -
 #   mscs-version-type=release
 #   mscs-client-version=$CURRENT_VERSION
 #   mscs-client-jar=$CLIENT_VERSION.jar
-#   mscs-client-url=https://s3.amazonaws.com/Minecraft.Download/versions/$CLIENT_VERSION/$CLIENT_VERSION.jar
+#   mscs-client-url=
 #   mscs-client-location=/opt/mscs/.minecraft/versions/$CLIENT_VERSION
 #   mscs-server-version=$CURRENT_VERSION
 #   mscs-server-jar=minecraft_server.$SERVER_VERSION.jar
-#   mscs-server-url=https://s3.amazonaws.com/Minecraft.Download/versions/$SERVER_VERSION/minecraft_server.$SERVER_VERSION.jar
+#   mscs-server-url=
 #   mscs-server-args=nogui
 #   mscs-initial-memory=128M
 #   mscs-maximum-memory=2048M
