@@ -73,6 +73,7 @@ requirements that this script has that may not already be in place:
 * Perl         - Most, if not all, Unix and Linux like systems have this
                  preinstalled.
 * libjson-perl - Allows the script to read JSON formatted data.
+* libwww-perl  - Allows the script to download data to verify downloads.
 * Python       - Required by the Minecraft Overviewer mapping software.
 * GNU Make     - Allows you to use the Makefile to simplify installation.
 * GNU Wget     - Allows the script to download software updates via the
@@ -86,7 +87,7 @@ requirements that this script has that may not already be in place:
 If you are running Debian or Ubuntu, you can make sure that these are
 installed by running:
 
-    sudo apt-get install default-jre perl libjson-perl python make wget rdiff-backup rsync socat iptables
+    sudo apt-get install default-jre perl libjson-perl libwww-perl python make wget rdiff-backup rsync socat iptables
 
 ### Configuring the firewall / NAT
 If you have a firewall installed on your computer, or a router using NAT
