@@ -31,5 +31,5 @@ MSCS_ARGS="-p $PROG -l $LOCATION -c $MSCS_DEFAULTS $@"
 if [ "$USER_NAME" = "$(whoami)" ]; then
   msctl $MSCS_ARGS
 else
-  sudo "PATH=$PATH" -u $USER_NAME --set-home msctl $MSCS_ARGS
+  sudo "PATH=$PATH" -u $USER_NAME -H msctl $MSCS_ARGS
 fi
