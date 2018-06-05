@@ -1,6 +1,6 @@
 [Unit]
 Description=Minecraft Server Control Script
-Documentation=https://github.com/sandain/MinecraftServerControlScript
+Documentation=https://github.com/MinecraftServerControl/mscs
 Requires=network.target
 After=network.target
 
