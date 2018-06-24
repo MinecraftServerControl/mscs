@@ -1849,10 +1849,19 @@ queryDetailedStatus() {
 # @return Query values in JSON format.
 # ---------------------------------------------------------------------------
 queryDetailedStatusJSON() {
-  local STATUS JSON PLAYERS COUNTER
+  local STATUS JSON MOTD GAMETYPE GAMEID VERSION PLUGINS MAP NUMPLAYERS MAXPLAYERS HOSTPORT HOSTIP PLAYERS COUNTER
   STATUS=$(queryDetailedStatus $1)
   if [ -n "$STATUS" ]; then
+    MOTD=$(printf "%s" "$STATUS" | cut -f 7)
+    GAMETYPE=$(printf "%s" "$STATUS" | cut -f 9)
+    GAMEID=$(printf "%s" "$STATUS" | cut -f 11)
+    VERSION=$(printf "%s" "$STATUS" | cut -f 13)
+    PLUGINS=$(printf "%s" "$STATUS" | cut -f 15)
+    MAP=$(printf "%s" "$STATUS" | cut -f 17)
     NUMPLAYERS=$(printf "%s" "$STATUS" | cut -f 19)
+    MAXPLAYERS=$(printf "%s" "$STATUS" | cut -f 21)
+    HOSTPORT=$(printf "%s" "$STATUS" | cut -f 23)
+    HOSTIP=$(printf "%s" "$STATUS" | cut -f 25)
     if [ $NUMPLAYERS -gt 0 ]; then
       PLAYERS=$(printf "%s\"" "$PLAYERS" $(printf "%s" "$STATUS" | cut -f $((30))))
       COUNTER=1
@@ -1861,23 +1870,11 @@ queryDetailedStatusJSON() {
         COUNTER=$(($COUNTER+1))
       done
     fi
-    JSON='{
-      "motd": "'$(printf "%s" "$STATUS" | cut -f 7)'",
-      "gametype": "'$(printf "%s" "$STATUS" | cut -f 9)'",
-      "gameid": "'$(printf "%s" "$STATUS" | cut -f 11)'",
-      "version": "'$(printf "%s" "$STATUS" | cut -f 13)'",
-      "plugins": "'$(printf "%s" "$STATUS" | cut -f 15)'",
-      "map": "'$(printf "%s" "$STATUS" | cut -f 17)'",
-      "numplayers": '$NUMPLAYERS',
-      "maxplayers": '$(printf "%s" "$STATUS" | cut -f 21)',
-      "hostport": "'$(printf "%s" "$STATUS" | cut -f 23)'",
-      "hostip": "'$(printf "%s" "$STATUS" | cut -f 25)'",
-      "players": ['$PLAYERS']
-    }'
+    JSON="{\"motd\":\"$MOTD\",\"gametype\":\"$GAMETYPE\",\"gameid\":\"$GAMEID\",\"version\":\"$VERSION\",\"plugins\":\"$PLUGINS\",\"map\":\"$MAP\",\"numplayers\":$NUMPLAYERS,\"maxplayers\":$MAXPLAYERS,\"hostport\":\"$HOSTPORT\",\"hostip\":\"$HOSTIP\",\"players\":[$PLAYERS]}"
   else
     JSON="{}"
   fi
-  printf "%s" $JSON
+  printf "%s" "$JSON"
 }
 
 # ---------------------------------------------------------------------------
