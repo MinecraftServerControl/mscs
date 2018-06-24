@@ -1932,6 +1932,28 @@ worldStatus() {
 }
 
 # ---------------------------------------------------------------------------
+# Display the status of a Minecraft world server in JSON format.
+#
+# @param 1 The world server of interest.
+# @return The status of the world in JSON format.
+# ---------------------------------------------------------------------------
+worldStatusJSON() {
+  local RUNNING QUERY PID MEMORY
+  if serverRunning $1; then
+    RUNNING="true"
+    QUERY="$(queryDetailedStatusJSON $1)"
+    PID="$(getJavaPID $1)"
+    MEMORY="$(getJavaMemory $1)"
+  else
+    RUNNING="false"
+    QUERY="null"
+    PID="null"
+    MEMORY="null"
+  fi
+  printf "{\"running\":%s,\"query\":%s,\"pid\":%s,\"memory\":%s}" "$RUNNING" "$QUERY" "$PID" "$MEMORY"
+}
+
+# ---------------------------------------------------------------------------
 # Begin.
 # ---------------------------------------------------------------------------
 
@@ -2534,7 +2556,7 @@ case "$1" in
       ;;
     esac
   ;;
-  status|show)
+  status|show|status-json|show-json)
     # Figure out which worlds to show the status for.
     if isWorldAvailable "$2"; then
       WORLDS="$2"
@@ -2545,12 +2567,27 @@ case "$1" in
     else
       WORLDS=$(getAvailableWorlds)
     fi
-    # Show the status of each world requested.
-    printf "Minecraft Server Status:\n"
-    for WORLD in $WORLDS; do
-      printf "  $WORLD: "
-      worldStatus $WORLD
-    done
+    case "$1" in
+      status-json|show-json)
+        # Show the status of each world requested in JSON format.
+        JSON=""
+        for WORLD in $WORLDS; do
+          if [ "$JSON" ]; then
+            JSON="$JSON, "
+          fi
+          JSON="$JSON\"$WORLD\":$(worldStatusJSON $WORLD)"
+        done
+        printf "{%s}" "$JSON"
+      ;;
+      *)
+        # Show the status of each world requested.
+        printf "Minecraft Server Status:\n"
+        for WORLD in $WORLDS; do
+          printf "  $WORLD: "
+          worldStatus $WORLD
+        done
+      ;;
+    esac
   ;;
   sync|synchronize)
     # Figure out which worlds to synchronize.
