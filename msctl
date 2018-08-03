@@ -1288,7 +1288,7 @@ start() {
     exit 1
   fi
   # Turn on terminal echo to work around issue with some server software.
-  tset
+  tty -s && tset
   # Retrieve the process ID for the server.
   sleep 1
   PID=$(getJavaPID "$1")
