@@ -328,11 +328,11 @@ your liking.
     mscs-default-version-type=release
     mscs-default-client-version=$CURRENT_VERSION
     mscs-default-client-jar=$CLIENT_VERSION.jar
-    mscs-default-client-url=https://s3.amazonaws.com/Minecraft.Download/versions/$CLIENT_VERSION/$CLIENT_VERSION.jar
+    mscs-default-client-url=
     mscs-default-client-location=/opt/mscs/.minecraft/versions/$CLIENT_VERSION
     mscs-default-server-version=$CURRENT_VERSION
     mscs-default-server-jar=minecraft_server.$SERVER_VERSION.jar
-    mscs-default-server-url=https://s3.amazonaws.com/Minecraft.Download/versions/$SERVER_VERSION/minecraft_server.$SERVER_VERSION.jar
+    mscs-default-server-url=
     mscs-default-server-args=nogui
     mscs-default-initial-memory=128M
     mscs-default-maximum-memory=2048M
