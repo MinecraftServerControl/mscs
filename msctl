@@ -219,7 +219,7 @@ mscs_defaults() {
 
 ; Default download URL for the client software. The \$CLIENT_VERSION variable
 ; allows access to the client version selected.
-# mscs-default-client-url=https://s3.amazonaws.com/Minecraft.Download/versions/\$CLIENT_VERSION/\$CLIENT_VERSION.jar
+# mscs-default-client-url=
 
 ; Default location of the client .jar file. The \$CLIENT_VERSION variable
 ; allows access to the client version selected.
@@ -235,7 +235,7 @@ mscs_defaults() {
 
 ; Default download URL for the server software. The \$SERVER_VERSION variable
 ; allows access to the server version selected.
-# mscs-default-server-url=https://s3.amazonaws.com/Minecraft.Download/versions/\$SERVER_VERSION/minecraft_server.\$SERVER_VERSION.jar
+# mscs-default-server-url=
 
 ; Default arguments for a world server.
 # mscs-default-server-args=nogui
