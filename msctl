@@ -1983,6 +1983,13 @@ if [ $? -ne 0 ]; then
   echo "sudo apt-get install libwww-perl"
   exit 1
 fi
+$PERL -e 'use LWP::Protocol::https;' > /dev/null 2>&1
+if [ $? -ne 0 ]; then
+  echo "ERROR: liblwp-protocol-https-perl not found!"
+  echo "Try installing this with:"
+  echo "sudo apt-get install liblwp-protocol-https-perl"
+  exit 1
+fi
 if [ ! -e "$PYTHON" ]; then
   echo "ERROR: Python not found!"
   echo "Try installing this with:"
