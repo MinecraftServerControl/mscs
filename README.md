@@ -35,6 +35,7 @@
   * [Examples](#examples)
 * [Issues](#issues)
   * [Troubleshooting](#troubleshooting)
+* [Code of Conduct](CODE_OF_CONDUCT.md)
 * [License](LICENSE)
 * [Disclaimer](#disclaimer)
 
