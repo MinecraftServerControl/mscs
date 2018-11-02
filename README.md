@@ -725,6 +725,10 @@ Type
 To give the `minecraft` user the correct permissions needed to create/modify
 folders.
 
+## Code of Conduct
+
+See [Code of Conduct](CODE_OF_CONDUCT.md)
+
 ## License
 
 See [LICENSE](LICENSE)
