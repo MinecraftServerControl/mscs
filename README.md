@@ -433,13 +433,14 @@ Edit the crontab file for the `minecraft` user using `sudo`:
 
 Page down until you get to an empty line. Then paste the following:
 
-    # Define PATH
+    # Define HOME and PATH
+    HOME=/opt/mscs
     PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 
     # Run mscs backups
     0 */2 * * *  mscs backup myWorld
 
-* We define the PATH because `cron` doesn't do it for us.
+* We define HOME and PATH because `cron` may not do it for us.
 
 * `0 */2 * * *` is the time interval to backup. This particular expression
   means backup every 2 hours. You can change this to 3, 4, 5, etc to backup
