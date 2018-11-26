@@ -440,7 +440,8 @@ Page down until you get to an empty line. Then paste the following:
     # Run mscs backups
     0 */2 * * *  mscs backup myWorld
 
-* We define HOME and PATH because `cron` may not do it for us.
+* We define HOME and PATH because `cron` may not do it for us. *Make sure that
+  PATH and HOME match the environment on your system.*
 
 * `0 */2 * * *` is the time interval to backup. This particular expression
   means backup every 2 hours. You can change this to 3, 4, 5, etc to backup
