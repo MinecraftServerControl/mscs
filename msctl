@@ -2302,7 +2302,12 @@ MAPS_URL=$(getDefaultsValue 'mscs-maps-url' 'http://minecraft.server.com/maps')
 
 # Respond to the command line arguments.
 # ---------------------------------------------------------------------------
-case "$1" in
+# Stores the user-issued command.
+COMMAND=$1
+if [ "$#" -ge 1 ]; then
+  shift 1
+fi
+case "$COMMAND" in
   start)
     # Grab the latest version information.
     updateVersionsJSON
@@ -2317,14 +2322,17 @@ case "$1" in
       echo "Or create the default world at the default port:"
       echo "  $PROG create"
       exit 1
-    elif [ -n "$2" ]; then
-      if isWorldEnabled "$2"; then
-        WORLDS="$2"
-      elif [ -n "$2" ]; then
-        printf "World '$2' not recognized.\n"
-        printf "  Usage:  $PROG $1 <world>\n"
-        exit 1
-      fi
+    elif [ "$#" -ge 1 ]; then
+      WORLDS=''
+      for arg in "$@"; do
+        if isWorldEnabled "$arg"; then
+          WORLDS="$WORLDS $arg"
+        else
+          printf "World '$arg' not recognized.\n"
+          printf "  Usage:  $PROG $COMMAND <world1> <world2> <...>\n"
+          exit 1
+        fi
+      done
     fi
     # Start each world requested, if not already running.
     printf "Starting Minecraft Server:"
@@ -2338,12 +2346,16 @@ case "$1" in
     ;;
   stop | force-stop)
     # Figure out which worlds to stop.
-    if isWorldEnabled "$2"; then
-      WORLDS="$2"
-    elif [ -n "$2" ]; then
-      printf "World '$2' not recognized.\n"
-      printf "  Usage:  $PROG $1 <world>\n"
-      exit 1
+    if [ "$#" -ge 1 ]; then
+      for arg in "$@"; do
+        if isWorldEnabled "$arg"; then
+          WORLDS="$WORLDS $arg"
+        else
+          printf "World '$arg' not recognized.\n"
+          printf "  Usage:  $PROG $COMMAND <world1> <world2> <...>\n"
+          exit 1
+        fi
+      done
     else
       WORLDS=$(getEnabledWorlds)
     fi
@@ -2361,12 +2373,12 @@ case "$1" in
         fi
         sendCommand $WORLD "save-all"
         sendCommand $WORLD "save-off"
-        if [ "$1" = "force-stop" ]; then
+        if [ "$COMMAND" = "force-stop" ]; then
           forceStop $WORLD
         else
           stop $WORLD
         fi
-      elif [ "$1" = "force-stop" ]; then
+      elif [ "$COMMAND" = "force-stop" ]; then
         printf " $WORLD"
         forceStop $WORLD
       fi
@@ -2377,12 +2389,16 @@ case "$1" in
     # Grab the latest version information.
     updateVersionsJSON
     # Figure out which worlds to restart.
-    if isWorldEnabled "$2"; then
-      WORLDS="$2"
-    elif [ -n "$2" ]; then
-      printf "World '$2' not recognized.\n"
-      printf "  Usage:  $PROG $1 <world>\n"
-      exit 1
+    if [ "$#" -ge 1 ]; then
+      for arg in "$@"; do
+        if isWorldEnabled "$arg"; then
+          WORLDS="$WORLDS $arg"
+        else
+          printf "World '$arg' not recognized.\n"
+          printf "  Usage:  $PROG $COMMAND <world1> <world2> <...>\n"
+          exit 1
+        fi
+      done
     else
       WORLDS=$(getEnabledWorlds)
     fi
@@ -2400,7 +2416,7 @@ case "$1" in
         fi
         sendCommand $WORLD "save-all"
         sendCommand $WORLD "save-off"
-        if [ "$(echo \"$1\" | cut -d '-' -f1)" = "force" ]; then
+        if [ "$(echo \"$COMMAND\" | cut -d '-' -f1)" = "force" ]; then
           forceStop $WORLD
         else
           stop $WORLD
@@ -2412,15 +2428,15 @@ case "$1" in
     printf ".\n"
     ;;
   create | new)
-    if [ -n "$2" ]; then
-      if [ -z "$3" ]; then
+    if [ -n "$1" ]; then
+      if [ -z "$2" ]; then
         printf "A name and port for the new world must be supplied.\n"
         printf "An IP address is optional and usually not needed.\n"
         printf "  Usage: $PROG create <world> <port> [<ip>]\n"
         exit 1
       else
-        printf "Creating Minecraft world: $2"
-        createWorld "$2" "$3" "$4"
+        printf "Creating Minecraft world: $1"
+        createWorld "$1" "$2" "$3"
         printf ".\n"
       fi
     elif [ -z "$(getAvailableWorlds)" ]; then
@@ -2432,74 +2448,74 @@ case "$1" in
     ;;
   delete | remove)
     # Get list of enabled worlds.
-    if ! isWorldAvailable "$2"; then
-      printf "World not found, unable to delete world '$2'.\n"
+    if ! isWorldAvailable "$1"; then
+      printf "World not found, unable to delete world '$1'.\n"
       exit 1
     fi
-    printf "Deleting Minecraft world: $2"
-    if serverRunning "$2"; then
+    printf "Deleting Minecraft world: $1"
+    if serverRunning "$1"; then
       # If the world server has users logged in, announce that the world is
       # being deleted.
-      if [ $(queryNumUsers "$2") -gt 0 ]; then
-        sendCommand "$2" "say The server admin is deleting this world."
-        sendCommand "$2" "say The server will be deleted in 1 minute..."
+      if [ $(queryNumUsers "$1") -gt 0 ]; then
+        sendCommand "$1" "say The server admin is deleting this world."
+        sendCommand "$1" "say The server will be deleted in 1 minute..."
         sleep 60
-        sendCommand "$2" "say The server is now shutting down."
+        sendCommand "$1" "say The server is now shutting down."
       fi
       # Stop the world server.
-      stop "$2"
+      stop "$1"
       sleep 5
     fi
     # Delete the world.
-    deleteWorld "$2"
+    deleteWorld "$1"
     printf ".\n"
     ;;
   disable)
     # Get list of enabled worlds.
-    if ! isWorldEnabled "$2"; then
-      printf "World not found, unable to disable world '$2'.\n"
+    if ! isWorldEnabled "$1"; then
+      printf "World not found, unable to disable world '$1'.\n"
       exit 1
     fi
-    printf "Disabling Minecraft world: $2"
-    if serverRunning "$2"; then
+    printf "Disabling Minecraft world: $1"
+    if serverRunning "$1"; then
       # If the world server has users logged in, announce that the world is
       # being disabled.
-      if [ $(queryNumUsers "$2") -gt 0 ]; then
-        sendCommand "$2" "say The server admin is disabling this world."
-        sendCommand "$2" "say The server will be disabled in 1 minute..."
+      if [ $(queryNumUsers "$1") -gt 0 ]; then
+        sendCommand "$1" "say The server admin is disabling this world."
+        sendCommand "$1" "say The server will be disabled in 1 minute..."
         sleep 60
-        sendCommand "$2" "say The server is now shutting down."
+        sendCommand "$1" "say The server is now shutting down."
       fi
       # Stop the world server.
-      stop "$2"
+      stop "$1"
       sleep 5
     fi
     # Disable the world.
-    disableWorld "$2"
+    disableWorld "$1"
     printf ".\n"
     ;;
   enable)
     # Grab the latest version information.
     updateVersionsJSON
     # Get list of disabled worlds.
-    if ! isWorldAvailable "$2"; then
-      printf "World not found, unable to enable world '$2'.\n"
+    if ! isWorldAvailable "$1"; then
+      printf "World not found, unable to enable world '$1'.\n"
       exit 1
-    elif isWorldEnabled "$2"; then
-      printf "Unable to enable already enabled world '$2'.\n"
+    elif isWorldEnabled "$1"; then
+      printf "Unable to enable already enabled world '$1'.\n"
       exit 1
     fi
-    printf "Enabling Minecraft world: $2"
+    printf "Enabling Minecraft world: $1"
     # Enable the world.
-    enableWorld "$2"
+    enableWorld "$1"
     # Start the world.
-    start "$2"
+    start "$1"
     printf ".\n"
     ;;
   ls | list)
     # Grab the desired list of worlds.
     WORLDS=""
-    case "$2" in
+    case "$1" in
       enabled)
         WORLDS=$(getEnabledWorlds)
         ;;
@@ -2524,12 +2540,12 @@ case "$1" in
         WORLDS=$(getAvailableWorlds)
         ;;
       *)
-        echo "Unknown list option: $2."
+        echo "Unknown list option: $1."
         echo "  Try '$PROG help' for help."
         exit 1
         ;;
     esac
-    case "$1" in
+    case "$COMMAND" in
       ls)
         # Simple list
         for WORLD in $WORLDS; do
@@ -2561,16 +2577,20 @@ case "$1" in
     ;;
   status | show | status-json | show-json)
     # Figure out which worlds to show the status for.
-    if isWorldAvailable "$2"; then
-      WORLDS="$2"
-    elif [ -n "$2" ]; then
-      printf "World '$2' not recognized.\n"
-      printf "  Usage:  $PROG $1 <world>\n"
-      exit 1
+    if [ "$#" -ge 1 ]; then
+      for arg in "$@"; do
+        if isWorldAvailable "$arg"; then
+          WORLDS="$WORLDS $arg"
+        else
+          printf "World '$arg' not recognized.\n"
+          printf "  Usage:  $PROG $COMMAND <world1> <world2> <...>\n"
+          exit 1
+        fi
+      done
     else
       WORLDS=$(getAvailableWorlds)
     fi
-    case "$1" in
+    case "$COMMAND" in
       status-json | show-json)
         # Show the status of each world requested in JSON format.
         JSON=""
@@ -2594,12 +2614,16 @@ case "$1" in
     ;;
   sync | synchronize)
     # Figure out which worlds to synchronize.
-    if isWorldEnabled "$2"; then
-      WORLDS="$2"
-    elif [ -n "$2" ]; then
-      printf "World '$2' not recognized.\n"
-      printf "  Usage:  $PROG $1 <world>\n"
-      exit 1
+    if [ "$#" -ge 1 ]; then
+      for arg in "$@"; do
+        if isWorldEnabled "$arg"; then
+          WORLDS="$WORLDS $arg"
+        else
+          printf "World '$arg' not recognized.\n"
+          printf "  Usage:  $PROG $COMMAND <world1> <world2> <...>\n"
+          exit 1
+        fi
+      done
     else
       WORLDS=$(getEnabledWorlds)
     fi
@@ -2622,9 +2646,7 @@ case "$1" in
   broadcast)
     # Get list of enabled worlds.
     WORLDS=$(getEnabledWorlds)
-    if [ -n "$2" ]; then
-      # Remove broadcast from the command line arguments.
-      shift 1
+    if [ -n "$1" ]; then
       # Broadcast the message to all of the enabled worlds.
       printf "Broadcasting command to world:"
       for WORLD in $WORLDS; do
@@ -2635,68 +2657,72 @@ case "$1" in
       done
       printf ".\n"
     else
-      printf "Usage:  $PROG $1 <command>\n"
-      printf "   ie:  $PROG $1 say Hello World!\n"
+      printf "Usage:  $PROG $COMMAND <command>\n"
+      printf "   ie:  $PROG $COMMAND say Hello World!\n"
       exit 1
     fi
     ;;
   send)
     # Check for the world command line argument.
-    if isWorldEnabled "$2" && [ -n "$3" ]; then
-      WORLD=$2
-      shift 2
+    if isWorldEnabled "$1" && [ -n "$2" ]; then
+      WORLD=$1
+      shift 1
       printf "Sending command to world: $WORLD - '$*'.\n"
       sendCommand $WORLD "$*"
     else
-      printf "Usage:  $PROG $1 <world> <command>\n"
-      printf "   ie:  $PROG $1 world say Hello World!\n"
+      printf "Usage:  $PROG $COMMAND <world> <command>\n"
+      printf "   ie:  $PROG $COMMAND world say Hello World!\n"
       exit 1
     fi
     ;;
   console)
     # Check for the world command line argument.
-    if isWorldEnabled "$2"; then
-      printf "Connecting to server console: $2.\n"
+    if isWorldEnabled "$1"; then
+      printf "Connecting to server console: $1.\n"
       printf "  Hit <Ctrl-D> to detach.\n"
       sleep 3
-      serverConsole $2
+      serverConsole $1
     else
-      if [ -n "$2" ]; then
-        printf "Minecraft world $2 not found!\n"
+      if [ -n "$1" ]; then
+        printf "Minecraft world $1 not found!\n"
       else
         printf "Minecraft world not provided!\n"
       fi
-      printf "  Usage:  $PROG $1 <world>\n"
+      printf "  Usage:  $PROG $COMMAND <world>\n"
       exit 1
     fi
     ;;
   watch)
     # Check for the world command line argument.
-    if isWorldEnabled "$2"; then
-      printf "Monitoring Minecraft Server: $2.\n"
-      watchLog $2
+    if isWorldEnabled "$1"; then
+      printf "Monitoring Minecraft Server: $1.\n"
+      watchLog $1
     else
-      if [ -n "$2" ]; then
-        printf "Minecraft world $2 not found!\n"
+      if [ -n "$1" ]; then
+        printf "Minecraft world $1 not found!\n"
       else
         printf "Minecraft world not provided!\n"
       fi
-      printf "  Usage:  $PROG $1 <world>\n"
+      printf "  Usage:  $PROG $COMMAND <world>\n"
       exit 1
     fi
     ;;
   logrotate)
     # Figure out which worlds to rotate the log.
-    if isWorldEnabled "$2"; then
-      WORLDS="$2"
-    elif [ -n "$2" ]; then
-      printf "World '$2' does not exist or not enabled.\n"
-      printf "  Usage:  $PROG $1 <world>\n"
-      exit 1
+    if [ "$#" -ge 1 ]; then
+      for arg in "$@"; do
+        if isWorldEnabled "$arg"; then
+          WORLDS="$WORLDS $arg"
+        else
+          printf "World '$arg' does not exist or not enabled.\n"
+          printf "  Usage:  $PROG $COMMAND <world1> <world2> <...>\n"
+          exit 1
+        fi
+      done
     else
       WORLDS=$(getEnabledWorlds)
     fi
-    # Backup each world requested.
+    # Rotate the log for each world requested.
     printf "Rotating Minecraft Server Log:"
     for WORLD in $WORLDS; do
       printf " $WORLD"
@@ -2706,12 +2732,16 @@ case "$1" in
     ;;
   backup)
     # Figure out which worlds to backup.
-    if isWorldEnabled "$2"; then
-      WORLDS="$2"
-    elif [ -n "$2" ]; then
-      printf "World '$2' does not exist or not enabled.\n"
-      printf "  Usage:  $PROG $1 <world>\n"
-      exit 1
+    if [ "$#" -ge 1 ]; then
+      for arg in "$@"; do
+        if isWorldEnabled "$arg"; then
+          WORLDS="$WORLDS $arg"
+        else
+          printf "World '$arg' does not exist or not enabled.\n"
+          printf "  Usage:  $PROG $COMMAND <world1> <world2> <...>\n"
+          exit 1
+        fi
+      done
     else
       WORLDS=$(getEnabledWorlds)
     fi
@@ -2742,33 +2772,33 @@ case "$1" in
     printf ".\n"
     ;;
   list-backups)
-    if isWorldEnabled "$2"; then
-      worldBackupList "$2"
-    elif [ -n "$2" ]; then
-      printf "World '$2' does not exist or not enabled.\n"
-      printf "  Usage:  $PROG $1 <world>\n"
+    if isWorldEnabled "$1"; then
+      worldBackupList "$1"
+    elif [ -n "$1" ]; then
+      printf "World '$1' does not exist or not enabled.\n"
+      printf "  Usage:  $PROG $COMMAND <world>\n"
       exit 1
     else
       printf "World not supplied.\n"
-      printf "  Usage:  $PROG $1 <world>\n"
+      printf "  Usage:  $PROG $COMMAND <world>\n"
       exit 1
     fi
     ;;
   restore-backup)
-    if [ -z $2 ]; then
+    if [ -z $1 ]; then
       printf "World not supplied.\n"
-      printf "  Usage:  $PROG $1 <world>\n"
+      printf "  Usage:  $PROG $COMMAND <world> <datetime>\n"
       exit 1
-    elif ! isWorldAvailable "$2"; then
-      printf "World '$2' not recognized.\n"
-      printf "  Usage:  $PROG $1 <world>\n"
+    elif ! isWorldAvailable "$1"; then
+      printf "World '$1' not recognized.\n"
+      printf "  Usage:  $PROG $COMMAND <world> <datetime>\n"
       exit 1
-    elif serverRunning "$2"; then
-      printf "World '$2' is running. Stop it first\n"
-      printf "  $PROG stop $2\n"
+    elif serverRunning "$1"; then
+      printf "World '$1' is running. Stop it first\n"
+      printf "  $PROG stop $1\n"
       exit 1
-    elif worldBackup "$2"; then
-      worldBackupRestore "$2" "$3"
+    elif worldBackup "$1"; then
+      worldBackupRestore "$1" "$2"
     else
       echo "Current world's state backup failed. Restore canceled."
       exit 1
@@ -2776,7 +2806,7 @@ case "$1" in
     ;;
   update | force-update)
     # Handle the force option.
-    if [ "$1" = "force-update" ]; then
+    if [ "$COMMAND" = "force-update" ]; then
       if [ -s $VERSIONS_JSON ]; then
         # Make a backup copy of the version_manifest.json file.
         cp -fp "$VERSIONS_JSON" "$VERSIONS_JSON.bak"
@@ -2787,12 +2817,16 @@ case "$1" in
     # Grab the latest version information.
     updateVersionsJSON
     # Figure out which worlds to update.
-    if isWorldEnabled "$2"; then
-      WORLDS="$2"
-    elif [ -n "$2" ]; then
-      printf "World '$2' does not exist or not enabled.\n"
-      printf "  Usage:  $PROG $1 <world>\n"
-      exit 1
+    if [ "$#" -ge 1 ]; then
+      for arg in "$@"; do
+        if isWorldEnabled "$arg"; then
+          WORLDS="$WORLDS $arg"
+        else
+          printf "World '$arg' does not exist or not enabled.\n"
+          printf "  Usage:  $PROG $COMMAND <world1> <world2> <...>\n"
+          exit 1
+        fi
+      done
     else
       WORLDS=$(getEnabledWorlds)
     fi
@@ -2822,7 +2856,7 @@ case "$1" in
     done
     printf ".\n"
     # Handle the force option.
-    if [ "$1" = "force-update" ]; then
+    if [ "$COMMAND" = "force-update" ]; then
       printf "Removing Minecraft Server software:"
       for WORLD in $WORLDS; do
         printf " $WORLD"
@@ -2853,12 +2887,16 @@ case "$1" in
       exit 1
     fi
     # Figure out which worlds to map.
-    if isWorldEnabled "$2"; then
-      WORLDS="$2"
-    elif [ -n "$2" ]; then
-      printf "World '$2' does not exist or not enabled.\n"
-      printf "  Usage:  $PROG $1 <world>\n"
-      exit 1
+    if [ "$#" -ge 1 ]; then
+      for arg in "$@"; do
+        if isWorldEnabled "$arg"; then
+          WORLDS="$WORLDS $arg"
+        else
+          printf "World '$arg' does not exist or not enabled.\n"
+          printf "  Usage:  $PROG $COMMAND <world1> <world2> <...>\n"
+          exit 1
+        fi
+      done
     else
       WORLDS=$(getEnabledWorlds)
     fi
@@ -2880,22 +2918,22 @@ case "$1" in
     ;;
   query | query-raw | query-json)
     # Make sure there is a world to query.
-    if [ ! -n "$2" ]; then
+    if [ ! -n "$1" ]; then
       printf "World not provided.\n"
-      printf "  Usage:  $PROG $1 <world>\n"
+      printf "  Usage:  $PROG $COMMAND <world>\n"
       exit 1
     fi
-    if ! isWorldEnabled "$2"; then
-      printf "World '$2' does not exist or not enabled.\n"
-      printf "  Usage:  $PROG $1 <world>\n"
+    if ! isWorldEnabled "$1"; then
+      printf "World '$1' does not exist or not enabled.\n"
+      printf "  Usage:  $PROG $COMMAND <world1> <world2> <...>\n"
       exit 1
     fi
-    case "$1" in
+    case "$COMMAND" in
       query | query-raw)
-        queryDetailedStatus "$2"
+        queryDetailedStatus "$1"
         ;;
       query-json)
-        queryDetailedStatusJSON "$2"
+        queryDetailedStatusJSON "$1"
         ;;
     esac
     ;;
