@@ -15,7 +15,7 @@
 * [Getting started guide](#getting-started-guide)
   * [Creating a new world](#creating-a-new-world)
   * [Importing an existing world](#importing-an-existing-world)
-    * [Renaming world folder](#renaming-world-folder)
+    * [Renaming a world](#renaming-a-world)
   * [Adjusting global server properties](#adjusting-global-server-properties)
     * [Default global server properties](#default-global-server-properties)
   * [Adjusting world properties](#adjusting-world-properties)
