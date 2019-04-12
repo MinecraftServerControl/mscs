@@ -208,16 +208,11 @@ and you're all set!
 
 ### Importing an existing world
 
-You just need to create a new directory in the worlds folder for the world you
-wish to import. Suppose the world you wish to import is called `alpha`, you
-would create a new folder in `/opt/mscs/worlds` with the same name as the
-world, then copy the data files over to that new directory.
+If you wish to import or make a copy of an existing world (perhaps one that
+you have not been using with mscs), simply do the following:
 
-IMPORTANT: make sure the world that you are importing is not currently
-running.
-
-If the directory containing the world `alpha` you wish to import looks like
-this:
+For this example, I change to a directory containing a world that I have
+running named `alpha`, and get a directory listing:
 
     $ ls
     alpha
@@ -229,37 +224,22 @@ this:
     server.properties
     white-list.txt
 
-You can just copy your world into the worlds directory:
+Now I simply tell mscs to create a new world from the current directory:
 
-    mkdir /opt/mscs/worlds/alpha
-    cp -R * /opt/mscs/worlds/alpha
+    mscs import . alpha 25565
 
-After you've copied the world files, you will want to [create a world entry
-into MSCS](#creating-a-new-world) using the name of the world and the port
-that you wish the world to use:
+Alternatively, I could have simply provided the world's directory that sits in
+my home folder instead of changing directories:
 
-    mscs create alpha 25565
+    mscs import ~/minecraft_world alpha 25565
 
+#### Renaming a world
+If you would like to rename a world to a different name, follow the steps
+below.
 
-#### Renaming world folder
-If you would like to rename the `alpha` folder
-(the one that is the parent folder of the actual world) to a different name,
-follow the steps below.
+In this example we want to rename a world named `alpha` to `vanillaMC`:
 
-IMPORTANT: make sure the world that you are importing is not currently
-running.
-
-In this example we want to rename the `alpha` folder to `vanillaMC`:
-
-    mkdir /opt/mscs/worlds/vanillaMC
-    cp -R * /opt/mscs/worlds/vanillaMC
-    mv /opt/mscs/worlds/vanillaMC/alpha /opt/mscs/worlds/vanillaMC/vanillaMC
-
-After you've set up the file structure, [you can now create a world entry
-into MSCS](#creating-a-new-world) using the name of the world and the port
-that you wish the world to use:
-
-    mscs create vanillaMC 25565
+    mscs rename alpha vanillaMC
 
 ### Adjusting global server properties
 Default values in the script can be overridden by adding certain properties to
@@ -576,6 +556,15 @@ will be started using the `minecraft` user instead for security purposes.
 
     Create a Minecraft world server.  The world name and port must be
     provided, the IP address is usually blank.
+
+* import [directory] [world] [port] [ip]
+
+    Import an existing world server.  The world name and port must be
+    provided, the IP address is usually blank.
+
+* rename [original world] [new world]
+
+    Rename an existing world server.
 
 * delete [world]
 
