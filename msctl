@@ -707,7 +707,9 @@ getCurrentMinecraftVersion() {
   VERSION=$($PERL -0777ne '
     use JSON;
     $json = decode_json ($_);
-    print $json->{latest}{'$TYPE'};
+    $version = $json->{latest}{'$TYPE'};
+    $version =~ s/[\s#%*+?^${}()|[\]\\]/-/g;
+    print $version;
   ' $VERSIONS_JSON)
   # Print an error and exit if the version string is empty.
   if [ -z "$VERSION" ]; then
@@ -731,7 +733,9 @@ getMinecraftVersionDownloadSHA1() {
     my $json = decode_json ($_);
     my $version;
     foreach $ver (@{$json->{versions}}) {
-      $version = $ver if ($ver->{id} eq "'$1'");
+      $id = $ver->{id};
+      $id =~ s/[\s#%*+?^${}()|[\]\\]/-/g;
+      $version = $ver if ($id eq "'$1'");
     }
     $json = decode_json (get ($version->{url}));
     print $json->{downloads}{'$2'}{sha1};
@@ -752,7 +756,9 @@ getMinecraftVersionDownloadURL() {
     my $json = decode_json ($_);
     my $version;
     foreach $ver (@{$json->{versions}}) {
-      $version = $ver if ($ver->{id} eq "'$1'");
+      $id = $ver->{id};
+      $id =~ s/[\s#%*+?^${}()|[\]\\]/-/g;
+      $version = $ver if ($id eq "'$1'");
     }
     $json = decode_json (get ($version->{url}));
     print $json->{downloads}{'$2'}{url};
@@ -770,7 +776,9 @@ getMinecraftVersionReleaseTime() {
     use JSON;
     $json = decode_json ($_);
     foreach $ver (@{$json->{versions}}) {
-      print $ver->{releaseTime} if ($ver->{id} eq "'$1'");
+      $id = $ver->{id};
+      $id =~ s/[\s#%*+?^${}()|[\]\\]/-/g;
+      print $ver->{releaseTime} if ($id eq "'$1'");
     }
   ' $VERSIONS_JSON
 }
