@@ -56,21 +56,21 @@ Usage:  $PROG [<options>] <action>
 
 Actions:
 
-  start <world>
-    Start the Minecraft world server.  Start all world servers by default.
+  start <world1> <world2> <...>
+    Start the Minecraft world server(s).  Start all world servers by default.
 
-  stop <world>
-    Stop the Minecraft world server.  Stop all world servers by default.
+  stop <world1> <world2> <...>
+    Stop the Minecraft world server(s).  Stop all world servers by default.
 
-  force-stop <world>
-    Forcibly stop the Minecraft world server.  Forcibly stop all world
+  force-stop <world1> <world2> <...>
+    Forcibly stop the Minecraft world server(s).  Forcibly stop all world
     servers by default.
 
-  restart <world>
-    Restart the Minecraft world server.  Restart all world servers by default.
+  restart <world1> <world2> <...>
+    Restart the Minecraft world server(s).  Restart all world servers by default.
 
-  force-restart <world>
-    Forcibly restart the Minecraft world server.  Forcibly restart all world
+  force-restart <world1> <world2> <...>
+    Forcibly restart the Minecraft world server(s).  Forcibly restart all world
     servers by default.
 
   create <world> <port> [<ip>]
@@ -81,11 +81,11 @@ Actions:
   delete <world>
     Delete a Minecraft world server.
 
-  disable <world>
-    Temporarily disable a world server.
+  disable <world1> <world2> <...>
+    Temporarily disables world server(s). Disables all world servers by default.
 
-  enable <world>
-    Enable a disabled world server.
+  enable <world1> <world2> <...>
+    Enable disabled world server(s). Enables all world servers by default.
 
   ls <option>
     Display a list of worlds.
@@ -99,13 +99,13 @@ Actions:
   list <option>
     Same as 'ls' but more detailed.
 
-  status <world>
-    Display the status of the Minecraft world server.  Display the status of
+  status <world1> <world2> <...>
+    Display the status of Minecraft world server(s).  Display the status of
     all world servers by default.
 
-  sync <world>
+  sync <world1> <world2> <...>
     Synchronize the data stored in the mirror images of the Minecraft world
-    server.  Synchronizes all of the world servers by default.  This option
+    server(s).  Synchronizes all of the world servers by default.  This option
     is only available when the mirror image option is enabled.
 
   broadcast <command>
@@ -120,12 +120,12 @@ Actions:
   watch <world>
     Watch the log file for the Minecraft world server.
 
-  logrotate <world>
-    Rotate the log file for the Minecraft world.  Rotate the log file for
+  logrotate <world1> <world2> <...>
+    Rotate the log file for the Minecraft world(s).  Rotate the log file for
     all worlds by default.
 
-  backup <world>
-    Backup the Minecraft world.  Backup all worlds by default.
+  backup <world1> <world2> <...>
+    Backup the Minecraft world(s).  Backup all worlds by default.
 
   list-backups <world>
     List the datetime of the backups for the world.
@@ -133,20 +133,22 @@ Actions:
   restore-backup <world> <datetime>
     Restore a backup for a world that was taken at the datetime.
 
-  map <world>
-    Run the Minecraft Overviewer mapping software on the Minecraft world.
+  map <world1> <world2> <...>
+    Run the Minecraft Overviewer mapping software on the Minecraft world(s).
     Map all worlds by default.
 
-  update <world>
-    Update the server software for the Minecraft world server.  Update
+  update <world1> <world2> <...>
+    Update the server software for the Minecraft world server(s).  Update
     server software for all worlds by default.
 
-  force-update <world>
-    Refresh version information prior to running update for the world server,
-    regardless of how recently the version information was updated.
+  force-update <world1> <world2> <...>
+    Refresh version information prior to running update for the world
+    server(s), regardless of how recently the version information was updated.
+    Refreshes version information and updates all world servers by default.
 
-  query <world>
-    Run a detailed Query on the Minecraft world server.
+  query <world1> <world2> <...>
+    Run a detailed Query on the Minecraft world server(s). Run a detailed
+    query on all world servers by default.
 
 Options:
 
@@ -501,6 +503,22 @@ getAvailableWorlds() {
 isWorldEnabled() {
   local WORLDS
   WORLDS=$(getEnabledWorlds)
+  if [ -n "$1" ] && listContains "$1" "$WORLDS"; then
+    return 0
+  else
+    return 1
+  fi
+}
+
+# ---------------------------------------------------------------------------
+# Check to see if the world is disabled.
+#
+# @param 1 The world of interest.
+# @return A 0 if the world is disabled, a 1 otherwise.
+# ---------------------------------------------------------------------------
+isWorldDisabled() {
+  local WORLDS
+  WORLDS=$(getDisabledWorlds)
   if [ -n "$1" ] && listContains "$1" "$WORLDS"; then
     return 0
   else
@@ -2368,6 +2386,10 @@ case "$COMMAND" in
       WORLDS=$(getEnabledWorlds)
     fi
     # Stop each world requested, if running.
+    if [ -z "$WORLDS" ]; then
+      printf "Unable to stop worlds: no running worlds found.\n"
+      exit 1
+    fi
     printf "Stopping Minecraft Server:"
     for WORLD in $WORLDS; do
       # Try to stop the world cleanly.
@@ -2409,6 +2431,10 @@ case "$COMMAND" in
       done
     else
       WORLDS=$(getEnabledWorlds)
+    fi
+    if [ -z "$WORLDS" ]; then
+      printf "Unable to restart worlds: no enabled worlds found.\n"
+      exit 1
     fi
     # Restart each world requested, start those not already
     # running.
@@ -2480,44 +2506,80 @@ case "$COMMAND" in
     ;;
   disable)
     # Get list of enabled worlds.
-    if ! isWorldEnabled "$1"; then
-      printf "World not found, unable to disable world '$1'.\n"
+    if [ "$#" -ge 1 ]; then
+      for arg in "$@"; do
+        if isWorldEnabled "$arg"; then
+          WORLDS="$WORLDS $arg"
+        elif isWorldDisabled "$arg"; then
+          printf "Unable to disable already disabled world '$arg'.\n"
+          exit 1
+        else
+          printf "World not found, unable to disable world '$arg'.\n"
+          printf "  Usage:  $PROG $COMMAND <world1> <world2> <...>\n"
+          exit 1
+        fi
+      done
+    else
+      WORLDS=$(getEnabledWorlds)
+    fi
+    if [ -z "$WORLDS" ]; then
+      printf "Unable to disable worlds: no enabled worlds found.\n"
       exit 1
     fi
-    printf "Disabling Minecraft world: $1"
-    if serverRunning "$1"; then
-      # If the world server has users logged in, announce that the world is
-      # being disabled.
-      if [ $(queryNumUsers "$1") -gt 0 ]; then
-        sendCommand "$1" "say The server admin is disabling this world."
-        sendCommand "$1" "say The server will be disabled in 1 minute..."
-        sleep 60
-        sendCommand "$1" "say The server is now shutting down."
+    printf "Disabling Minecraft world:"
+    for WORLD in $WORLDS; do
+      printf " $WORLD"
+      if serverRunning "$WORLD"; then
+        # If the world server has users logged in, announce that the world is
+        # being disabled.
+        if [ $(queryNumUsers "$WORLD") -gt 0 ]; then
+          sendCommand "$WORLD" "say The server admin is disabling this world."
+          sendCommand "$WORLD" "say The server will be disabled in 1 minute..."
+          sleep 60
+          sendCommand "$WORLD" "say The server is now shutting down."
+        fi
+        # Stop the world server.
+        stop "$WORLD"
+        sleep 5
       fi
-      # Stop the world server.
-      stop "$1"
-      sleep 5
-    fi
-    # Disable the world.
-    disableWorld "$1"
+      # Disable the world.
+      disableWorld "$WORLD"
+    done
     printf ".\n"
     ;;
   enable)
     # Grab the latest version information.
     updateVersionsJSON
     # Get list of disabled worlds.
-    if ! isWorldAvailable "$1"; then
-      printf "World not found, unable to enable world '$1'.\n"
-      exit 1
-    elif isWorldEnabled "$1"; then
-      printf "Unable to enable already enabled world '$1'.\n"
+    if [ "$#" -ge 1 ]; then
+      for arg in "$@"; do
+        if isWorldDisabled "$arg"; then
+          WORLDS="$WORLDS $arg"
+        elif isWorldEnabled "$arg"; then
+          printf "Unable to enable already enabled world '$arg'.\n"
+          exit 1
+        else
+          printf "World not found, unable to enable world '$arg'.\n"
+          printf "  Usage:  $PROG $COMMAND <world1> <world2> <...>\n"
+          exit 1
+        fi
+      done
+    else
+      WORLDS=$(getDisabledWorlds)
+    fi
+    if [ -z "$WORLDS" ]; then
+      printf "Unable to enable worlds: no disabled worlds found.\n"
       exit 1
     fi
-    printf "Enabling Minecraft world: $1"
-    # Enable the world.
-    enableWorld "$1"
-    # Start the world.
-    start "$1"
+    printf "Enabling Minecraft world:"
+    # Enable the world(s).
+    for WORLD in $WORLDS; do
+      printf " $WORLD"
+      # Enable the world.
+      enableWorld "$WORLD"
+      # Start the world.
+      start "$WORLD"
+    done
     printf ".\n"
     ;;
   ls | list)
@@ -2598,6 +2660,10 @@ case "$COMMAND" in
     else
       WORLDS=$(getAvailableWorlds)
     fi
+    if [ -z "$WORLDS" ]; then
+      printf "Unable to get world status: no available worlds found.\n"
+      exit 1
+    fi
     case "$COMMAND" in
       status-json | show-json)
         # Show the status of each world requested in JSON format.
@@ -2635,6 +2701,10 @@ case "$COMMAND" in
     else
       WORLDS=$(getEnabledWorlds)
     fi
+    if [ -z "$WORLDS" ]; then
+      printf "Unable to sync worlds: no enabled worlds found.\n"
+      exit 1
+    fi
     # Synchronize the images for each world.
     printf "Synchronizing Minecraft Server:"
     for WORLD in $WORLDS; do
@@ -2654,6 +2724,10 @@ case "$COMMAND" in
   broadcast)
     # Get list of enabled worlds.
     WORLDS=$(getEnabledWorlds)
+    if [ -z "$WORLDS" ]; then
+      printf "Unable to broadcast: no enabled worlds found.\n"
+      exit 1
+    fi
     if [ -n "$1" ]; then
       # Broadcast the message to all of the enabled worlds.
       printf "Broadcasting command to world:"
@@ -2678,6 +2752,7 @@ case "$COMMAND" in
       printf "Sending command to world: $WORLD - '$*'.\n"
       sendCommand $WORLD "$*"
     else
+      printf "Minecraft world '$1' not enabled or not found!\n"
       printf "Usage:  $PROG $COMMAND <world> <command>\n"
       printf "   ie:  $PROG $COMMAND world say Hello World!\n"
       exit 1
@@ -2692,7 +2767,7 @@ case "$COMMAND" in
       serverConsole $1
     else
       if [ -n "$1" ]; then
-        printf "Minecraft world $1 not found!\n"
+        printf "Minecraft world '$1' not enabled or not found!\n"
       else
         printf "Minecraft world not provided!\n"
       fi
@@ -2707,7 +2782,7 @@ case "$COMMAND" in
       watchLog $1
     else
       if [ -n "$1" ]; then
-        printf "Minecraft world $1 not found!\n"
+        printf "Minecraft world '$1' not enabled or not found!\n"
       else
         printf "Minecraft world not provided!\n"
       fi
@@ -2729,6 +2804,10 @@ case "$COMMAND" in
       done
     else
       WORLDS=$(getEnabledWorlds)
+    fi
+    if [ -z "$WORLDS" ]; then
+      printf "Unable to logrotate worlds: no enabled worlds found.\n"
+      exit 1
     fi
     # Rotate the log for each world requested.
     printf "Rotating Minecraft Server Log:"
@@ -2752,6 +2831,10 @@ case "$COMMAND" in
       done
     else
       WORLDS=$(getEnabledWorlds)
+    fi
+    if [ -z "$WORLDS" ]; then
+      printf "Unable to backup worlds: no enabled worlds found.\n"
+      exit 1
     fi
     # Backup each world requested.
     printf "Backing up Minecraft Server:"
@@ -2838,6 +2921,10 @@ case "$COMMAND" in
     else
       WORLDS=$(getEnabledWorlds)
     fi
+    if [ -z "$WORLDS" ]; then
+      printf "Unable to update worlds: no enabled worlds found.\n"
+      exit 1
+    fi
     # Stop all of the world servers and backup the worlds.
     RUNNING=
     printf "Stopping Minecraft Server:"
@@ -2908,6 +2995,10 @@ case "$COMMAND" in
     else
       WORLDS=$(getEnabledWorlds)
     fi
+    if [ -z "$WORLDS" ]; then
+      printf "Unable to map worlds: no enabled worlds found.\n"
+      exit 1
+    fi
     # Run Minecraft Overviewer on each world requested.
     printf "Running Minecraft Overviewer mapping:"
     for WORLD in $WORLDS; do
@@ -2925,23 +3016,36 @@ case "$COMMAND" in
     printf ".\n"
     ;;
   query | query-raw | query-json)
-    # Make sure there is a world to query.
-    if [ ! -n "$1" ]; then
-      printf "World not provided.\n"
-      printf "  Usage:  $PROG $COMMAND <world>\n"
-      exit 1
+    # Figure out which worlds to show the status for.
+    if [ "$#" -ge 1 ]; then
+      for arg in "$@"; do
+        if isWorldEnabled "$arg"; then
+          WORLDS="$WORLDS $arg"
+        else
+          printf "World '$arg' does not exist or not enabled.\n"
+          printf "  Usage:  $PROG $COMMAND <world1> <world2> <...>\n"
+          exit 1
+        fi
+      done
+    else
+      WORLDS=$(getEnabledWorlds)
     fi
-    if ! isWorldEnabled "$1"; then
-      printf "World '$1' does not exist or not enabled.\n"
-      printf "  Usage:  $PROG $COMMAND <world1> <world2> <...>\n"
+    if [ -z "$WORLDS" ]; then
+      printf "Unable to query worlds: no enabled worlds found.\n"
       exit 1
     fi
     case "$COMMAND" in
       query | query-raw)
-        queryDetailedStatus "$1"
+        for WORLD in $WORLDS; do
+          queryDetailedStatus "$WORLD"
+          printf "\n"
+        done
         ;;
       query-json)
-        queryDetailedStatusJSON "$1"
+        for WORLD in $WORLDS; do
+          queryDetailedStatusJSON "$WORLD"
+          printf "\n"
+        done
         ;;
     esac
     ;;
