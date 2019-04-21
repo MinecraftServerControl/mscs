@@ -79,12 +79,10 @@ Actions:
     a default world at the default port.
 
   import <directory> <world> <port> [<ip>]
-
     Import an existing world server.  The world name and port must be
     provided, the IP address is usually blank.
 
   rename <original world> <new world>
-
     Rename an existing world server.
 
   delete <world>
