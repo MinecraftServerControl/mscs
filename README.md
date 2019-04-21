@@ -527,134 +527,122 @@ user or as `root` (through sudo).
 Note: If the script is run as the `root` user, all important server processes
 will be started using the `minecraft` user instead for security purposes.
 
-    sudo mscs [option]
 
 ````
-* start [world]
+Usage:  mscs [<options>] <action>
 
-    Start the Minecraft world server.  Start all worlds by default.
+Actions:
 
-* stop [world]
+  start <world1> <world2> <...>
+    Start the Minecraft world server(s).  Start all world servers by default.
 
-    Stop the Minecraft world server.  Stop all worlds by default.
+  stop <world1> <world2> <...>
+    Stop the Minecraft world server(s).  Stop all world servers by default.
 
-* force-stop [world]
+  force-stop <world1> <world2> <...>
+    Forcibly stop the Minecraft world server(s).  Forcibly stop all world
+    servers by default.
 
-    Forcibly stop the Minecraft world server.  Forcibly stop all worlds by
-    default.
+  restart <world1> <world2> <...>
+    Restart the Minecraft world server(s).  Restart all world servers by default.
 
-* restart [world]
+  force-restart <world1> <world2> <...>
+    Forcibly restart the Minecraft world server(s).  Forcibly restart all world
+    servers by default.
 
-    Restart the Minecraft world server.  Restart all worlds by default.
-
-* force-restart [world]
-
-    Forcibly restart the Minecraft world server.  Forcibly restart all
-    worlds by default.
-
-* create [world] [port] [ip]
-
+  create <world> <port> [<ip>]
     Create a Minecraft world server.  The world name and port must be
-    provided, the IP address is usually blank.
+    provided, the IP address is usually blank.  Without arguments, create a
+    a default world at the default port.
 
-* import [directory] [world] [port] [ip]
-
+  import <directory> <world> <port> <ip>
     Import an existing world server.  The world name and port must be
     provided, the IP address is usually blank.
 
-* rename [original world] [new world]
-
+  rename <original world> <new world>
     Rename an existing world server.
 
-* delete [world]
-
+  delete <world>
     Delete a Minecraft world server.
 
-* disable [world]
+  disable <world1> <world2> <...>
+    Temporarily disables world server(s). Disables all world servers by default.
 
-    Temporarily disable a world server.
+  enable <world1> <world2> <...>
+    Enable disabled world server(s). Enables all world servers by default.
 
-* enable [world]
-
-    Enable a disabled world server.
-
-* list [option]
-
+  ls <option>
     Display a list of worlds.
     Options:
+      enabled   Display a list of enabled worlds, default.
+      disabled  Display a list of disabled worlds.
+      running   Display a list of running worlds.
+      stopped   Display a list of stopped worlds.
+    If no option, all available worlds are listed.
 
-    * enabled
+  list <option>
+    Same as 'ls' but more detailed.
 
-        Display a list of enabled worlds, default.
+  status <world1> <world2> <...>
+    Display the status of Minecraft world server(s).  Display the status of
+    all world servers by default.
 
-    * disabled
+  sync <world1> <world2> <...>
+    Synchronize the data stored in the mirror images of the Minecraft world
+    server(s).  Synchronizes all of the world servers by default.  This option
+    is only available when the mirror image option is enabled.
 
-        Display a list of disabled worlds.
-
-    * running
-
-        Display a list of running worlds.
-
-    * stopped
-
-        Display a list of stopped worlds.
-
-* status [world]
-
-    Display the status of the Minecraft world server.  Display the
-    status of all worlds by default.
-
-* broadcast [command]
-
+  broadcast <command>
     Broadcast a command to all running Minecraft world servers.
 
-* send [world] [command]
-
+  send <world> <command>
     Send a command to a Minecraft world server.
 
-* logrotate [world]
+  console <world>
+    Connect to the Minecraft world server's console.  Hit <Ctrl-D> to detach.
 
-    Rotate the server.log file.  Rotate the server.log file for all
-    worlds by default.
-
-* backup [world]
-
-    Backup the Minecraft world.  Backup all worlds by default.
-
-* list-backups [world]
-
-    List the datetime of the backups for the world.
-
-* restore-backup [world] [datetime]
-
-    Restore a backup for a world that was taken at the datetime.
-
-* console [world]
-
-    Connect to the Minecraft world server's console.  Hit [Ctrl-D] to detach.
-
-* watch [world]
-
+  watch <world>
     Watch the log file for the Minecraft world server.
 
-* map [world]
+  logrotate <world1> <world2> <...>
+    Rotate the log file for the Minecraft world(s).  Rotate the log file for
+    all worlds by default.
 
-    Run the Minecraft Overviewer mapping software on the Minecraft world.
+  backup <world1> <world2> <...>
+    Backup the Minecraft world(s).  Backup all worlds by default.
+
+  list-backups <world>
+    List the datetime of the backups for the world.
+
+  restore-backup <world> <datetime>
+    Restore a backup for a world that was taken at the datetime.
+
+  map <world1> <world2> <...>
+    Run the Minecraft Overviewer mapping software on the Minecraft world(s).
     Map all worlds by default.
 
-* update [world]
-
-    Update the server software for the Minecraft world server.  Update
+  update <world1> <world2> <...>
+    Update the server software for the Minecraft world server(s).  Update
     server software for all worlds by default.
 
-* force-update [world]
+  force-update <world1> <world2> <...>
+    Refresh version information prior to running update for the world
+    server(s), regardless of how recently the version information was updated.
+    Refreshes version information and updates all world servers by default.
 
-    Refresh version information prior to running update for the world server,
-    regardless of how recently the version information was updated.
+  query <world1> <world2> <...>
+    Run a detailed Query on the Minecraft world server(s). Run a detailed
+    query on all world servers by default.
 
-* query [world]
+Options:
 
-    Run a detailed Query on the Minecraft world server.
+  -c <config_file>
+    Read configuration from <config_files> instead of default locations.
+
+  -l <location>
+    Uses <location> as the base path for data.  Overrides configuration file
+    options.
+
 ````
 
 ### Examples
