@@ -555,7 +555,7 @@ Actions:
     provided, the IP address is usually blank.  Without arguments, create a
     a default world at the default port.
 
-  import <directory> <world> <port> <ip>
+  import <directory> <world> <port> [<ip>]
     Import an existing world server.  The world name and port must be
     provided, the IP address is usually blank.
 
