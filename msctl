@@ -78,6 +78,13 @@ Actions:
     provided, the IP address is usually blank.  Without arguments, create a
     a default world at the default port.
 
+  import <directory> <world> <port> [<ip>]
+    Import an existing world server.  The world name and port must be
+    provided, the IP address is usually blank.
+
+  rename <original world> <new world>
+    Rename an existing world server.
+
   delete <world>
     Delete a Minecraft world server.
 
@@ -2479,6 +2486,67 @@ case "$COMMAND" in
       createWorld "$DEFAULT_WORLD" "$DEFAULT_PORT"
       printf ".\n"
     fi
+    ;;
+  import | copy | cp)
+    # Verify the directory argument.
+    if [ ! -d $1 || ! -r $1/server.properties ]; then
+      printf "Directory containing a Minecraft world was not provided.\n"
+      printf "  Usage: $PROG import <directory> <world> <port> [<ip>]\n"
+      exit 1
+    fi
+    # Verify the name and port arguments.
+    if [ -z "$2" || -z "$3" || isWorldAvailable "$2"]; then
+      printf "An unused name and port for the world must be supplied.\n"
+      printf "An IP address is optional and usually not needed.\n"
+      printf "  Usage: $PROG import <directory> <world> <port> [<ip>]\n"
+      exit 1
+    fi
+    # Import the world.
+    printf "Importing Minecraft world: $2"
+    mkdir -p "$WORLDS_LOCATION/$2"
+    cp -R $1/* $WORLDS_LOCATION/$2
+    createWorld "$2" "$3" "$4"
+    printf ".\n"
+    ;;
+  rename)
+    # Verify the original world argument.
+    if [ -z "$1" ] || ! isWorldAvailable "$1"; then
+      printf "A Minecraft world was not provided.\n"
+      printf "  Usage: $PROG rename <original world> <new world>\n"
+      exit 1
+    fi
+    # Verify the new world argument.
+    if [ -z "$2" ] || isWorldAvailable "$2"; then
+      printf "Invalid name for the new world provided.\n"
+      printf "  Usage: $PROG rename <original world> <new world>\n"
+      exit 1
+    fi
+    # Make sure the world is stopped.
+    if serverRunning "$1"; then
+      # If the world server has users logged in, announce that the world is
+      # being modified.
+      if [ $(queryNumUsers "$1") -gt 0 ]; then
+        sendCommand "$1" "say The server admin is modifying this world."
+        sendCommand "$1" "say The server will be restarted in 1 minute..."
+        sleep 60
+        sendCommand "$1" "say The server is now shutting down."
+      fi
+      # Stop the world server.
+      stop "$1"
+      sleep 5
+    fi
+    # Save the port and IP for the world.
+    PORT=$(getServerPropertiesValue "$1" "server-port" "$DEFAULT_PORT")
+    IP=$(getServerPropertiesValue "$1" "server-ip" "$DEFAULT_IP")
+    # Rename the world.
+    printf "Renaming Minecraft world: $1"
+    mkdir -p "$WORLDS_LOCATION/$2"
+    mv $WORLDS_LOCATION/$1 $WORLDS_LOCATION/$2
+    if [ -d $WORLDS_LOCATION/$2/$1 ]; then
+      mv $WORLDS_LOCATION/$2/$1 $WORLDS_LOCATION/$2/$2
+    fi
+    createWorld "$2" "$PORT" "$IP"
+    printf ".\n"
     ;;
   delete | remove)
     # Get list of enabled worlds.
