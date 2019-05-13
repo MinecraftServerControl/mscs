@@ -2489,13 +2489,13 @@ case "$COMMAND" in
     ;;
   import | copy | cp)
     # Verify the directory argument.
-    if [ ! -d $1 || ! -r $1/server.properties ]; then
+    if [ ! -d "$1" ] || [ ! -r "$1/server.properties" ]; then
       printf "Directory containing a Minecraft world was not provided.\n"
       printf "  Usage: $PROG import <directory> <world> <port> [<ip>]\n"
       exit 1
     fi
     # Verify the name and port arguments.
-    if [ -z "$2" || -z "$3" || isWorldAvailable "$2"]; then
+    if [ -z "$2" ] || [ -z "$3" ] || isWorldAvailable "$2"; then
       printf "An unused name and port for the world must be supplied.\n"
       printf "An IP address is optional and usually not needed.\n"
       printf "  Usage: $PROG import <directory> <world> <port> [<ip>]\n"
