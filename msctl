@@ -1938,7 +1938,7 @@ worldStatus() {
       VERSION=$(printf "%s" "$STATUS" | cut -f 13)
       printf "running version %s (%d of %d users online).\n" "$VERSION" $NUM $MAX
       if [ $NUM -gt 0 ]; then
-        PLAYERS=$(printf "\"%s\"" $(printf "%s" "$STATUS" | cut -f 30))
+        PLAYERS=$(printf "%s" $(printf "%s" "$STATUS" | cut -f 30))
         COUNTER=1
         while [ $COUNTER -lt $NUM ]; do
           PLAYERS=$(printf "%s, %s" "$PLAYERS" $(printf "%s" "$STATUS" | cut -f $((30 + $COUNTER))))
