@@ -96,6 +96,11 @@ installed by running:
 
     sudo apt-get install default-jre perl libjson-perl libwww-perl liblwp-protocol-https-perl python make wget rdiff-backup rsync socat iptables
 
+If you are running Fedora, you can make sure that these are
+installed by running:
+
+	yum install java-1.8.0-openjdk perl perl-JSON perl-libwww-perl perl-LWP-Protocol-https python make wget rdiff-backup rsync socat iptables git sudo procps which
+
 ### Configuring the firewall / NAT
 If you have a firewall installed on your computer, or a router using NAT
 installed in your network, you will need to route some ports to your server.
