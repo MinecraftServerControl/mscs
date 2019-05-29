@@ -832,6 +832,7 @@ getClientVersion() {
     $PERL -ne '
     $current_version="'$CURRENT_VERSION'";
     $_ =~ s/\$CURRENT_VERSION/$current_version/g;
+    $_ =~ s/[\s#%*+?^\${}()|[\]\\]/-/g;
     print;
   '
 }
@@ -947,6 +948,7 @@ getServerVersion() {
     $PERL -ne '
     $current_version="'$CURRENT_VERSION'";
     $_ =~ s/\$CURRENT_VERSION/$current_version/g;
+    $_ =~ s/[\s#%*+?^\${}()|[\]\\]/-/g;
     print;
   '
 }
