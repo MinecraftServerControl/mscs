@@ -1548,7 +1548,7 @@ updateServerSoftware() {
   fi
   SERVER_VERSION=$(getServerVersion "$1")
   if [ $? -ne 0 ]; then
-    printf "$CLIENT_VERSION\n"
+    printf "$SERVER_VERSION\n"
     exit 1
   fi
   # Make sure the server software directory exists.
