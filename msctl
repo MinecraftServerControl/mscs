@@ -760,7 +760,10 @@ getMinecraftVersionDownloadSHA1() {
     foreach $ver (@{$json->{versions}}) {
       $id = $ver->{id};
       $id =~ s/[\s#%*+?^\${}()|[\]\\]/-/g;
-      $version = $ver if ($id eq "'$1'");
+      if ($id eq "'$1'") {
+        $version = $ver;
+        last;
+      }
     }
     $json = decode_json (get ($version->{url}));
     print $json->{downloads}{'$2'}{sha1};
