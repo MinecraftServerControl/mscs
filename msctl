@@ -389,7 +389,7 @@ compareTime() {
   local T1 T2
   T1=$(date --date="$1" +%s)
   T2=$(date --date="$2" +%s)
-  echo $(($T1 < $T2 ? -1 : $T1 > $T2 ? 1 : 0))
+  printf $(($T1 < $T2 ? -1 : $T1 > $T2 ? 1 : 0))
 }
 
 # ---------------------------------------------------------------------------
@@ -471,7 +471,7 @@ getEnabledWorlds() {
       fi
     fi
   done
-  echo $WORLDS
+  printf "$WORLDS"
 }
 
 # ---------------------------------------------------------------------------
@@ -489,7 +489,7 @@ getDisabledWorlds() {
       fi
     fi
   done
-  echo $WORLDS
+  printf "$WORLDS"
 }
 
 # ---------------------------------------------------------------------------
@@ -498,7 +498,7 @@ getDisabledWorlds() {
 # @return The list of all available worlds.
 # ---------------------------------------------------------------------------
 getAvailableWorlds() {
-  echo $(getEnabledWorlds) $(getDisabledWorlds)
+  printf "$(getEnabledWorlds) $(getDisabledWorlds)"
 }
 
 # ---------------------------------------------------------------------------
@@ -580,9 +580,9 @@ getValue() {
   fi
   # Return the value if found, the default value if not.
   if [ -n "$KEY" ] && [ -n "$VALUE" ]; then
-    echo "$VALUE"
+    printf "$VALUE"
   else
-    echo "$3"
+    printf "$3"
   fi
 }
 
@@ -741,7 +741,7 @@ getCurrentMinecraftVersion() {
     printf "Error detecting the current Minecraft version.\n"
     exit 1
   fi
-  echo "$VERSION"
+  printf "$VERSION"
 }
 
 # ---------------------------------------------------------------------------
@@ -926,7 +926,7 @@ getClientURL() {
   if [ -z "$URL" ]; then
     URL=$(getMinecraftVersionDownloadURL $CLIENT_VERSION 'client')
   fi
-  echo "$URL"
+  printf "$URL"
 }
 
 # ---------------------------------------------------------------------------
@@ -1041,7 +1041,7 @@ getServerURL() {
   if [ -z "$URL" ]; then
     URL=$(getMinecraftVersionDownloadURL $SERVER_VERSION 'server')
   fi
-  echo "$URL"
+  printf "$URL"
 }
 
 # ---------------------------------------------------------------------------
@@ -1926,7 +1926,7 @@ queryNumUsers() {
   NUM_USERS=$(queryStatus $1 | cut -f6)
   # Return 0 if query server not available
   [ -z "$NUM_USERS" ] && NUM_USERS=0
-  echo "$NUM_USERS"
+  printf "$NUM_USERS"
 }
 
 # ---------------------------------------------------------------------------
