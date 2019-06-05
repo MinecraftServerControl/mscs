@@ -456,6 +456,24 @@ enableWorld() {
 }
 
 # ---------------------------------------------------------------------------
+# Import a world.
+#
+# @param 1 The location of the world to import.
+# @param 2 The name of the new imported world.
+# @param 3 The port of the new imported world.
+# @param 4 The IP address of the new imported world.
+# ---------------------------------------------------------------------------
+importWorld() {
+  local NAME MCUSER MCGROUP
+  mkdir -p "$WORLDS_LOCATION/$2"
+  cp -R $1/* $WORLDS_LOCATION/$2
+  chown $(id -un):$(id -gn) -R $WORLDS_LOCATION/$2
+  NAME=$(getServerPropertiesValue $2 'level-name')
+  mv $WORLDS_LOCATION/$2/$NAME $WORLDS_LOCATION/$2/$2
+  createWorld "$2" "$3" "$4"
+}
+
+# ---------------------------------------------------------------------------
 # Grab the list of enabled worlds.
 #
 # @return The list of enabled worlds.
@@ -2511,9 +2529,7 @@ case "$COMMAND" in
     fi
     # Import the world.
     printf "Importing Minecraft world: $2"
-    mkdir -p "$WORLDS_LOCATION/$2"
-    cp -R $1/* $WORLDS_LOCATION/$2
-    createWorld "$2" "$3" "$4"
+    importWorld "$1" "$2" "$3" "$4"
     printf ".\n"
     ;;
   rename)
