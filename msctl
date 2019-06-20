@@ -464,7 +464,7 @@ enableWorld() {
 # @param 4 The IP address of the new imported world.
 # ---------------------------------------------------------------------------
 importWorld() {
-  local NAME MCUSER MCGROUP
+  local NAME
   mkdir -p "$WORLDS_LOCATION/$2"
   cp -R $1/* $WORLDS_LOCATION/$2
   chown $(id -un):$(id -gn) -R $WORLDS_LOCATION/$2
