@@ -1630,9 +1630,9 @@ overviewer() {
   updateClientSoftware "$1"
   # Create a default Overviewer settings file if it is missing.
   if [ ! -e $SETTINGS_FILE ]; then
-    # Use the backup location so we minimize the time the server isn't saving
-    # data.
-    printf "worlds['$1'] = '$BACKUP_LOCATION/$1/$1'\n\n" >$SETTINGS_FILE
+    # Use the backup location so we minimize the time the server isn't saving data.
+    printf "import os\n\n" >$SETTINGS_FILE
+    printf "worlds['$1'] = '$BACKUP_LOCATION/$1/$1-original' if os.path.exists('$BACKUP_LOCATION/$1/$1-original') else '$BACKUP_LOCATION/$1/$1'\n\n" >>$SETTINGS_FILE
     printf "renders['overworld-render'] = {\n" >>$SETTINGS_FILE
     printf "  'world': '$1',\n" >>$SETTINGS_FILE
     printf "  'title': 'Overworld',\n" >>$SETTINGS_FILE
