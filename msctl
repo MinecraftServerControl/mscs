@@ -1192,8 +1192,10 @@ rotateLog() {
   WORLD_DIR="$WORLDS_LOCATION/$1"
   # Make sure the log directory exists.
   mkdir -p "$WORLD_DIR/logs"
-  # Delete old log files.
-  find "$WORLD_DIR/logs" -type f -mtime +"$LOG_DURATION" -delete
+  if [ "$LOG_DURATION" -gt 0 ]; then
+    # Delete old log files.
+    find "$WORLD_DIR/logs" -type f -mtime +"$LOG_DURATION" -delete
+  fi
   # Archive and rotate the log files for old Minecraft servers (Versions 1.7
   # and greater do this automatically).
   if [ -e "$WORLD_DIR/server.log" ] &&
