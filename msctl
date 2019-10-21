@@ -274,7 +274,7 @@ mscs_defaults() {
 ; Length in days that backups survive.
 # mscs-backup-duration=15
 
-; Length in days that logs survive.
+; Length in days that logs survive. A value less than 1 disables log deletion.
 # mscs-log-duration=15
 
 ; Enable the mirror option by default for worlds (default disabled). Change
