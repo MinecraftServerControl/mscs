@@ -271,10 +271,10 @@ mscs_defaults() {
 ; Location of the backup log file.
 # mscs-backup-log=/opt/mscs/backups/backup.log
 
-; Length in days that backups survive.
+; Length in days that backups survive. A value less than 1 disables backup deletion.
 # mscs-backup-duration=15
 
-; Length in days that logs survive.
+; Length in days that logs survive. A value less than 1 disables log deletion.
 # mscs-log-duration=15
 
 ; Enable the mirror option by default for worlds (default disabled). Change
@@ -1192,8 +1192,10 @@ rotateLog() {
   WORLD_DIR="$WORLDS_LOCATION/$1"
   # Make sure the log directory exists.
   mkdir -p "$WORLD_DIR/logs"
-  # Delete old log files.
-  find "$WORLD_DIR/logs" -type f -mtime +"$LOG_DURATION" -delete
+  if [ "$LOG_DURATION" -gt 0 ]; then
+    # Delete old log files.
+    find "$WORLD_DIR/logs" -type f -mtime +"$LOG_DURATION" -delete
+  fi
   # Archive and rotate the log files for old Minecraft servers (Versions 1.7
   # and greater do this automatically).
   if [ -e "$WORLD_DIR/server.log" ] &&

@@ -283,8 +283,8 @@ The following properties are available:
 * mscs-default-server-command  - Default command to run for a world server.
 * mscs-backup-location         - Location to store backup files.
 * mscs-backup-log              - Location of the backup log file.
-* mscs-backup-duration         - Length in days that backups survive.
-* mscs-log-duration            - Length in days that logs survive.
+* mscs-backup-duration         - Length in days that backups survive. A value less than 1 disables backup deletion.
+* mscs-log-duration            - Length in days that logs survive. A value less than 1 disables log deletion.
 * mscs-enable-mirror           - Enable the mirror option by default for worlds (default disabled).
 * mscs-mirror-path             - Default path for the mirror files.
 * mscs-overviewer-bin          - Location of Overviewer.

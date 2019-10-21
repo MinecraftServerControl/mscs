@@ -5,3 +5,5 @@ tags
 TAGS
 .ctags
 ctags.cnf
+*.swo
+*.swp
