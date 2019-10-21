@@ -271,7 +271,7 @@ mscs_defaults() {
 ; Location of the backup log file.
 # mscs-backup-log=/opt/mscs/backups/backup.log
 
-; Length in days that backups survive.
+; Length in days that backups survive. A value less than 1 disables backup deletion.
 # mscs-backup-duration=15
 
 ; Length in days that logs survive. A value less than 1 disables log deletion.
