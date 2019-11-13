@@ -1,0 +1,25 @@
+#!/usr/bin/env bash
+# do some unit testing
+
+# print the error to stderr showing the callers file via BASH_SOURCE
+terr () {
+    echo ${BASH_SOURCE[1]} $@ >&2
+}
+
+# get variable values and functions for testing
+source msctl
+
+# override some vars from msctl with values that allow testing
+
+
+# funcs like getMSCSValue have local vars based on WORLDS_LOCATION.
+WORLDS_LOCATION=/tmp
+testworld="mscs-testdata"
+# tests will write to this propfile to verify parsing etc.
+propfile="$WORLDS_LOCATION/$testworld/mscs.properties"
+mkdir -p $(dirname $propfile) || exit 1
+
+# run the tests; no news is good news!
+for t in tests/*; do
+    source "$t"
+done

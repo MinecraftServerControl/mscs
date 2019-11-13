@@ -237,6 +237,9 @@ mscs_defaults() {
 ; variable to access the latest version based on the version type selected.
 # mscs-default-server-version=\$CURRENT_VERSION
 
+; Default arguments for the JVM.
+# mscs-default-jvm-args=
+
 ; Default .jar file for the server software. The \$SERVER_VERSION variable
 ; allows access to the server version selected.
 # mscs-default-server-jar=minecraft_server.\$SERVER_VERSION.jar
@@ -600,7 +603,8 @@ getValue() {
   fi
   # Return the value if found, the default value if not.
   if [ -n "$KEY" ] && [ -n "$VALUE" ]; then
-    printf "$VALUE"
+    # $VALUE may contains flag-like strings not intended for printf
+    printf -- "$VALUE"
   else
     printf "$3"
   fi
@@ -1095,6 +1099,10 @@ getServerCommand() {
     printf "$SERVER_LOCATION\n"
     exit 1
   fi
+  # Get the jvm arguments, use the default value if not provided.
+  JVM_ARGS=$(
+    getMSCSValue "$1" "mscs-jvm-args" "$DEFAULT_JVM_ARGS"
+  )
   # Get the server arguments, use the default value if not provided.
   SERVER_ARGS=$(
     getMSCSValue "$1" "mscs-server-args" "$DEFAULT_SERVER_ARGS"
@@ -1113,6 +1121,7 @@ getServerCommand() {
     $java = "'$JAVA'";
     $current_version="'$CURRENT_VERSION'";
     $server_version="'$SERVER_VERSION'";
+    $jvm_args = "'$JVM_ARGS'";
     $server_jar = "'$SERVER_JAR'";
     $server_location = "'$SERVER_LOCATION'";
     $server_args = "'$SERVER_ARGS'";
@@ -1121,6 +1130,7 @@ getServerCommand() {
     $_ =~ s/\$JAVA/$java/g;
     $_ =~ s/\$CURRENT_VERSION/$current_version/g;
     $_ =~ s/\$SERVER_VERSION/$server_version/g;
+    $_ =~ s/\$JVM_ARGS/$jvm_args/;
     $_ =~ s/\$SERVER_JAR/$server_jar/g;
     $_ =~ s/\$SERVER_LOCATION/$server_location/g;
     $_ =~ s/\$SERVER_ARGS/$server_args/g;
@@ -2138,6 +2148,8 @@ elif [ -r "$HOME/mscs.defaults" ]; then
   MSCS_DEFAULTS="$HOME/mscs.defaults"
 elif [ -r "$HOME/.config/mscs/mscs.defaults" ]; then
   MSCS_DEFAULTS="$HOME/.config/mscs/mscs.defaults"
+else
+  MSCS_DEFAULTS="$HOME/mscs.defaults"
 fi
 # Generate the example `mscs.defaults` if it is missing or empty.
 if [ ! -s "$MSCS_DEFAULTS" ]; then
@@ -2164,9 +2176,10 @@ fi
 #   mscs-default-client-url      - Default download URL for the client software.
 #   mscs-default-client-location - Default location of the client .jar file.
 #   mscs-default-server-version  - Default version of the server software.
+#   mscs-default-jvm-args        - Default arguments for the JVM.
 #   mscs-default-server-jar      - Default .jar file for the server software.
 #   mscs-default-server-url      - Default download URL for the server software.
-#   mscs-default-server-args     - Default arguments to for a world server.
+#   mscs-default-server-args     - Default arguments for a world server.
 #   mscs-default-initial-memory  - Default initial amount of memory for a world server.
 #   mscs-default-maximum-memory  - Default maximum amount of memory for a world server.
 #   mscs-default-server-location - Default location of the server .jar file.
@@ -2209,6 +2222,7 @@ fi
 #   mscs-default-client-url=
 #   mscs-default-client-location=/opt/mscs/.minecraft/versions/$CLIENT_VERSION
 #   mscs-default-server-version=$CURRENT_VERSION
+#   mscs-default-jvm-args=
 #   mscs-default-server-jar=minecraft_server.$SERVER_VERSION.jar
 #   mscs-default-server-url=
 #   mscs-default-server-args=nogui
@@ -2254,13 +2268,14 @@ DEFAULT_CLIENT_JAR=$(getDefaultsValue 'mscs-default-client-jar' '$CLIENT_VERSION
 DEFAULT_CLIENT_URL=$(getDefaultsValue 'mscs-default-client-url' '')
 DEFAULT_CLIENT_LOCATION=$(getDefaultsValue 'mscs-default-client-location' $HOME'/.minecraft/versions/$CLIENT_VERSION')
 DEFAULT_SERVER_VERSION=$(getDefaultsValue 'mscs-default-server-version' '$CURRENT_VERSION')
+DEFAULT_JVM_ARGS=$(getDefaultsValue 'mscs-default-jvm-args' '')
 DEFAULT_SERVER_JAR=$(getDefaultsValue 'mscs-default-server-jar' 'minecraft_server.$SERVER_VERSION.jar')
 DEFAULT_SERVER_URL=$(getDefaultsValue 'mscs-default-server-url' '')
 DEFAULT_SERVER_ARGS=$(getDefaultsValue 'mscs-default-server-args' 'nogui')
 DEFAULT_INITIAL_MEMORY=$(getDefaultsValue 'mscs-default-initial-memory' '128M')
 DEFAULT_MAXIMUM_MEMORY=$(getDefaultsValue 'mscs-default-maximum-memory' '2048M')
 DEFAULT_SERVER_LOCATION=$(getDefaultsValue 'mscs-default-server-location' $LOCATION'/server')
-DEFAULT_SERVER_COMMAND=$(getDefaultsValue 'mscs-default-server-command' '$JAVA -Xms$INITIAL_MEMORY -Xmx$MAXIMUM_MEMORY -jar $SERVER_LOCATION/$SERVER_JAR $SERVER_ARGS')
+DEFAULT_SERVER_COMMAND=$(getDefaultsValue 'mscs-default-server-command' '$JAVA -Xms$INITIAL_MEMORY -Xmx$MAXIMUM_MEMORY $JVM_ARGS -jar $SERVER_LOCATION/$SERVER_JAR $SERVER_ARGS')
 # Each world server can override the default values in a similar manner by
 # adding certain key/value pairs to the world's mscs.properties file.
 #
@@ -2272,6 +2287,7 @@ DEFAULT_SERVER_COMMAND=$(getDefaultsValue 'mscs-default-server-command' '$JAVA -
 #   mscs-client-url      - Assign the download URL for the client software.
 #   mscs-client-location - Assign the location of the client .jar file.
 #   mscs-server-version  - Assign the version of the server software.
+#   mscs-jvm-args        - Assign the arguments to the JVM.
 #   mscs-server-jar      - Assign the .jar file for the server software.
 #   mscs-server-url      - Assign the download URL for the server software.
 #   mscs-server-args     - Assign the arguments to the server.
@@ -2285,6 +2301,7 @@ DEFAULT_SERVER_COMMAND=$(getDefaultsValue 'mscs-default-server-command' '$JAVA -
 #   $CURRENT_VERSION     - The current Mojang Minecraft release version.
 #   $CLIENT_VERSION      - The version of the client software.
 #   $SERVER_VERSION      - The version of the server software.
+#   $JVM_ARGS            - The arguments to the JVM.
 #   $SERVER_JAR          - The .jar file to run for the server.
 #   $SERVER_ARGS         - The arguments to the server.
 #   $INITIAL_MEMORY      - The initial amount of memory for the server.
@@ -2299,6 +2316,7 @@ DEFAULT_SERVER_COMMAND=$(getDefaultsValue 'mscs-default-server-command' '$JAVA -
 #   mscs-client-url=
 #   mscs-client-location=/opt/mscs/.minecraft/versions/$CLIENT_VERSION
 #   mscs-server-version=$CURRENT_VERSION
+#   mscs-jvm-args=
 #   mscs-server-jar=minecraft_server.$SERVER_VERSION.jar
 #   mscs-server-url=
 #   mscs-server-args=nogui
@@ -2362,6 +2380,13 @@ OVERVIEWER_BIN=$(getDefaultsValue 'mscs-overviewer-bin' $(which overviewer.py))
 OVERVIEWER_URL=$(getDefaultsValue 'mscs-overviewer-url' 'http://overviewer.org')
 MAPS_LOCATION=$(getDefaultsValue 'mscs-maps-location' $LOCATION'/maps')
 MAPS_URL=$(getDefaultsValue 'mscs-maps-url' 'http://minecraft.server.com/maps')
+
+# allow function importing via source command for tests
+(return 2>/dev/null)
+if [ $? -eq 0 ]; then
+  # file was sourced, don't execute below here
+  return 0
+fi
 
 # Respond to the command line arguments.
 # ---------------------------------------------------------------------------
