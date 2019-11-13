@@ -475,7 +475,7 @@ worlds).
 ## Configuring logging
 Want to customize the server logs?  You can configure log4j by setting `mscs-jvm-args` in [world properties](#adjusting-world-properties).
 
-example setting: `mscs-jvm-args=-Dlog4j.configurationFile=$HOME/log4j2.xml`
+example setting: `mscs-jvm-args=-Dlog4j.configurationFile=/opt/mscs/log4j2.xml`
 
 ## Setting up mapping
 
