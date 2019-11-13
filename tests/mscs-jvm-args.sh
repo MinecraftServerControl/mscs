@@ -1,3 +1,6 @@
+# start with clean slate
+[ -f $MSCS_DEFAULTS ] && rm $MSCS_DEFAULTS
+
 want='$JVM_ARGS'
 # verify DEFAULT_SERVER_COMMAND contains $JVM_ARGS string literal before -jar flag
 if ! printf "$DEFAULT_SERVER_COMMAND" | grep -qs -- ".*$want.*-jar"; then
@@ -47,6 +50,27 @@ fi
 got=$(getDefaultsValue "mscs-default-jvm-args" '')
 if [ "$got" != "$want" ]; then
     terr wrong value from getMSCSValue got \"$got\" want \"$want\"
+fi
+
+want="-Dlog4j.configurationFile=/opt/mscs/log4j2.xml"
+# write the config under test
+cat > $MSCS_DEFAULTS <<EOF
+mscs-default-jvm-args=$want
+EOF
+got=$(getDefaultsValue "mscs-default-jvm-args" '')
+# verify getDefaultsValue returns correct value for mscs-default-jvm-args when set
+if [ "$got" != "$want" ]; then
+    terr "wrong value from getDefaultsValue for mscs-default-jvm-args got $got want $want"
+fi
+
+want="-Dlog4j.configurationFile=/opt/mscs/log4j2.xml"
+cat > $MSCS_DEFAULTS <<EOF
+mscs-default-jvm-args=
+EOF
+# when getValue returns a default value with a hyphen (like a flag)
+got=$(getValue $MSCS_DEFAULTS mscs-default-jvm-args "$want")
+if [ "$got" != "$want" ]; then
+    terr "wrong value from getValue for mscs-default-jvm-args got $got want $want"
 fi
 
 # verify mscs_defaults output contains correct value for mscs-default-jvm-args

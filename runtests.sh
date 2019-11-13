@@ -14,6 +14,7 @@ terr () {
 
 # funcs like getMSCSValue have local vars based on WORLDS_LOCATION.
 WORLDS_LOCATION=/tmp
+MSCS_DEFAULTS="/tmp/mscs.defaults"
 testworld="mscs-testdata"
 # tests will write to this propfile to verify parsing etc.
 propfile="$WORLDS_LOCATION/$testworld/mscs.properties"
