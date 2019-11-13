@@ -1,13 +1,13 @@
-#!/usr/bin/env bash
+#!/bin/sh
 # do some unit testing
 
-# print the error to stderr showing the callers file via BASH_SOURCE
+# print the error to stderr prefixed with caller info
 terr () {
-    echo ${BASH_SOURCE[1]} $@ >&2
+    echo "$caller:" $@ >&2
 }
 
 # get variable values and functions for testing
-source msctl
+. ./msctl
 
 # override some vars from msctl with values that allow testing
 
@@ -21,5 +21,6 @@ mkdir -p $(dirname $propfile) || exit 1
 
 # run the tests; no news is good news!
 for t in tests/*; do
-    source "$t"
+    caller=`basename "$t"`
+    . "$t"
 done
