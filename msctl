@@ -606,7 +606,7 @@ getValue() {
     # $VALUE may contains flag-like strings not intended for printf
     printf -- "$VALUE"
   else
-    printf "$3"
+    printf -- "$3"
   fi
 }
 
