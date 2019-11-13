@@ -2382,8 +2382,7 @@ MAPS_LOCATION=$(getDefaultsValue 'mscs-maps-location' $LOCATION'/maps')
 MAPS_URL=$(getDefaultsValue 'mscs-maps-url' 'http://minecraft.server.com/maps')
 
 # allow function importing via source command for tests
-(return 2>/dev/null)
-if [ $? -eq 0 ]; then
+if printf $0 | grep -qs "runtests\.sh"; then
   # file was sourced, don't execute below here
   return 0
 fi
