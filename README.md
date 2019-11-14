@@ -27,6 +27,7 @@
   * [Removing backups after X days](#removing-backups-after-x-days)
   * [Scheduling restarts](#scheduling-restarts)
   * [Scheduling mapping](#scheduling-mapping)
+  * [Configuring logging](#configuring-logging)
 * [Setting up mapping](#setting-up-mapping)
   * [Installing Overviewer (the mapping software)](#installing-overviewer-the-mapping-software)
   * [Configuring overviewer](#configuring-overviewer)
@@ -274,6 +275,7 @@ The following properties are available:
 * mscs-default-client-url      - Default download URL for the client software.
 * mscs-default-client-location - Default location of the client .jar file.
 * mscs-default-server-version  - Default version of the server software.
+* mscs-default-jvm-args        - Default arguments for the JVM.
 * mscs-default-server-jar      - Default .jar file for the server software.
 * mscs-default-server-url      - Default download URL for the server software.
 * mscs-default-server-args     - Default arguments for a world server.
@@ -297,6 +299,7 @@ The following variables may be used in some of the above properties:
 * $CURRENT_VERSION     - The current Mojang Minecraft release version.
 * $CLIENT_VERSION      - The version of the client software.
 * $SERVER_VERSION      - The version of the server software.
+* $JVM_ARGS            - The arguments to the JVM.
 * $SERVER_JAR          - The .jar file to run for the server.
 * $SERVER_ARGS         - The arguments to the server.
 * $INITIAL_MEMORY      - The initial amount of memory for the server.
@@ -323,6 +326,7 @@ your liking.
     mscs-default-client-url=
     mscs-default-client-location=/opt/mscs/.minecraft/versions/$CLIENT_VERSION
     mscs-default-server-version=$CURRENT_VERSION
+    mscs-default-jvm-args=
     mscs-default-server-jar=minecraft_server.$SERVER_VERSION.jar
     mscs-default-server-url=
     mscs-default-server-args=nogui
@@ -359,6 +363,7 @@ The following properties are available:
 * mscs-client-url - Assign the download URL for the client software.
 * mscs-client-location - Assign the location of the client .jar file.
 * mscs-server-version - Assign the version of the server software.
+* mscs-jvm-args - Assign the arguments to the JVM.
 * mscs-server-jar - Assign the .jar file for the server software.
 * mscs-server-url - Assign the download URL for the server software.
 * mscs-server-args - Assign the arguments to the server.
@@ -390,6 +395,7 @@ liking.
     mscs-client-url=https://s3.amazonaws.com/Minecraft.Download/versions/$CLIENT_VERSION/$CLIENT_VERSION.jar
     mscs-client-location=/opt/mscs/.minecraft/versions/$CLIENT_VERSION
     mscs-server-version=$CURRENT_VERSION
+    mscs-jvm-args=
     mscs-server-jar=minecraft_server.$SERVER_VERSION.jar
     mscs-server-url=https://s3.amazonaws.com/Minecraft.Download/versions/$SERVER_VERSION/minecraft_server.$SERVER_VERSION.jar
     mscs-server-args=nogui
@@ -465,6 +471,11 @@ Once you've [set up mapping](#setting-up-mapping), you can schedule the world(s)
 
 Where `<world>` is the name of the world you wish to map (omit for all
 worlds).
+
+## Configuring logging
+Want to customize the server logs?  You can configure log4j by setting `mscs-jvm-args` in [world properties](#adjusting-world-properties).
+
+example setting: `mscs-jvm-args=-Dlog4j.configurationFile=/opt/mscs/log4j2.xml`
 
 ## Setting up mapping
 
