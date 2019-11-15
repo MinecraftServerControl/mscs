@@ -33,7 +33,7 @@ getServerVersion () {
 
 # verify getServerCommand returns correct jvm args
 got=$(getServerCommand $testworld)
-if printf $got | grep -qs -- "$want"; then
+if ! printf "$got" | grep -qs -- "$want"; then
     terr "getServerCommand did not return the expected command"
     terr got $got
     terr want substring $want
