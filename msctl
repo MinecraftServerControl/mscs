@@ -1753,7 +1753,7 @@ queryStart() {
   # server is piped into the query.out file.  Give the server a moment to
   # start before initializing the Query handler.
   nohup sh -c "
-    sleep 20;
+    sleep 1;
     tail -f --pid=$SERVER_PID \"$WORLD_DIR/query.in\" |
     $SOCAT - UDP:$SERVER_IP:$QUERY_PORT > \"$WORLD_DIR/query.out\"
   " >/dev/null 2>&1 &
@@ -1811,6 +1811,8 @@ querySendPacket() {
       $packed = join "", map { pack ("C", hex($_)) } ("'$RESPONSE'" =~ /(..)/g);
       printf "%s\n", join "\t", unpack ("'$4'", $packed);
     '
+  else
+    ps a | grep socat | grep "$1" | grep tail >/dev/null || queryStart "$1"
   fi
 }
 
