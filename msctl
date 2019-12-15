@@ -2761,6 +2761,7 @@ case "$COMMAND" in
             printf "    $PROP="
             getServerPropertiesValue "$WORLD" "$PROP" ""
           done
+          printf '\n'
         done
         ;;
     esac
