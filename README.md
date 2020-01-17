@@ -27,7 +27,11 @@ and restart worlds.
 
 # Documentation
 
-Please see  [https://minecraftservercontrol.github.io/docs/mscs](https://minecraftservercontrol.github.io/docs/mscs).
+Docs have moved to [https://minecraftservercontrol.github.io/docs/mscs](https://minecraftservercontrol.github.io/docs/mscs).
+
+# Issues
+
+Please see [https://minecraftservercontrol.github.io/docs/mscs/troubleshooting-issues](https://minecraftservercontrol.github.io/docs/mscs/troubleshooting-issues).
 
 # Code of Conduct
 
