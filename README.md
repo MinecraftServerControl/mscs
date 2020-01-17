@@ -28,18 +28,17 @@ and restart worlds.
 # Documentation
 
 Documentation has moved to 
-[https://minecraftservercontrol.github.io/docs/mscs]
-(https://minecraftservercontrol.github.io/docs/mscs).
+[https://minecraftservercontrol.github.io/docs/mscs](https://minecraftservercontrol.github.io/docs/mscs).
 
-# Code of Conduct
+### Code of Conduct
 
 See [Code of Conduct](CODE_OF_CONDUCT.md)
 
-# License
+### License
 
 See [LICENSE](LICENSE)
 
-# Disclaimer
+### Disclaimer
 
 Minecraft is a trademark of Mojang Synergies AB, a subsidiary of Microsoft
 Studios.  MSCS and MSC-GUI are designed to ease the use of the Mojang produced
