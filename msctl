@@ -853,12 +853,11 @@ getClientVersion() {
   fi
   # Get the client version, use the default version if not provided.
   getMSCSValue "$1" "mscs-client-version" "$DEFAULT_CLIENT_VERSION" |
-    $PERL -ne '
-    $current_version="'$CURRENT_VERSION'";
+    $PERL -sne '
     $_ =~ s/\$CURRENT_VERSION/$current_version/g;
     $_ =~ s/[\s#%*+?^\${}()|[\]\\]/-/g;
     print;
-  '
+  ' -- -current_version="$CURRENT_VERSION"
 }
 
 # ---------------------------------------------------------------------------
@@ -881,13 +880,11 @@ getClientJar() {
   fi
   # Get the client jar, use the default value if not provided.
   getMSCSValue "$1" "mscs-client-jar" "$DEFAULT_CLIENT_JAR" |
-    $PERL -ne '
-    $current_version="'$CURRENT_VERSION'";
-    $client_version="'$CLIENT_VERSION'";
+    $PERL -sne '
     $_ =~ s/\$CURRENT_VERSION/$current_version/g;
     $_ =~ s/\$CLIENT_VERSION/$client_version/g;
     print;
-  '
+  ' -- -current_version="$CURRENT_VERSION" -client_version="$CLIENT_VERSION"
 }
 
 # ---------------------------------------------------------------------------
@@ -910,13 +907,11 @@ getClientLocation() {
   fi
   # Get the client location, use the default value if not provided.
   getMSCSValue "$1" "mscs-client-location" "$DEFAULT_CLIENT_LOCATION" |
-    $PERL -ne '
-    $current_version="'$CURRENT_VERSION'";
-    $client_version="'$CLIENT_VERSION'";
+    $PERL -sne '
     $_ =~ s/\$CURRENT_VERSION/$current_version/g;
     $_ =~ s/\$CLIENT_VERSION/$client_version/g;
     print;
-  '
+  ' -- -current_version="$CURRENT_VERSION" -client_version="$CLIENT_VERSION"
 }
 
 # ---------------------------------------------------------------------------
@@ -938,14 +933,12 @@ getClientURL() {
     exit 1
   fi
   # Get the client download URL, use the default value if not provided.
-  URL=$(getMSCSValue "$1" "mscs-client-url" "$DEFAULT_CLIENT_URL" | $PERL -ne '
-    $current_version="'$CURRENT_VERSION'";
-    $client_version="'$CLIENT_VERSION'";
+  URL=$(getMSCSValue "$1" "mscs-client-url" "$DEFAULT_CLIENT_URL" | $PERL -sne '
     $_ =~ s/\$CURRENT_VERSION/$current_version/g;
     $_ =~ s/\$CLIENT_VERSION/$client_version/g;
     $_ =~ s/\\\:/\:/g;
     print;
-  ')
+  ' -- -current_version="$CURRENT_VERSION" -client_version="$CLIENT_VERSION")
   # If the download URL was not specified, extract it from the version
   # manifest.
   if [ -z "$URL" ]; then
@@ -969,12 +962,11 @@ getServerVersion() {
   fi
   # Get the server version, use the default version if not provided.
   getMSCSValue "$1" "mscs-server-version" "$DEFAULT_SERVER_VERSION" |
-    $PERL -ne '
-    $current_version="'$CURRENT_VERSION'";
+    $PERL -sne '
     $_ =~ s/\$CURRENT_VERSION/$current_version/g;
     $_ =~ s/[\s#%*+?^\${}()|[\]\\]/-/g;
     print;
-  '
+  ' -- -current_version="$CURRENT_VERSION"
 }
 
 # ---------------------------------------------------------------------------
@@ -997,13 +989,11 @@ getServerJar() {
   fi
   # Get the server jar, use the default value if not provided.
   getMSCSValue "$1" "mscs-server-jar" "$DEFAULT_SERVER_JAR" |
-    $PERL -ne '
-    $current_version="'$CURRENT_VERSION'";
-    $server_version="'$SERVER_VERSION'";
+    $PERL -sne '
     $_ =~ s/\$CURRENT_VERSION/$current_version/g;
     $_ =~ s/\$SERVER_VERSION/$server_version/g;
     print;
-  '
+  ' -- -current_version="$CURRENT_VERSION" -server_version="$SERVER_VERSION"
 }
 
 # ---------------------------------------------------------------------------
@@ -1026,13 +1016,11 @@ getServerLocation() {
   fi
   # Get the server location, use the default value if not provided.
   getMSCSValue "$1" "mscs-server-location" "$DEFAULT_SERVER_LOCATION" |
-    $PERL -ne '
-    $current_version="'$CURRENT_VERSION'";
-    $server_version="'$SERVER_VERSION'";
+    $PERL -sne '
     $_ =~ s/\$CURRENT_VERSION/$current_version/g;
     $_ =~ s/\$SERVER_VERSION/$server_version/g;
     print;
-  '
+  ' -- -current_version="$CURRENT_VERSION" -server_version="$SERVER_VERSION"
 }
 
 # ---------------------------------------------------------------------------
@@ -1054,14 +1042,12 @@ getServerURL() {
     exit 1
   fi
   # Get the server download URL, use the default value if not provided.
-  URL=$(getMSCSValue "$1" "mscs-server-url" "$DEFAULT_SERVER_URL" | $PERL -ne '
-    $current_version="'$CURRENT_VERSION'";
-    $server_version="'$SERVER_VERSION'";
+  URL=$(getMSCSValue "$1" "mscs-server-url" "$DEFAULT_SERVER_URL" | $PERL -sne '
     $_ =~ s/\$CURRENT_VERSION/$current_version/g;
     $_ =~ s/\$SERVER_VERSION/$server_version/g;
     $_ =~ s/\\\:/\:/g;
     print;
-  ')
+  ' -- -current_version="$CURRENT_VERSION" -server_version="$SERVER_VERSION")
   # If the download URL was not specified, extract it from the version
   # manifest.
   if [ -z "$URL" ]; then
@@ -1117,16 +1103,7 @@ getServerCommand() {
   )
   # Get the server command, use the default value if not provided.
   getMSCSValue "$1" "mscs-server-command" "$DEFAULT_SERVER_COMMAND" |
-    $PERL -ne '
-    $java = "'$JAVA'";
-    $current_version="'$CURRENT_VERSION'";
-    $server_version="'$SERVER_VERSION'";
-    $jvm_args = "'$JVM_ARGS'";
-    $server_jar = "'$SERVER_JAR'";
-    $server_location = "'$SERVER_LOCATION'";
-    $server_args = "'$SERVER_ARGS'";
-    $initial_memory = "'$INITIAL_MEMORY'";
-    $maximum_memory = "'$MAXIMUM_MEMORY'";
+    $PERL -sne '
     $_ =~ s/\$JAVA/$java/g;
     $_ =~ s/\$CURRENT_VERSION/$current_version/g;
     $_ =~ s/\$SERVER_VERSION/$server_version/g;
@@ -1137,7 +1114,16 @@ getServerCommand() {
     $_ =~ s/\$INITIAL_MEMORY/$initial_memory/g;
     $_ =~ s/\$MAXIMUM_MEMORY/$maximum_memory/g;
     print;
-  '
+  ' -- \
+  -java="$JAVA" \
+  -current_version="$CURRENT_VERSION" \
+  -server_version="$SERVER_VERSION" \
+  -jvm_args="$JVM_ARGS" \
+  -server_jar="$SERVER_JAR" \
+  -server_location="$SERVER_LOCATION" \
+  -server_args="$SERVER_ARGS" \
+  -initial_memory="$INITIAL_MEMORY" \
+  -maximum_memory="$MAXIMUM_MEMORY"
 }
 
 # ---------------------------------------------------------------------------
