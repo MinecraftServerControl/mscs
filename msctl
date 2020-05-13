@@ -1737,7 +1737,7 @@ queryStart() {
   # Wait until the query port is open before creating the query files
   # and establishing the tail process.
   nohup sh -c "
-    while ! nc -u -z $SERVER_IP $QUERY_PORT; do
+    while ! echo | $SOCAT - UDP-CONNECT:$SERVER_IP:$QUERY_PORT >/dev/null 2>&1; do
       sleep 0.1
     done;
     printf '' >\"$WORLD_DIR/query.in\"
