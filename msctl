@@ -1734,22 +1734,17 @@ queryStart() {
   SERVER_PID=$(getJavaPID $1)
   # Delete any old query.in or query.out buffer files.
   rm -Rf "$WORLD_DIR/query.in" "$WORLD_DIR/query.out"
-  # Initialize the query.in and query.out buffer files.
-  printf '' >"$WORLD_DIR/query.in"
-  printf '' >"$WORLD_DIR/query.out"
   # Start a tail process to watch for changes to the query.in file to pipe
   # to the Minecraft query server via socat.  The response from the query
-  # server is piped into the query.out file.  Give the server a moment to
-  # start before initializing the Query handler.
+  # server is piped into the query.out file.
   nohup sh -c "
-    sleep 1;
-    tail -f --pid=$SERVER_PID \"$WORLD_DIR/query.in\" |
+    while ! echo | $SOCAT - UDP-CONNECT:$SERVER_IP:$QUERY_PORT >/dev/null 2>&1; do
+      sleep 0.1
+    done;
+    printf '' >\"$WORLD_DIR/query.in\"
+    printf '' >\"$WORLD_DIR/query.out\"    tail -f --pid=$SERVER_PID \"$WORLD_DIR/query.in\" |
     $SOCAT - UDP:$SERVER_IP:$QUERY_PORT > \"$WORLD_DIR/query.out\"
   " >/dev/null 2>&1 &
-  # Verify the connection to the query server worked.
-  if [ $? -ne 0 ]; then
-    printf "Error connecting to the query server.\n"
-  fi
 }
 
 # ---------------------------------------------------------------------------
@@ -1800,7 +1795,14 @@ querySendPacket() {
       $packed = join "", map { pack ("C", hex($_)) } ($response =~ /(..)/g);
       printf "%s\n", join "\t", unpack ($format, $packed);
     ' -- -response="$RESPONSE" -format="$4"
-  else
+
+  # If the response is empty and the query.in and query.out files have NOT been created,
+  # the world is still starting up and the status query will return as such.
+  # See lines 1985-1987.
+
+  # If the response is empty and the query.in and query.out files HAVE been created,
+  # something went wrong. We try restarting the query handler again.
+  elif [ -z "$RESPONSE" ] && [ -e "$WORLD_DIR/query.in" ] && [ -e "$WORLD_DIR/query.out" ]; then
     ps a | grep socat | grep "$1" | grep tail >/dev/null || queryStart "$1"
   fi
 }
