@@ -318,8 +318,9 @@ getJavaPID() {
   local PID MCUSER
   MCUSER=$(whoami)
   PID=$(
-    ps -a -U $MCUSER -o pid,comm,args -ww |
-      $PERL -ne 'if ($_ =~ /^\s*(\d+)\s+java.+mscs-world='$1'$/) { print $1; }'
+    ps -a -U $MCUSER -o pid,comm,args -ww | $PERL -sne '
+      if ($_ =~ /^\s*(\d+)\s+java.+mscs-world=\Q$world\E$/) { print $1; }
+    ' -- -world="$1"
   )
   printf "%d\n" $PID
 }
@@ -584,22 +585,22 @@ getValue() {
   # Make sure the file exists.
   if [ -e "$1" ]; then
     # Find the key/value combo.
-    KEY=$($PERL -ne '
+    KEY=$(cat $1 | $PERL -sne '
       # Remove single and double quotes plus CR and LF.
       $_ =~ s/[\x22\x27\r\n]//g;
       # Remove comments that begin with # or ;.
       $_ =~ s/^\s*[\x23\x3B].*//;
       # Extract the key.
-      if ($_ =~ /^\s*('$2')\s*=\s*.*$/i) { print lc $1; }
-    ' $1)
-    VALUE=$($PERL -ne '
+      if ($_ =~ /^\s*(\Q$key\E)\s*=\s*.*$/i) { print lc $1; }
+    ' -- -key="$2")
+    VALUE=$(cat $1 | $PERL -sne '
       # Remove single and double quotes plus CR and LF.
       $_ =~ s/[\x22\x27\r\n]//g;
       # Remove comments that begin with # or ;.
       $_ =~ s/^\s*[\x23\x3B].*//;
       # Extract the value.
-      if ($_ =~ /^\s*'$2'\s*=\s*(.*)$/i) { print $1; }
-    ' $1)
+      if ($_ =~ /^\s*\Q$key\E\s*=\s*(.*)$/i) { print $1; }
+    ' -- -key="$2")
   fi
   # Return the value if found, the default value if not.
   if [ -n "$KEY" ] && [ -n "$VALUE" ]; then
@@ -623,15 +624,17 @@ setValue() {
   touch "$1"
   # Replace the key/value combo if it already exists, otherwise just
   # append it to the end of the file.
-  KEY_VALUE=$($PERL -ne '
+  KEY_VALUE=$(cat $1 | $PERL -sne '
     $_ =~ s/[\r]//;
-    if ($_ =~ /^('$2'=.*)$/) { print "$1"; }
-  ' $1)
+    if ($_ =~ /^(\Q$key\E=.*)$/) { print "$1"; }
+  ' -- -key="$2")
   if [ -n "$KEY_VALUE" ]; then
-    $PERL -i -ne '
+    mv $1 $1.bak
+    cat $1.bak | $PERL -sne '
       $_ =~ s/[\r]//;
-      if ($_ =~ /^'$2'=.*$/) { print "'$2'='$3'\n"; } else { print; }
-    ' $1
+      if ($_ =~ /^\Q$key\E=.*$/) { print "$key=$value\n"; } else { print; }
+    ' -- -key="$2" -value="$3" > $1
+    rm $1.bak
   else
     printf "$2=$3\n" >>"$1"
   fi
@@ -753,13 +756,13 @@ getCurrentMinecraftVersion() {
   # Determine the version type for the current world.
   TYPE=$(getMSCSValue "$1" "mscs-version-type" "$DEFAULT_VERSION_TYPE")
   # Extract the current version information.
-  VERSION=$($PERL -0777ne '
+  VERSION=$(cat $VERSIONS_JSON | $PERL -0777 -sne '
     use JSON;
     $json = decode_json ($_);
-    $version = $json->{latest}{'$TYPE'};
+    $version = $json->{latest}{$type};
     $version =~ s/[\s#%*+?^\${}()|[\]\\]/-/g;
     print $version;
-  ' $VERSIONS_JSON)
+  ' -- -type="$TYPE")
   # Print an error and exit if the version string is empty.
   if [ -z "$VERSION" ]; then
     printf "Error detecting the current Minecraft version.\n"
@@ -776,22 +779,22 @@ getCurrentMinecraftVersion() {
 # @return The sha1sum for the Minecraft client or server.
 # ---------------------------------------------------------------------------
 getMinecraftVersionDownloadSHA1() {
-  $PERL -0777ne '
+  cat $VERSIONS_JSON | $PERL -0777 -sne '
     use JSON;
     use LWP::Simple;
     my $json = decode_json ($_);
-    my $version;
+    my $v;
     foreach $ver (@{$json->{versions}}) {
       $id = $ver->{id};
       $id =~ s/[\s#%*+?^\${}()|[\]\\]/-/g;
-      if ($id eq "'$1'") {
-        $version = $ver;
+      if ($id eq "$version") {
+        $v = $ver;
         last;
       }
     }
-    $json = decode_json (get ($version->{url}));
-    print $json->{downloads}{'$2'}{sha1};
-  ' $VERSIONS_JSON
+    $json = decode_json (get ($v->{url}));
+    print $json->{downloads}{$type}{sha1};
+  ' -- -version="$1" -type="$2"
 }
 
 # ---------------------------------------------------------------------------
@@ -802,22 +805,22 @@ getMinecraftVersionDownloadSHA1() {
 # @return The download URL for the Minecraft client or server.
 # ---------------------------------------------------------------------------
 getMinecraftVersionDownloadURL() {
-  $PERL -0777ne '
+  cat $VERSIONS_JSON | $PERL -0777 -sne '
     use JSON;
     use LWP::Simple;
     my $json = decode_json ($_);
-    my $version;
+    my $v;
     foreach $ver (@{$json->{versions}}) {
       $id = $ver->{id};
       $id =~ s/[\s#%*+?^\${}()|[\]\\]/-/g;
-      if ($id eq "'$1'") {
-        $version = $ver;
+      if ($id eq "$version") {
+        $v = $ver;
         last;
       }
     }
-    $json = decode_json (get ($version->{url}));
-    print $json->{downloads}{'$2'}{url};
-  ' $VERSIONS_JSON
+    $json = decode_json (get ($v->{url}));
+    print $json->{downloads}{$type}{url};
+  ' -- -version="$1" -type="$2"
 }
 
 # ---------------------------------------------------------------------------
@@ -827,15 +830,15 @@ getMinecraftVersionDownloadURL() {
 # @return The release time of the Minecraft version number.
 # ---------------------------------------------------------------------------
 getMinecraftVersionReleaseTime() {
-  $PERL -0777ne '
+  cat $VERSIONS_JSON | $PERL -0777 -sne '
     use JSON;
     $json = decode_json ($_);
     foreach $ver (@{$json->{versions}}) {
       $id = $ver->{id};
       $id =~ s/[\s#%*+?^\${}()|[\]\\]/-/g;
-      print $ver->{releaseTime} if ($id eq "'$1'");
+      print $ver->{releaseTime} if ($id eq "$version");
     }
-  ' $VERSIONS_JSON
+  ' -- -version="$1"
 }
 
 # ---------------------------------------------------------------------------
@@ -854,7 +857,7 @@ getClientVersion() {
   # Get the client version, use the default version if not provided.
   getMSCSValue "$1" "mscs-client-version" "$DEFAULT_CLIENT_VERSION" |
     $PERL -sne '
-    $_ =~ s/\$CURRENT_VERSION/$current_version/g;
+    $_ =~ s/\$CURRENT_VERSION/\Q$current_version\E/g;
     $_ =~ s/[\s#%*+?^\${}()|[\]\\]/-/g;
     print;
   ' -- -current_version="$CURRENT_VERSION"
@@ -881,8 +884,8 @@ getClientJar() {
   # Get the client jar, use the default value if not provided.
   getMSCSValue "$1" "mscs-client-jar" "$DEFAULT_CLIENT_JAR" |
     $PERL -sne '
-    $_ =~ s/\$CURRENT_VERSION/$current_version/g;
-    $_ =~ s/\$CLIENT_VERSION/$client_version/g;
+    $_ =~ s/\$CURRENT_VERSION/\Q$current_version\E/g;
+    $_ =~ s/\$CLIENT_VERSION/\Q$client_version\E/g;
     print;
   ' -- -current_version="$CURRENT_VERSION" -client_version="$CLIENT_VERSION"
 }
@@ -908,8 +911,8 @@ getClientLocation() {
   # Get the client location, use the default value if not provided.
   getMSCSValue "$1" "mscs-client-location" "$DEFAULT_CLIENT_LOCATION" |
     $PERL -sne '
-    $_ =~ s/\$CURRENT_VERSION/$current_version/g;
-    $_ =~ s/\$CLIENT_VERSION/$client_version/g;
+    $_ =~ s/\$CURRENT_VERSION/\Q$current_version\E/g;
+    $_ =~ s/\$CLIENT_VERSION/\Q$client_version\E/g;
     print;
   ' -- -current_version="$CURRENT_VERSION" -client_version="$CLIENT_VERSION"
 }
@@ -934,8 +937,8 @@ getClientURL() {
   fi
   # Get the client download URL, use the default value if not provided.
   URL=$(getMSCSValue "$1" "mscs-client-url" "$DEFAULT_CLIENT_URL" | $PERL -sne '
-    $_ =~ s/\$CURRENT_VERSION/$current_version/g;
-    $_ =~ s/\$CLIENT_VERSION/$client_version/g;
+    $_ =~ s/\$CURRENT_VERSION/\Q$current_version\E/g;
+    $_ =~ s/\$CLIENT_VERSION/\Q$client_version\E/g;
     $_ =~ s/\\\:/\:/g;
     print;
   ' -- -current_version="$CURRENT_VERSION" -client_version="$CLIENT_VERSION")
@@ -963,7 +966,7 @@ getServerVersion() {
   # Get the server version, use the default version if not provided.
   getMSCSValue "$1" "mscs-server-version" "$DEFAULT_SERVER_VERSION" |
     $PERL -sne '
-    $_ =~ s/\$CURRENT_VERSION/$current_version/g;
+    $_ =~ s/\$CURRENT_VERSION/\Q$current_version\E/g;
     $_ =~ s/[\s#%*+?^\${}()|[\]\\]/-/g;
     print;
   ' -- -current_version="$CURRENT_VERSION"
@@ -990,8 +993,8 @@ getServerJar() {
   # Get the server jar, use the default value if not provided.
   getMSCSValue "$1" "mscs-server-jar" "$DEFAULT_SERVER_JAR" |
     $PERL -sne '
-    $_ =~ s/\$CURRENT_VERSION/$current_version/g;
-    $_ =~ s/\$SERVER_VERSION/$server_version/g;
+    $_ =~ s/\$CURRENT_VERSION/\Q$current_version\E/g;
+    $_ =~ s/\$SERVER_VERSION/\Q$server_version\E/g;
     print;
   ' -- -current_version="$CURRENT_VERSION" -server_version="$SERVER_VERSION"
 }
@@ -1017,8 +1020,8 @@ getServerLocation() {
   # Get the server location, use the default value if not provided.
   getMSCSValue "$1" "mscs-server-location" "$DEFAULT_SERVER_LOCATION" |
     $PERL -sne '
-    $_ =~ s/\$CURRENT_VERSION/$current_version/g;
-    $_ =~ s/\$SERVER_VERSION/$server_version/g;
+    $_ =~ s/\$CURRENT_VERSION/\Q$current_version\E/g;
+    $_ =~ s/\$SERVER_VERSION/\Q$server_version\E/g;
     print;
   ' -- -current_version="$CURRENT_VERSION" -server_version="$SERVER_VERSION"
 }
@@ -1043,8 +1046,8 @@ getServerURL() {
   fi
   # Get the server download URL, use the default value if not provided.
   URL=$(getMSCSValue "$1" "mscs-server-url" "$DEFAULT_SERVER_URL" | $PERL -sne '
-    $_ =~ s/\$CURRENT_VERSION/$current_version/g;
-    $_ =~ s/\$SERVER_VERSION/$server_version/g;
+    $_ =~ s/\$CURRENT_VERSION/\Q$current_version\E/g;
+    $_ =~ s/\$SERVER_VERSION/\Q$server_version\E/g;
     $_ =~ s/\\\:/\:/g;
     print;
   ' -- -current_version="$CURRENT_VERSION" -server_version="$SERVER_VERSION")
@@ -1104,15 +1107,15 @@ getServerCommand() {
   # Get the server command, use the default value if not provided.
   getMSCSValue "$1" "mscs-server-command" "$DEFAULT_SERVER_COMMAND" |
     $PERL -sne '
-    $_ =~ s/\$JAVA/$java/g;
-    $_ =~ s/\$CURRENT_VERSION/$current_version/g;
-    $_ =~ s/\$SERVER_VERSION/$server_version/g;
-    $_ =~ s/\$JVM_ARGS/$jvm_args/;
-    $_ =~ s/\$SERVER_JAR/$server_jar/g;
-    $_ =~ s/\$SERVER_LOCATION/$server_location/g;
-    $_ =~ s/\$SERVER_ARGS/$server_args/g;
-    $_ =~ s/\$INITIAL_MEMORY/$initial_memory/g;
-    $_ =~ s/\$MAXIMUM_MEMORY/$maximum_memory/g;
+    $_ =~ s/\$JAVA/\Q$java\E/g;
+    $_ =~ s/\$CURRENT_VERSION/\Q$current_version\E/g;
+    $_ =~ s/\$SERVER_VERSION/\Q$server_version\E/g;
+    $_ =~ s/\$JVM_ARGS/\Q$jvm_args\E/;
+    $_ =~ s/\$SERVER_JAR/\Q$server_jar\E/g;
+    $_ =~ s/\$SERVER_LOCATION/\Q$server_location\E/g;
+    $_ =~ s/\$SERVER_ARGS/\Q$server_args\E/g;
+    $_ =~ s/\$INITIAL_MEMORY/\Q$initial_memory\E/g;
+    $_ =~ s/\$MAXIMUM_MEMORY/\Q$maximum_memory\E/g;
     print;
   ' -- \
   -java="$JAVA" \
@@ -1204,7 +1207,7 @@ rotateLog() {
     cp /dev/null "$WORLD_DIR/server.log"
     # Rotate the files in the world's logs directory.
     for LOG in $(ls -r $WORLD_DIR/logs/$DATE-*.log.gz); do
-      NUM=$(echo $LOG | $PERL -ne 'print ($1 + 1) if ($_ =~ /'$DATE'-(\d+)/)')
+      NUM=$(echo $LOG | $PERL -sne 'print ($1 + 1) if ($_ =~ /\Q$date\E-(\d+)/)' -- -date="$DATE")
       mv -f $LOG "$WORLD_DIR/logs/$DATE-$NUM.log.gz"
     done
   fi
@@ -1741,8 +1744,7 @@ queryStart() {
       sleep 0.1
     done;
     printf '' >\"$WORLD_DIR/query.in\"
-    printf '' >\"$WORLD_DIR/query.out\"
-    tail -f --pid=$SERVER_PID \"$WORLD_DIR/query.in\" |
+    printf '' >\"$WORLD_DIR/query.out\"    tail -f --pid=$SERVER_PID \"$WORLD_DIR/query.in\" |
     $SOCAT - UDP:$SERVER_IP:$QUERY_PORT > \"$WORLD_DIR/query.out\"
   " >/dev/null 2>&1 &
 }
@@ -1771,36 +1773,38 @@ querySendPacket() {
     # Remove any old responses from the query.out buffer file.
     printf '' >"$WORLD_DIR/query.out"
     # Pack the hex string packet and write it to the query.in buffer file.
-    $PERL -e "
-      print map { pack (\"C\", hex(\$_)) } (\"$PACKET\" =~ /(..)/g);
-    " >>"$WORLD_DIR/query.in"
+    $PERL -se '
+      print map { pack ("C", hex($_)) } ($packet =~ /(..)/g);
+    ' -- -packet="$PACKET" >>"$WORLD_DIR/query.in"
     # Give the Query server a moment to respond.
     sleep 1
     # Unpack the response packet from the query.out buffer file. There are a
     # variable amount of null bytes at the start of the response packet, so
     # find the start of the response by searching for the packet type and ID.
-    RESPONSE=$($PERL -0777 -ne '
+    RESPONSE=$(cat $WORLD_DIR/query.out | $PERL -0777 -sne '
       foreach (unpack "C*", $_) {
         $char = sprintf ("%.2x", $_);
         $char =~ s/0a/5c6e/;
         $hex .= $char;
       }
-      $hex =~ s/^0*'$2$ID'/'$2$ID'/;
+      $hex =~ s/^0*\Q$type$id\E/\Q$type$id\E/;
       print $hex;
-    ' $WORLD_DIR/query.out)
+    ' -- -type="$2" -id="$ID")
   fi
-  # If the response is not empty, return the response 
+  # If the response is not empty, return the response
   # in the format requested.
   if [ -n "$RESPONSE" ]; then
-    $PERL -e '
-      $packed = join "", map { pack ("C", hex($_)) } ("'$RESPONSE'" =~ /(..)/g);
-      printf "%s\n", join "\t", unpack ("'$4'", $packed);
-    '
+    # Return the response in the format requested.
+    $PERL -se '
+      $packed = join "", map { pack ("C", hex($_)) } ($response =~ /(..)/g);
+      printf "%s\n", join "\t", unpack ($format, $packed);
+    ' -- -response="$RESPONSE" -format="$4"
+
   # If the response is empty and the query.in and query.out files have NOT been created,
-  # the world is still starting up and the status query will return as such. 
+  # the world is still starting up and the status query will return as such.
   # See lines 1985-1987.
 
-  # If the response is empty and the query.in and query.out files HAVE been created, 
+  # If the response is empty and the query.in and query.out files HAVE been created,
   # something went wrong. We try restarting the query handler again.
   elif [ -z "$RESPONSE" ] && [ -e "$WORLD_DIR/query.in" ] && [ -e "$WORLD_DIR/query.out" ]; then
     ps a | grep socat | grep "$1" | grep tail >/dev/null || queryStart "$1"
