@@ -2415,9 +2415,14 @@ case "$COMMAND" in
       WORLDS=''
       for arg in "$@"; do
         if isWorldEnabled "$arg"; then
-          WORLDS="$WORLDS $arg"
+          if serverRunning "$arg"; then
+            printf "Unable to start the requested world(s): world '$arg' already running.\n"
+            exit 1
+          else
+            WORLDS="$WORLDS $arg"
+          fi
         else
-          printf "World '$arg' not recognized.\n"
+          printf "World '$arg' not recognized or disabled.\n"
           printf "  Usage:  $PROG $COMMAND <world1> <world2> <...>\n"
           exit 1
         fi
@@ -2438,9 +2443,14 @@ case "$COMMAND" in
     if [ "$#" -ge 1 ]; then
       for arg in "$@"; do
         if isWorldEnabled "$arg"; then
-          WORLDS="$WORLDS $arg"
+          if ! serverRunning "$arg"; then
+            printf "Unable to stop the requested world(s): world '$arg' already stopped.\n"
+            exit 1
+          else
+            WORLDS="$WORLDS $arg"
+          fi
         else
-          printf "World '$arg' not recognized.\n"
+          printf "World '$arg' not recognized or disabled.\n"
           printf "  Usage:  $PROG $COMMAND <world1> <world2> <...>\n"
           exit 1
         fi
