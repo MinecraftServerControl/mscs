@@ -2421,8 +2421,12 @@ case "$COMMAND" in
           else
             WORLDS="$WORLDS $arg"
           fi
+        elif isWorldDisabled "$arg"; then
+            printf "Unable to start the requested worlds: world '$arg' is disabled.\n"
+            printf "Please enable the world first with '$PROG enable $arg'.\n"
+            exit 1
         else
-          printf "Unable to start the requested worlds: world '$arg' not recognized or disabled.\n"
+          printf "Unable to start the requested worlds: world '$arg' not recognized.\n"
           printf "  Usage:  $PROG $COMMAND <world1> <world2> <...>\n"
           exit 1
         fi
@@ -2449,8 +2453,12 @@ case "$COMMAND" in
           else
             WORLDS="$WORLDS $arg"
           fi
+        elif isWorldDisabled "$arg"; then
+            printf "Unable to stop the requested worlds: world '$arg' is disabled.\n"
+            printf "Please enable the world first with '$PROG enable $arg'.\n"
+            exit 1
         else
-          printf "Unable to stop the requested worlds: world '$arg' not recognized or disabled.\n"
+          printf "Unable to stop the requested worlds: world '$arg' not recognized.\n"
           printf "  Usage:  $PROG $COMMAND <world1> <world2> <...>\n"
           exit 1
         fi
@@ -2496,8 +2504,12 @@ case "$COMMAND" in
       for arg in "$@"; do
         if isWorldEnabled "$arg"; then
           WORLDS="$WORLDS $arg"
+        elif isWorldDisabled "$arg"; then
+            printf "Unable to start the requested worlds: world '$arg' is disabled.\n"
+            printf "Please enable the world first with '$PROG enable $arg'.\n"
+            exit 1
         else
-          printf "Unable to restart the requested worlds: world '$arg' not recognized or disabled.\n"
+          printf "Unable to restart the requested worlds: world '$arg' not recognized.\n"
           printf "  Usage:  $PROG $COMMAND <world1> <world2> <...>\n"
           exit 1
         fi
@@ -2618,23 +2630,30 @@ case "$COMMAND" in
       printf "World not found, unable to delete world '$1'.\n"
       exit 1
     fi
-    printf "Deleting Minecraft world: $1"
-    if serverRunning "$1"; then
-      # If the world server has users logged in, announce that the world is
-      # being deleted.
-      if [ $(queryNumUsers "$1") -gt 0 ]; then
-        sendCommand "$1" "say The server admin is deleting this world."
-        sendCommand "$1" "say The server will be deleted in 1 minute..."
-        sleep 60
-        sendCommand "$1" "say The server is now shutting down."
+    printf "Are you sure you wish to delete world '$1'? (y/n): "
+    read answer
+    if [ "$answer" = "${answer#[Yy]}" ]; then
+        printf "Aborted.\n"
+        exit 1
+    else
+      printf "Deleting Minecraft world: $1"
+      if serverRunning "$1"; then
+        # If the world server has users logged in, announce that the world is
+        # being deleted.
+        if [ $(queryNumUsers "$1") -gt 0 ]; then
+          sendCommand "$1" "say The server admin is deleting this world."
+          sendCommand "$1" "say The server will be deleted in 1 minute..."
+          sleep 60
+          sendCommand "$1" "say The server is now shutting down."
+        fi
+        # Stop the world server.
+        stop "$1"
+        sleep 5
       fi
-      # Stop the world server.
-      stop "$1"
-      sleep 5
+      # Delete the world.
+      deleteWorld "$1"
+      printf ".\n"
     fi
-    # Delete the world.
-    deleteWorld "$1"
-    printf ".\n"
     ;;
   disable)
     # Get list of enabled worlds.
