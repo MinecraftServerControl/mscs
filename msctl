@@ -1984,10 +1984,10 @@ worldStatus() {
         done
         printf "    Players: %s.\n" "$PLAYERS"
       fi
-    elif [ "$(getServerPropertiesValue $1 'enable-query')" = "true" ] && 
+    elif [ "$(getServerPropertiesValue $1 'enable-query')" = "true" ] &&
       [ -e "$WORLD_DIR/query.in" ] && [ -e "$WORLD_DIR/query.out" ]; then
       printf "running (query server offline).\n"
-    elif [ "$(getServerPropertiesValue $1 'enable-query')" = "true" ] && 
+    elif [ "$(getServerPropertiesValue $1 'enable-query')" = "true" ] &&
       [ ! -e "$WORLD_DIR/query.in" ] && [ ! -e "$WORLD_DIR/query.out" ]; then
       printf "world starting up.\n"
     else
@@ -2549,10 +2549,10 @@ case "$COMMAND" in
   create | new)
     if [ -n "$1" ]; then
       if [ -z "$2" ]; then
-        printf "A name and port for the new world must be supplied.\n"
-        printf "An IP address is optional and usually not needed.\n"
-        printf "  Usage: $PROG create <world> <port> [<ip>]\n"
-        exit 1
+        printf 'Creating world at default port %s' \
+        $DEFAULT_PORT
+        createWorld "$1" "$DEFAULT_PORT"
+        printf ".\n"
       else
         printf "Creating Minecraft world: $1"
         createWorld "$1" "$2" "$3"
