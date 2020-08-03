@@ -1296,7 +1296,7 @@ start() {
   rotateLog "$1"
   # Make a mirror image of the world directory if requested.
   if [ $ENABLE_MIRROR -eq 1 ]; then
-    # Make sure the mirror master folder exists.
+    # Make sure the main mirror folder exists.
     mkdir -p "$MIRROR_PATH"
     # If the symlink exists but the target doesn't, the
     # mirror was removed somehow. This is bad.
