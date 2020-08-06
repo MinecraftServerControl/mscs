@@ -1975,6 +1975,7 @@ worldStatus() {
       MAX=$(printf "%s" "$STATUS" | cut -f 21)
       VERSION=$(printf "%s" "$STATUS" | cut -f 13)
       printf "running version %s (%d of %d users online).\n" "$VERSION" $NUM $MAX
+      printf "    Port: %d.\n" $(getServerPropertiesValue "$1" "server-port" "$DEFAULT_PORT")    
       if [ $NUM -gt 0 ]; then
         PLAYERS=$(printf "%s" $(printf "%s" "$STATUS" | cut -f 30))
         COUNTER=1
@@ -1992,9 +1993,10 @@ worldStatus() {
       printf "world starting up.\n"
     else
       printf "running.\n"
-    fi
+    fi 
+    printf "    Memory used: $(getJavaMemory "$1" | awk '{$1=int(100 * $1/1024/1024)/100"GB";}{ print;}')"
+    printf " ($(getMSCSValue "$1" "mscs-maximum-memory" "$DEFAULT_MAXIMUM_MEMORY" | rev | cut -c 2- | rev | awk '{$1=int($1/1024)"GB";}{ print;}') allocated).\n"
     printf "    Process ID: %d.\n" $(getJavaPID "$1")
-    printf "    Memory used: %d kB.\n" $(getJavaMemory "$1")
   elif [ "$(getMSCSValue $1 'mscs-enabled')" = "false" ]; then
     printf "disabled.\n"
   else
