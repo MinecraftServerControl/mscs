@@ -1331,9 +1331,11 @@ serverMonitor() {
       # Verify that the server restarted successfully. 
       if [ $? -eq 0 ]; then
         printf "[$(timestamp)] [INFO]: Server monitoring resumed for $1. Server PID: $(getJavaPID $1). Monitor PID: $MONITOR_PID.\n"
-        printf "    $1 automatically restarted from a crash on $(timestamp).\n" > "$LAST_START_STATUS_LOG"
-        printf "    See $WORLD_DIR/logs/mscs.monitor.log and\n" >> "$LAST_START_STATUS_LOG"
-        printf "    $WORLD_DIR/crash_reports/ for more information.\n" >> "$LAST_START_STATUS_LOG"
+        printf "    $1 automatically restarted from a crash (or in-game stop command)\n" > "$LAST_START_STATUS_LOG"
+        printf "    on $(timestamp). See\n" >> "$LAST_START_STATUS_LOG"
+        printf "    $WORLD_DIR/logs/mscs.monitor.log and\n" >> "$LAST_START_STATUS_LOG"
+        printf "    $WORLD_DIR/crash_reports/ and\n" >> "$LAST_START_STATUS_LOG"
+        printf "    $WORLD_DIR/logs/ for more information.\n" >> "$LAST_START_STATUS_LOG"
       else
         printf "[$(timestamp)] [ERROR]: Failed to restart $1.\n" 
         stopServerMonitor $1
@@ -2323,7 +2325,7 @@ fi
 #   mscs-default-maximum-memory     - Default maximum amount of memory for a world server.
 #   mscs-default-server-location    - Default location of the server .jar file.
 #   mscs-default-server-command     - Default command to run for a world server.
-#   mscs-enable-restart-after-crash - Enable the option to restart the server after crash detected (default enabled).
+#   mscs-enable-restart-after-crash - Enable the option to restart server after crash detected (default enabled).
 #   mscs-backup-location            - Location to store backup files.
 #   mscs-backup-log                 - Location of the backup log file.
 #   mscs-backup-duration            - Length in days that backups survive.
