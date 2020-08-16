@@ -2323,7 +2323,7 @@ fi
 #   mscs-default-maximum-memory     - Default maximum amount of memory for a world server.
 #   mscs-default-server-location    - Default location of the server .jar file.
 #   mscs-default-server-command     - Default command to run for a world server.
-#   mscs-enable-restart-after-crash - Enable the option to restart worlds after crash detected (default enabled).
+#   mscs-enable-restart-after-crash - Enable the option to restart the server after crash detected (default enabled).
 #   mscs-backup-location            - Location to store backup files.
 #   mscs-backup-log                 - Location of the backup log file.
 #   mscs-backup-duration            - Length in days that backups survive.
