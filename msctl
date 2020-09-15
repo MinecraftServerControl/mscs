@@ -2229,7 +2229,7 @@ fi
 #   $INITIAL_MEMORY      - The initial amount of memory for the server.
 #   $MAXIMUM_MEMORY      - The maximum amount of memory for the server.
 #   $SERVER_LOCATION     - The location of the server .jar file.
-#   $WORLD_NAME
+#   $WORLD_NAME          - The name of the world.
 #
 # The following example key/value pairs are equivalent to the default values:
 #   mscs-location=/opt/mscs
