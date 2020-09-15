@@ -1446,12 +1446,19 @@ worldBackup() {
   "
   # Add all user-specified excluded files
   OLD_IFS=$IFS
+  IFS=,
   # Check for world-specific excluded files
   WORLD_BACKUP_EXCLUDED_FILES=$(getMSCSValue $1 "mscs-backup-excluded-files" "$BACKUP_EXCLUDED_FILES")
+  #For each comma separated value, evaluate the $WORLD_NAME variable, and add to the list of rdiff_backup excluded files
   for EXCLUDED_USER_LOCATION in $WORLD_BACKUP_EXCLUDED_FILES; do
-    EXCLUDE_OPTION="$EXCLUDE_OPTION --exclude $WORLDS_LOCATION/$1/$EXCLUDED_USER_LOCATION \
+    EVALUATED_EXCLUDED_USER_LOCATION=$(echo "$EXCLUDED_USER_LOCATION" | $PERL -sne '
+    $_ =~ s/\$WORLD_NAME/$world_name/g;
+    print;
+  ' -- -world_name="$1")
+    EXCLUDE_OPTION="$EXCLUDE_OPTION --exclude $WORLDS_LOCATION/$1/$EVALUATED_EXCLUDED_USER_LOCATION \
     "
   done
+  IFS=$OLD_IFS
   # Determine if we need to exclude the mirrored symlink or not
   if [ -L "$WORLDS_LOCATION/$1/$1" ]; then
     EXCLUDE_OPTION="$EXCLUDE_OPTION --exclude $WORLDS_LOCATION/$1/$1"
@@ -2222,6 +2229,7 @@ fi
 #   $INITIAL_MEMORY      - The initial amount of memory for the server.
 #   $MAXIMUM_MEMORY      - The maximum amount of memory for the server.
 #   $SERVER_LOCATION     - The location of the server .jar file.
+#   $WORLD_NAME
 #
 # The following example key/value pairs are equivalent to the default values:
 #   mscs-location=/opt/mscs
