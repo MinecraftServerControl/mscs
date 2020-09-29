@@ -274,6 +274,10 @@ mscs_defaults() {
 ; Location of the backup log file.
 # mscs-backup-log=/opt/mscs/backups/backup.log
 
+; Files and directories excluded from backups. Each path is relative to the
+; world/<world> directory. Separate each entry with commas.
+# mscs-backup-excluded-files=
+
 ; Length in days that backups survive. A value less than 1 disables backup deletion.
 # mscs-backup-duration=15
 
@@ -1440,6 +1444,21 @@ worldBackup() {
     --exclude $WORLDS_LOCATION/$1/query.out \
     --exclude $WORLDS_LOCATION/$1/logs/latest.log \
   "
+  # Add all user-specified excluded files
+  OLD_IFS=$IFS
+  IFS=,
+  # Check for world-specific excluded files
+  WORLD_BACKUP_EXCLUDED_FILES=$(getMSCSValue $1 "mscs-backup-excluded-files" "$BACKUP_EXCLUDED_FILES")
+  #For each comma separated value, evaluate the $WORLD_NAME variable, and add to the list of rdiff_backup excluded files
+  for EXCLUDED_USER_LOCATION in $WORLD_BACKUP_EXCLUDED_FILES; do
+    EVALUATED_EXCLUDED_USER_LOCATION=$(echo "$EXCLUDED_USER_LOCATION" | $PERL -sne '
+    $_ =~ s/\$WORLD_NAME/$world_name/g;
+    print;
+  ' -- -world_name="$1")
+    EXCLUDE_OPTION="$EXCLUDE_OPTION --exclude $WORLDS_LOCATION/$1/$EVALUATED_EXCLUDED_USER_LOCATION \
+    "
+  done
+  IFS=$OLD_IFS
   # Determine if we need to exclude the mirrored symlink or not
   if [ -L "$WORLDS_LOCATION/$1/$1" ]; then
     EXCLUDE_OPTION="$EXCLUDE_OPTION --exclude $WORLDS_LOCATION/$1/$1"
@@ -1975,7 +1994,7 @@ worldStatus() {
       MAX=$(printf "%s" "$STATUS" | cut -f 21)
       VERSION=$(printf "%s" "$STATUS" | cut -f 13)
       printf "running version %s (%d of %d users online).\n" "$VERSION" $NUM $MAX
-      printf "    Port: %d.\n" $(getServerPropertiesValue "$1" "server-port" "$DEFAULT_PORT")    
+      printf "    Port: %d.\n" $(getServerPropertiesValue "$1" "server-port" "$DEFAULT_PORT")
       if [ $NUM -gt 0 ]; then
         PLAYERS=$(printf "%s" $(printf "%s" "$STATUS" | cut -f 30))
         COUNTER=1
@@ -1993,7 +2012,7 @@ worldStatus() {
       printf "world starting up.\n"
     else
       printf "running.\n"
-    fi 
+    fi
     printf "    Memory used: $(getJavaMemory "$1" | awk '{$1=int(100 * $1/1024/1024)/100"GB";}{ print;}')"
     printf " ($(getMSCSValue "$1" "mscs-maximum-memory" "$DEFAULT_MAXIMUM_MEMORY" | rev | cut -c 2- | rev | awk '{$1=int($1/1024)"GB";}{ print;}') allocated).\n"
     printf "    Process ID: %d.\n" $(getJavaPID "$1")
@@ -2190,6 +2209,7 @@ fi
 #   mscs-default-server-command  - Default command to run for a world server.
 #   mscs-backup-location         - Location to store backup files.
 #   mscs-backup-log              - Lcation of the backup log file.
+#   mscs-backup-excluded-files   - Comma separated list of files and directories excluded from backups.
 #   mscs-backup-duration         - Length in days that backups survive.
 #   mscs-log-duration            - Length in days that logs survive.
 #   mscs-enable-mirror           - Enable the mirror option by default for worlds (default disabled).
@@ -2209,6 +2229,7 @@ fi
 #   $INITIAL_MEMORY      - The initial amount of memory for the server.
 #   $MAXIMUM_MEMORY      - The maximum amount of memory for the server.
 #   $SERVER_LOCATION     - The location of the server .jar file.
+#   $WORLD_NAME          - The name of the world.
 #
 # The following example key/value pairs are equivalent to the default values:
 #   mscs-location=/opt/mscs
@@ -2236,6 +2257,7 @@ fi
 #   mscs-default-server-command=$JAVA -Xms$INITIAL_MEMORY -Xmx$MAXIMUM_MEMORY -jar $SERVER_LOCATION/$SERVER_JAR $SERVER_ARGS
 #   mscs-backup-location=/opt/mscs/backups
 #   mscs-backup-log=/opt/mscs/backups/backup.log
+#   mscs-backup-excluded_files=
 #   mscs-backup-duration=15
 #   mscs-log-duration=15
 #   mscs-detailed-listing=motd server-ip server-port max-players level-type online-mode
@@ -2346,6 +2368,8 @@ LOCKFILE_DURATION=$(getDefaultsValue 'mscs-lockfile-duration' '1440')
 BACKUP_LOCATION=$(getDefaultsValue 'mscs-backup-location' $LOCATION'/backups')
 # Location of the backup log file.
 BACKUP_LOG=$(getDefaultsValue 'mscs-backup-log' $BACKUP_LOCATION'/backup.log')
+# Comma separated list of files and directories excluded from backups.
+BACKUP_EXCLUDED_FILES=$(getDefaultsValue 'mscs-backup-excluded-files' '')
 # Length in days that backups survive.
 BACKUP_DURATION=$(getDefaultsValue 'mscs-backup-duration' '15')
 
