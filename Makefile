@@ -9,16 +9,18 @@ MSCS_COMPLETION := /etc/bash_completion.d/mscs
 
 UPDATE_D := $(wildcard update.d/*)
 
-.PHONY: install update clean
+.PHONY: install adduser update clean
 
-install: update
-	useradd --system --user-group --create-home -K UMASK=0022 --home $(MSCS_HOME) $(MSCS_USER)
+install: adduser update
 	if which systemctl; then \
 		systemctl -f enable mscs.service; \
 	else \
 		ln -s $(MSCS) $(MSCS_INIT_D); \
 		update-rc.d mscs defaults; \
 	fi
+	
+adduser:
+	useradd --system --user-group --create-home -K UMASK=0022 --home $(MSCS_HOME) $(MSCS_USER)
 
 update:
 	install -m 0755 msctl $(MSCTL)
