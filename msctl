@@ -217,8 +217,9 @@ mscs_defaults() {
 ; Default version type (release or snapshot).
 # mscs-default-version-type=release
 
-; Default version of the client software. You can use the \$CURRENT_VERSION
-; variable to access the latest version based on the version type selected.
+; Default version of the client software. This sets the \$CLIENT_VERSION
+; variable. You can use the \$CURRENT_VERSION variable to access the latest
+; version based on the version type selected.
 # mscs-default-client-version=\$CURRENT_VERSION
 
 ; Default .jar file for the client software. The \$CLIENT_VERSION variable
@@ -233,40 +234,47 @@ mscs_defaults() {
 ; allows access to the client version selected.
 # mscs-default-client-location=/opt/mscs/.minecraft/versions/\$CLIENT_VERSION
 
-; Default version of the server software. You can use the \$CURRENT_VERSION
-; variable to access the latest version based on the version type selected.
+; Default version of the server software. This sets the \$SERVER_VERSION
+; variable. You can use the \$CURRENT_VERSION variable to access the latest
+; version based on the version type selected.
 # mscs-default-server-version=\$CURRENT_VERSION
 
-; Default arguments for the JVM.
+; Default arguments for the JVM. This sets the \$JVM_ARGS variable.
 # mscs-default-jvm-args=
 
-; Default .jar file for the server software. The \$SERVER_VERSION variable
-; allows access to the server version selected.
+; Default .jar file for the server software. This sets the \$SERVER_JAR
+; variable. The \$SERVER_VERSION variable allows access to the server version
+; selected.
 # mscs-default-server-jar=minecraft_server.\$SERVER_VERSION.jar
 
 ; Default download URL for the server software. The \$SERVER_VERSION variable
 ; allows access to the server version selected.
 # mscs-default-server-url=
 
-; Default arguments for a world server.
+; Default arguments for a world server. This sets the \$SERVER_ARGS variable.
 # mscs-default-server-args=nogui
 
-; Default initial amount of memory for a world server.
+; Default initial amount of memory for a world server. This sets the
+; \$INITIAL_MEMORY variable.
 # mscs-default-initial-memory=128M
 
-; Default maximum amount of memory for a world server.
+; Default maximum amount of memory for a world server. This sets the
+; \$MAXIMUM_MEMORY variable.
 # mscs-default-maximum-memory=2048M
 
-; Default location of the server .jar file.
+; Default location of the server .jar file. This sets the \$SERVER_LOCATION
+; variable.
 # mscs-default-server-location=/opt/mscs/server
 
 ; Default command to run for a world server. You can use the \$JAVA variable to
 ; access the results of \$(which java). The \$INITIAL_MEMORY and \$MAXIMUM_MEMORY
 ; variables provide access to the amounts of memory selected. The
 ; \$SERVER_LOCATION and \$SERVER_JAR variables provide access to the location
-; and file name of the server software selected. The \$SERVER_ARGS variable
-; provides access to the arguments for the world server selected.
-# mscs-default-server-command=\$JAVA -Xms\$INITIAL_MEMORY -Xmx\$MAXIMUM_MEMORY -jar \$SERVER_LOCATION/\$SERVER_JAR \$SERVER_ARGS
+; and file name of the server software selected. The \$JVM_ARGS variable
+; provides access to the Java virtual machine arguments for the world server
+; selected. The \$SERVER_ARGS variable provides access to the server arguments
+; for the world server selected.
+# mscs-default-server-command=\$JAVA -Xms\$INITIAL_MEMORY -Xmx\$MAXIMUM_MEMORY \$JVM_ARGS -jar \$SERVER_LOCATION/\$SERVER_JAR \$SERVER_ARGS
 
 ; Location to store backup files.
 # mscs-backup-location=/opt/mscs/backups
@@ -2189,7 +2197,6 @@ fi
 #   mscs-versions-json           - Location of the version_manifest.json file.
 #   mscs-versions-duration       - Duration (in minutes) to keep the version_manifest.json file before updating.
 #   mscs-lockfile-duration       - Duration (in minutes) to keep lock files before removing.
-#   mscs-detailed-listing        - Properties to return for detailed listings.
 #   mscs-default-world           - Default world name.
 #   mscs-default-port            - Default Port.
 #   mscs-default-ip              - Default IP address.
@@ -2212,6 +2219,7 @@ fi
 #   mscs-backup-excluded-files   - Comma separated list of files and directories excluded from backups.
 #   mscs-backup-duration         - Length in days that backups survive.
 #   mscs-log-duration            - Length in days that logs survive.
+#   mscs-detailed-listing        - Properties to return for detailed listings.
 #   mscs-enable-mirror           - Enable the mirror option by default for worlds (default disabled).
 #   mscs-mirror-path             - Default path for the mirror files.
 #   mscs-overviewer-bin          - Location of Overviewer.
@@ -2224,6 +2232,7 @@ fi
 #   $CURRENT_VERSION     - The current Mojang Minecraft release version.
 #   $CLIENT_VERSION      - The version of the client software.
 #   $SERVER_VERSION      - The version of the server software.
+#   $JVM_ARGS            - The arguments to the JVM.
 #   $SERVER_JAR          - The .jar file to run for the server.
 #   $SERVER_ARGS         - The arguments to the server.
 #   $INITIAL_MEMORY      - The initial amount of memory for the server.
@@ -2254,7 +2263,7 @@ fi
 #   mscs-default-initial-memory=128M
 #   mscs-default-maximum-memory=2048M
 #   mscs-default-server-location=/opt/mscs/server
-#   mscs-default-server-command=$JAVA -Xms$INITIAL_MEMORY -Xmx$MAXIMUM_MEMORY -jar $SERVER_LOCATION/$SERVER_JAR $SERVER_ARGS
+#   mscs-default-server-command=$JAVA -Xms$INITIAL_MEMORY -Xmx$MAXIMUM_MEMORY $JVM_ARGS -jar $SERVER_LOCATION/$SERVER_JAR $SERVER_ARGS
 #   mscs-backup-location=/opt/mscs/backups
 #   mscs-backup-log=/opt/mscs/backups/backup.log
 #   mscs-backup-excluded_files=
@@ -2349,7 +2358,7 @@ DEFAULT_SERVER_COMMAND=$(getDefaultsValue 'mscs-default-server-command' '$JAVA -
 #   mscs-initial-memory=128M
 #   mscs-maximum-memory=2048M
 #   mscs-server-location=/opt/mscs/server
-#   mscs-server-command=$JAVA -Xms$INITIAL_MEMORY -Xmx$MAXIMUM_MEMORY -jar $SERVER_LOCATION/$SERVER_JAR $SERVER_ARGS
+#   mscs-server-command=$JAVA -Xms$INITIAL_MEMORY -Xmx$MAXIMUM_MEMORY $JVM_ARGS -jar $SERVER_LOCATION/$SERVER_JAR $SERVER_ARGS
 
 # World (Server Instance) Configuration
 # ---------------------------------------------------------------------------
