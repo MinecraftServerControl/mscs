@@ -1323,7 +1323,7 @@ stopServerMonitor() {
 # @param 1 The world server to monitor.
 # ---------------------------------------------------------------------------
 serverMonitor() {
-  local WORLD_DIR MONITOR_LOG SERVER_LOG LAST_START_STATUS_LOG MONITOR_PID GREP_STOP
+  local WORLD_DIR MONITOR_LOG SERVER_LOG LAST_START_STATUS_LOG MONITOR_PID
   WORLD_DIR="$WORLDS_LOCATION/$1"
   MONITOR_LOG="$WORLD_DIR/logs/mscs.monitor.log"
   SERVER_LOG="$WORLD_DIR/logs/latest.log"
