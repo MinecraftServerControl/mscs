@@ -350,6 +350,26 @@ getJavaMemory() {
 }
 
 # ---------------------------------------------------------------------------
+# Evaluate true/false values.
+#
+# @param 1 The true or false value to evaluate.
+# @return 0 (success) for true values, 1 (failure) for false values.
+# ---------------------------------------------------------------------------
+true_value() {
+  local VALUE
+  VALUE=$(echo "$1" | tr '[:upper:]' '[:lower:]')
+  if [ $VALUE = 1 ] || [ "$VALUE" = "true" ] || [ "$VALUE" = "yes" ] || [ "$VALUE" = "on" ]; then
+    # Return a true value (success).
+    return 0
+  fi
+  if [ $VALUE = 0 ] || [ "$VALUE" = "false" ] || [ "$VALUE" = "no" ] || [ "$VALUE" = "off" ]; then
+    # Return a false value (failure).
+    return 1
+  fi
+  return -1
+}
+
+# ---------------------------------------------------------------------------
 # Check to see if the world server is running.
 #
 # @param 1 The world server of interest.
@@ -504,7 +524,7 @@ getEnabledWorlds() {
   WORLDS=""
   for WORLD in $(ls $WORLDS_LOCATION); do
     if [ -d $WORLDS_LOCATION/$WORLD ]; then
-      if [ "$(getMSCSValue $WORLD 'mscs-enabled' 'true')" = "true" ]; then
+      if true_value "$(getMSCSValue $WORLD 'mscs-enabled' 'true')"; then
         WORLDS="$WORLDS $WORLD"
       fi
     fi
@@ -522,7 +542,7 @@ getDisabledWorlds() {
   WORLDS=""
   for WORLD in $(ls $WORLDS_LOCATION); do
     if [ -d $WORLDS_LOCATION/$WORLD ]; then
-      if [ "$(getMSCSValue $WORLD 'mscs-enabled' 'true')" != "true" ]; then
+      if ! true_value "$(getMSCSValue $WORLD 'mscs-enabled' 'true')"; then
         WORLDS="$WORLDS $WORLD"
       fi
     fi
@@ -1311,7 +1331,7 @@ start() {
   fi
   # Make sure the EULA has been set to true.
   EULA=$(getEULAValue "$1")
-  if [ $EULA != "true" ]; then
+  if ! true_value "$EULA"; then
     printf "\nError, the EULA has not been accepted for world %s.\n" "$1"
     printf "To accept the EULA, modify %s/eula.txt file.\n" "$WORLD_DIR"
     exit 1
@@ -1319,7 +1339,7 @@ start() {
   # Rotate the world's log files.
   rotateLog "$1"
   # Make a mirror image of the world directory if requested.
-  if [ $ENABLE_MIRROR -eq 1 ]; then
+  if true_value $ENABLE_MIRROR; then
     # Make sure the main mirror folder exists.
     mkdir -p "$MIRROR_PATH"
     # If the symlink exists but the target doesn't, the
@@ -1382,7 +1402,7 @@ start() {
     exit 1
   fi
   # Start the Query handler if enabled.
-  if [ "$(getServerPropertiesValue $1 'enable-query')" = "true" ]; then
+  if true_value "$(getServerPropertiesValue $1 'enable-query')"; then
     queryStart "$1"
     # Sleep for a second to workaround issue with ssh using the forced
     # pseudo-terminal allocation command line option.
@@ -1406,7 +1426,7 @@ stop() {
     sleep 1
   done
   # Synchronize the mirror image of the world prior to closing, if required.
-  if [ $ENABLE_MIRROR -eq 1 ] && [ -L "$WORLDS_LOCATION/$1/$1" ] && [ -d "$MIRROR_PATH/$1" ]; then
+  if true_value $ENABLE_MIRROR && [ -L "$WORLDS_LOCATION/$1/$1" ] && [ -d "$MIRROR_PATH/$1" ]; then
     syncMirrorImage $1
     # Remove the symlink to the world-file mirror image.
     rm -f "$WORLDS_LOCATION/$1/$1"
@@ -1456,7 +1476,7 @@ worldBackup() {
     return 1
   fi
   # Synchronize the mirror image of the world prior to closing, if required.
-  if [ $ENABLE_MIRROR -eq 1 ] && [ -L "$WORLDS_LOCATION/$1/$1" ] && [ -d "$MIRROR_PATH/$1" ]; then
+  if true_value $ENABLE_MIRROR && [ -L "$WORLDS_LOCATION/$1/$1" ] && [ -d "$MIRROR_PATH/$1" ]; then
     syncMirrorImage $1
   fi
   EXCLUDE_OPTION=" \
@@ -1890,7 +1910,7 @@ querySendChallengePacket() {
 # ---------------------------------------------------------------------------
 queryStatus() {
   local PACKET TOKEN
-  if [ "$(getServerPropertiesValue $1 'enable-query')" = "true" ]; then
+  if true_value "$(getServerPropertiesValue $1 'enable-query')"; then
     # Send a challenge packet to the Minecraft query server.
     TOKEN=$(querySendChallengePacket $1 | cut -f 3)
     if [ -n "$TOKEN" ]; then
@@ -1940,7 +1960,7 @@ queryStatus() {
 # ---------------------------------------------------------------------------
 queryDetailedStatus() {
   local CHALLENGE ID PACKET TOKEN
-  if [ "$(getServerPropertiesValue $1 'enable-query')" = "true" ]; then
+  if true_value "$(getServerPropertiesValue $1 'enable-query')"; then
     # Send a challenge packet to the Minecraft query server.
     CHALLENGE=$(querySendChallengePacket $1)
     ID=$(echo "$CHALLENGE" | cut -f 2)
@@ -2029,10 +2049,10 @@ worldStatus() {
         done
         printf "    Players: %s.\n" "$PLAYERS"
       fi
-    elif [ "$(getServerPropertiesValue $1 'enable-query')" = "true" ] &&
+    elif true_value "$(getServerPropertiesValue $1 'enable-query')" &&
       [ -e "$WORLD_DIR/query.in" ] && [ -e "$WORLD_DIR/query.out" ]; then
       printf "running (query server offline).\n"
-    elif [ "$(getServerPropertiesValue $1 'enable-query')" = "true" ] &&
+    elif true_value "$(getServerPropertiesValue $1 'enable-query')" &&
       [ ! -e "$WORLD_DIR/query.in" ] && [ ! -e "$WORLD_DIR/query.out" ]; then
       printf "world starting up.\n"
     else
@@ -2041,7 +2061,7 @@ worldStatus() {
     printf "    Memory used: $(getJavaMemory "$1" | awk '{$1=int(100 * $1/1024/1024)/100"GB";}{ print;}')"
     printf " ($(getMSCSValue "$1" "mscs-maximum-memory" "$DEFAULT_MAXIMUM_MEMORY" | rev | cut -c 2- | rev | awk '{$1=int($1/1024)"GB";}{ print;}') allocated).\n"
     printf "    Process ID: %d.\n" $(getJavaPID "$1")
-  elif [ "$(getMSCSValue $1 'mscs-enabled')" = "false" ]; then
+  elif ! true_value "$(getMSCSValue $1 'mscs-enabled')"; then
     printf "disabled.\n"
   else
     printf "not running.\n"
@@ -2916,7 +2936,7 @@ case "$COMMAND" in
       if serverRunning $WORLD; then
         printf " $WORLD"
         sendCommand $WORLD "save-all"
-        if [ $ENABLE_MIRROR -eq 1 ]; then
+        if true_value $ENABLE_MIRROR; then
           sendCommand $WORLD "save-off"
           sleep 20
           syncMirrorImage $WORLD
