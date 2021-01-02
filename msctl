@@ -358,8 +358,10 @@ getJavaMemory() {
 serverRunning() {
   # Try to determine if the world is running.
   if [ $(getJavaPID "$1") -gt 0 ]; then
+    # Return a true value (success).
     return 0
   else
+    # Return a false value (failure).
     return 1
   fi
 }
@@ -547,8 +549,10 @@ isWorldEnabled() {
   local WORLDS
   WORLDS=$(getEnabledWorlds)
   if [ -n "$1" ] && listContains "$1" "$WORLDS"; then
+    # Return a true value (success).
     return 0
   else
+    # Return a false value (failure).
     return 1
   fi
 }
@@ -563,8 +567,10 @@ isWorldDisabled() {
   local WORLDS
   WORLDS=$(getDisabledWorlds)
   if [ -n "$1" ] && listContains "$1" "$WORLDS"; then
+    # Return a true value (success).
     return 0
   else
+    # Return a false value (failure).
     return 1
   fi
 }
@@ -579,8 +585,10 @@ isWorldAvailable() {
   local WORLDS
   WORLDS=$(getAvailableWorlds)
   if [ -n "$1" ] && listContains "$1" "$WORLDS"; then
+    # Return a true value (success).
     return 0
   else
+    # Return a false value (failure).
     return 1
   fi
 }
@@ -1161,13 +1169,15 @@ createLockFile() {
     # LOCKFILE exists, check to see if its process is running.
     ps -p $PID >/dev/null 2>&1
     if [ $? -eq 0 ]; then
-      # LOCKFILE exists and the process is running, return FALSE.
+      # LOCKFILE exists and the process is running.
+      # Return a false value (failure).
       return 1
     else
       # Process not found assume it is not running.
       echo $$ >$LOCKFILE
       if [ $? -ne 0 ]; then
-        # Error creating LOCKFILE, return FALSE.
+        # Error creating LOCKFILE.
+        # Return a false value (failure).
         return 1
       fi
     fi
@@ -1175,11 +1185,13 @@ createLockFile() {
     # LOCKFILE does not exists.
     echo $$ >$LOCKFILE
     if [ $? -ne 0 ]; then
-      # Error creating LOCKFILE, return FALSE.
+      # Error creating LOCKFILE.
+      # Return a false value (failure).
       return 1
     fi
   fi
-  # Success creating LOCKFILE, return TRUE.
+  # Success creating LOCKFILE.
+  # Return a true value (success).
   return 0
 }
 
@@ -1440,10 +1452,10 @@ worldBackup() {
   # Make sure that the backup location exists.
   if ! mkdir -p "$BACKUP_LOCATION"; then
     echo "Error creating backup dir $BACKUP_LOCATION"
+    # Return a false value (failure).
     return 1
   fi
-  # Synchronize the mirror image of the world prior to closing, if
-  # required.
+  # Synchronize the mirror image of the world prior to closing, if required.
   if [ $ENABLE_MIRROR -eq 1 ] && [ -L "$WORLDS_LOCATION/$1/$1" ] && [ -d "$MIRROR_PATH/$1" ]; then
     syncMirrorImage $1
   fi
@@ -1474,15 +1486,18 @@ worldBackup() {
   # Create the backup.
   if ! $RDIFF_BACKUP -v5 --print-statistics $EXCLUDE_OPTION "$WORLDS_LOCATION/$1" "$BACKUP_LOCATION/$1" >>"$BACKUP_LOG"; then
     echo "Error doing backup of world $1"
+    # Return a false value (failure).
     return 1
   fi
   # Cleanup old backups.
   if [ $BACKUP_DURATION -gt 0 ]; then
     if ! $RDIFF_BACKUP --remove-older-than ${BACKUP_DURATION}D --force "$BACKUP_LOCATION/$1" >>"$BACKUP_LOG"; then
       echo "Error cleaning old backups of world $1"
+      # Return a false value (failure).
       return 1
     fi
   fi
+  # Return a true value (success).
   return 0
 }
 
@@ -1521,10 +1536,12 @@ worldBackupRestore() {
     else
       echo "Restoring backup failed: $1 $2"
       rm -rf "$TARGET_TMP"
+      # Return a false value (failure).
       return 1
     fi
   else
     echo "No backups found for world $1"
+    # Return a false value (failure).
     return 1
   fi
 }
@@ -1983,7 +2000,7 @@ queryDetailedStatusJSON() {
 queryNumUsers() {
   local NUM_USERS
   NUM_USERS=$(queryStatus $1 | cut -f6)
-  # Return 0 if query server not available
+  # Return 0 users if query server not available.
   [ -z "$NUM_USERS" ] && NUM_USERS=0
   printf "$NUM_USERS"
 }
@@ -2418,9 +2435,10 @@ OVERVIEWER_URL=$(getDefaultsValue 'mscs-overviewer-url' 'http://overviewer.org')
 MAPS_LOCATION=$(getDefaultsValue 'mscs-maps-location' $LOCATION'/maps')
 MAPS_URL=$(getDefaultsValue 'mscs-maps-url' 'http://minecraft.server.com/maps')
 
-# allow function importing via source command for tests
+# Allow function importing via source command for tests.
 if printf $0 | grep -qs "runtests\.sh"; then
-  # file was sourced, don't execute below here
+  # File was sourced, don't execute below here.
+  # Return a true value (success).
   return 0
 fi
 
