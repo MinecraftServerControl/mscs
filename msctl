@@ -2338,7 +2338,6 @@ fi
 #   mscs-versions-json               - Location of the version_manifest.json file.
 #   mscs-versions-duration           - Duration (in minutes) to keep the version_manifest.json file before updating.
 #   mscs-lockfile-duration           - Duration (in minutes) to keep lock files before removing.
-#   mscs-detailed-listing            - Properties to return for detailed listings.
 #   mscs-default-world               - Default world name.
 #   mscs-default-port                - Default Port.
 #   mscs-default-ip                  - Default IP address.
@@ -2356,20 +2355,19 @@ fi
 #   mscs-default-maximum-memory      - Default maximum amount of memory for a world server.
 #   mscs-default-server-location     - Default location of the server .jar file.
 #   mscs-default-server-command      - Default command to run for a world server.
-#   mscs-default-server-command      - Default command to run for a world server.
 #   mscs-default-restart-after-crash - Default behavior if to restart the server after crash is detected (default disabled).
 #   mscs-backup-location             - Location to store backup files.
-#   mscs-backup-excluded-files       - Comma separated list of files and directories excluded from backups.
 #   mscs-backup-log                  - Location of the backup log file.
+#   mscs-backup-excluded-files       - Comma separated list of files and directories excluded from backups.
 #   mscs-backup-duration             - Length in days that backups survive.
 #   mscs-log-duration                - Length in days that logs survive.
+#   mscs-detailed-listing            - Properties to return for detailed listings.
 #   mscs-enable-mirror               - Enable the mirror option by default for worlds (default disabled).
 #   mscs-mirror-path                 - Default path for the mirror files.
 #   mscs-overviewer-bin              - Location of Overviewer.
 #   mscs-overviewer-url              - URL for Overviewer.
 #   mscs-maps-location               - Location of Overviewer generated map files.
 #   mscs-maps-url                    - URL for accessing Overviewer generated maps.
-#
 #
 # The following variables may be used in some of the key values:
 #   $JAVA                - The Java virtual machine.
