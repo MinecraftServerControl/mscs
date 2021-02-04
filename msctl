@@ -2267,7 +2267,7 @@ fi
 if [ ! -e "$FLOCK" ]; then
   echo "ERROR: flock not found!"
   echo "Try installing this with:"
-  echo "sudo apt-get install flock"
+  echo "sudo apt-get install util-linux"
   exit 1
 fi
 
