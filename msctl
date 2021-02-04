@@ -47,6 +47,7 @@ WGET=$(which wget)
 RDIFF_BACKUP=$(which rdiff-backup)
 RSYNC=$(which rsync)
 SOCAT=$(which socat)
+FLOCK=$(which flock)
 
 # Script Usage
 # ---------------------------------------------------------------------------
@@ -1310,7 +1311,7 @@ stopServerMonitor() {
       printf "[$(timestamp)] [ERROR]: Unable to kill monitor process.\n" >> "$MONITOR_LOG"
       exit 1
     else 
-      printf "[$(timestamp)] [INFO]: Server monitor process killed sucessfully.\n" >> "$MONITOR_LOG"
+      printf "[$(timestamp)] [INFO]: Server monitor process killed successfully.\n" >> "$MONITOR_LOG"
       # Remove the monitor PID file. 
       rm -f "$WORLD_DIR/monitor.pid"
     fi
@@ -2198,7 +2199,7 @@ worldStatusJSON() {
 # ---------------------------------------------------------------------------
 
 # Make sure that Java, Perl, libjson-perl, libwww-perl, Python, Wget,
-# Rdiff-backup, Rsync, and Socat are installed.
+# Rdiff-backup, Rsync, Socat and flock are installed.
 # ---------------------------------------------------------------------------
 if [ ! -e "$JAVA" ]; then
   echo "ERROR: Java not found!"
@@ -2261,6 +2262,12 @@ if [ ! -e "$SOCAT" ]; then
   echo "ERROR: socat not found!"
   echo "Try installing this with:"
   echo "sudo apt-get install socat"
+  exit 1
+fi
+if [ ! -e "$FLOCK" ]; then
+  echo "ERROR: flock not found!"
+  echo "Try installing this with:"
+  echo "sudo apt-get install flock"
   exit 1
 fi
 
