@@ -1300,7 +1300,7 @@ stopServerMonitor() {
   MONITOR_LOCK_FILE="$WORLD_DIR/monitor.lock"
   # Check if server monitor instance currently running.
   (
-  flock -n 9
+  $FLOCK -n 9
   ACQUIRED_LOCK=$?
   if [ "$ACQUIRED_LOCK" -eq 1 ]; then # Server monitor is running.
     printf "[$(timestamp)] [INFO]: Stop command received for server monitor. Attempting to kill server monitor...\n" >> "$MONITOR_LOG"
