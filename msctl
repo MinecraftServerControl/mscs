@@ -1376,7 +1376,7 @@ startServerMonitor() {
   if [ "$RESTART_AFTER_CRASH" = "true" ]; then
     # Verify that there is no monitor instance currently running.
     (
-    flock -n 9
+    $FLOCK -n 9
     ACQUIRED_LOCK=$?
     if [ "$ACQUIRED_LOCK" -eq 0 ]; then # Server monitor doesn't exist.
       # Delete old log file greater than $LOG_DURATION, if it exists.
