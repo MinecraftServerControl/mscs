@@ -1822,7 +1822,7 @@ querySendPacket() {
       print map { pack ("C", hex($_)) } ($packet =~ /(..)/g);
     ' -- -packet="$PACKET" >>"$WORLD_DIR/query.in"
     # Give the Query server a moment to respond.
-    sleep 1
+    timeout 1 sh -c "while [ ! -s '$WORLD_DIR/query.out' ]; do :; done"
     # Unpack the response packet from the query.out buffer file. There are a
     # variable amount of null bytes at the start of the response packet, so
     # find the start of the response by searching for the packet type and ID.
