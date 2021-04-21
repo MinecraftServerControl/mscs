@@ -698,7 +698,7 @@ getDefaultsValue() {
 getEULAValue() {
   local EULA_FILE
   EULA_FILE=$WORLDS_LOCATION/$1/eula.txt
-  getValue "$EULA_FILE" "eula" "true" | $PERL -ne 'print lc'
+  getValue "$EULA_FILE" "eula" "false" | $PERL -ne 'print lc'
 }
 
 # ---------------------------------------------------------------------------
