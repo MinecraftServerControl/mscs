@@ -1334,9 +1334,8 @@ start() {
   # Make sure the EULA has been set to true.
   EULA=$(getEULAValue "$1")
   if ! true_value "$EULA"; then
-    printf "\nError, the EULA has not been accepted for world %s.\n" "$1"
+    printf "\nWarning, the EULA has not been accepted for world %s.\n" "$1"
     printf "To accept the EULA, modify %s/eula.txt file.\n" "$WORLD_DIR"
-    exit 1
   fi
   # Rotate the world's log files.
   rotateLog "$1"
