@@ -366,7 +366,7 @@ true_value() {
     # Return a false value (failure).
     return 1
   fi
-  printf "Invalid true/false value: \"$1\"\n" 2>&1
+  printf "Invalid true/false value: \"$1\"\n" >&2
   # Return a false value (failure) in case of invalid true/false input.
   return 1
 }
