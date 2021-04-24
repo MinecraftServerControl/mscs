@@ -1373,7 +1373,7 @@ startServerMonitor() {
   RESTART_AFTER_CRASH=$(getMSCSValue "$1" "mscs-restart-after-crash" "$DEFAULT_RESTART_AFTER_CRASH")
 
   # Verify option is enabled.
-  if [ "$RESTART_AFTER_CRASH" = "true" ]; then
+  if true_value "$RESTART_AFTER_CRASH"; then
     # Verify that there is no monitor instance currently running.
     (
     $FLOCK -n 9
@@ -1389,7 +1389,7 @@ startServerMonitor() {
       # Nohup does not allow you to pass functions. However, the code below mimics nohup behavior by doing the following:
         # Start subshell, ignore HUP signal, redirect stdin to /dev/null, redirect stdout and stderr to log file, run in background.
       # Also store the PID of this process for later use.
-      ( trap "true" HUP ; pid=$(exec sh -c 'echo "$PPID"'); echo $pid > "$MONITOR_PID"; serverMonitor $1 ) </dev/null 2>&1 1>>"$MONITOR_LOG" & 
+      ( trap "" HUP ; echo $(exec sh -c 'echo "$PPID"') > "$MONITOR_PID"; echo $pid > "$MONITOR_PID"; serverMonitor $1 ) </dev/null 2>&1 1>>"$MONITOR_LOG" & 
     fi
     ) 9>"$MONITOR_LOCK_FILE"
   fi
@@ -2150,7 +2150,7 @@ worldStatus() {
       printf "world starting up.\n"
     else
       printf "running.\n"
-    fi 
+    fi
     printf "    Memory used: $(getJavaMemory "$1" | awk '{$1=int(100 * $1/1024/1024)/100"GB";}{ print;}')"
     printf " ($(getMSCSValue "$1" "mscs-maximum-memory" "$DEFAULT_MAXIMUM_MEMORY" | rev | cut -c 2- | rev | awk '{$1=int($1/1024)"GB";}{ print;}') allocated).\n"
     printf "    Server PID: %d.\n" $(getJavaPID "$1")
