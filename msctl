@@ -47,6 +47,7 @@ WGET=$(which wget)
 RDIFF_BACKUP=$(which rdiff-backup)
 RSYNC=$(which rsync)
 SOCAT=$(which socat)
+FLOCK=$(which flock)
 
 # Script Usage
 # ---------------------------------------------------------------------------
@@ -276,6 +277,9 @@ mscs_defaults() {
 ; for the world server selected.
 # mscs-default-server-command=\$JAVA -Xms\$INITIAL_MEMORY -Xmx\$MAXIMUM_MEMORY \$JVM_ARGS -jar \$SERVER_LOCATION/\$SERVER_JAR \$SERVER_ARGS
 
+; Default behavior if to restart the server after crash is detected (default disabled).
+# mscs-default-restart-after-crash=false
+
 ; Location to store backup files.
 # mscs-backup-location=/opt/mscs/backups
 
@@ -350,28 +354,6 @@ getJavaMemory() {
 }
 
 # ---------------------------------------------------------------------------
-# Evaluate true/false values.
-#
-# @param 1 The true or false value to evaluate.
-# @return 0 (success) for true values, 1 (failure) for false values.
-# ---------------------------------------------------------------------------
-true_value() {
-  local VALUE
-  VALUE=$(echo "$1" | tr '[:upper:]' '[:lower:]')
-  if [ "$VALUE" = "1" ] || [ "$VALUE" = "true" ] || [ "$VALUE" = "yes" ] || [ "$VALUE" = "on" ]; then
-    # Return a true value (success).
-    return 0
-  fi
-  if [ "$VALUE" = "0" ] || [ "$VALUE" = "false" ] || [ "$VALUE" = "no" ] || [ "$VALUE" = "off" ]; then
-    # Return a false value (failure).
-    return 1
-  fi
-  printf "Invalid true/false value: \"$1\"\n" >&2
-  # Return a false value (failure) in case of invalid true/false input.
-  return 1
-}
-
-# ---------------------------------------------------------------------------
 # Check to see if the world server is running.
 #
 # @param 1 The world server of interest.
@@ -380,10 +362,8 @@ true_value() {
 serverRunning() {
   # Try to determine if the world is running.
   if [ $(getJavaPID "$1") -gt 0 ]; then
-    # Return a true value (success).
     return 0
   else
-    # Return a false value (failure).
     return 1
   fi
 }
@@ -526,7 +506,7 @@ getEnabledWorlds() {
   WORLDS=""
   for WORLD in $(ls $WORLDS_LOCATION); do
     if [ -d $WORLDS_LOCATION/$WORLD ]; then
-      if true_value "$(getMSCSValue $WORLD 'mscs-enabled' 'true')"; then
+      if [ "$(getMSCSValue $WORLD 'mscs-enabled' 'true')" = "true" ]; then
         WORLDS="$WORLDS $WORLD"
       fi
     fi
@@ -544,7 +524,7 @@ getDisabledWorlds() {
   WORLDS=""
   for WORLD in $(ls $WORLDS_LOCATION); do
     if [ -d $WORLDS_LOCATION/$WORLD ]; then
-      if ! true_value "$(getMSCSValue $WORLD 'mscs-enabled' 'true')"; then
+      if [ "$(getMSCSValue $WORLD 'mscs-enabled' 'true')" != "true" ]; then
         WORLDS="$WORLDS $WORLD"
       fi
     fi
@@ -571,10 +551,8 @@ isWorldEnabled() {
   local WORLDS
   WORLDS=$(getEnabledWorlds)
   if [ -n "$1" ] && listContains "$1" "$WORLDS"; then
-    # Return a true value (success).
     return 0
   else
-    # Return a false value (failure).
     return 1
   fi
 }
@@ -589,10 +567,8 @@ isWorldDisabled() {
   local WORLDS
   WORLDS=$(getDisabledWorlds)
   if [ -n "$1" ] && listContains "$1" "$WORLDS"; then
-    # Return a true value (success).
     return 0
   else
-    # Return a false value (failure).
     return 1
   fi
 }
@@ -607,10 +583,8 @@ isWorldAvailable() {
   local WORLDS
   WORLDS=$(getAvailableWorlds)
   if [ -n "$1" ] && listContains "$1" "$WORLDS"; then
-    # Return a true value (success).
     return 0
   else
-    # Return a false value (failure).
     return 1
   fi
 }
@@ -700,7 +674,7 @@ getDefaultsValue() {
 getEULAValue() {
   local EULA_FILE
   EULA_FILE=$WORLDS_LOCATION/$1/eula.txt
-  getValue "$EULA_FILE" "eula" "false" | $PERL -ne 'print lc'
+  getValue "$EULA_FILE" "eula" "true" | $PERL -ne 'print lc'
 }
 
 # ---------------------------------------------------------------------------
@@ -1191,15 +1165,13 @@ createLockFile() {
     # LOCKFILE exists, check to see if its process is running.
     ps -p $PID >/dev/null 2>&1
     if [ $? -eq 0 ]; then
-      # LOCKFILE exists and the process is running.
-      # Return a false value (failure).
+      # LOCKFILE exists and the process is running, return FALSE.
       return 1
     else
       # Process not found assume it is not running.
       echo $$ >$LOCKFILE
       if [ $? -ne 0 ]; then
-        # Error creating LOCKFILE.
-        # Return a false value (failure).
+        # Error creating LOCKFILE, return FALSE.
         return 1
       fi
     fi
@@ -1207,13 +1179,11 @@ createLockFile() {
     # LOCKFILE does not exists.
     echo $$ >$LOCKFILE
     if [ $? -ne 0 ]; then
-      # Error creating LOCKFILE.
-      # Return a false value (failure).
+      # Error creating LOCKFILE, return FALSE.
       return 1
     fi
   fi
-  # Success creating LOCKFILE.
-  # Return a true value (success).
+  # Success creating LOCKFILE, return TRUE.
   return 0
 }
 
@@ -1309,6 +1279,123 @@ serverConsole() {
 }
 
 # ---------------------------------------------------------------------------
+# Retrieve the timestamp.
+#
+# @return The current date and time.
+# ---------------------------------------------------------------------------
+timestamp() {
+  date +"%Y-%m-%d_%H-%M-%S"
+}
+
+# ---------------------------------------------------------------------------
+# Stop the server monitor.
+#
+# @param 1 The world server to stop.
+# ---------------------------------------------------------------------------
+stopServerMonitor() {
+  local WORLD_DIR MONITOR_LOG MONITOR_PID MONITOR_LOCK_FILE ACQUIRED_LOCK
+  WORLD_DIR="$WORLDS_LOCATION/$1"
+  MONITOR_LOG="$WORLD_DIR/logs/mscs.monitor.log"
+  MONITOR_PID="$WORLD_DIR/monitor.pid"
+  MONITOR_LOCK_FILE="$WORLD_DIR/monitor.lock"
+  # Check if server monitor instance currently running.
+  (
+  $FLOCK -n 9
+  ACQUIRED_LOCK=$?
+  if [ "$ACQUIRED_LOCK" -eq 1 ]; then # Server monitor is running.
+    printf "[$(timestamp)] [INFO]: Stop command received for server monitor. Attempting to kill server monitor...\n" >> "$MONITOR_LOG"
+    # Kill the server monitor.
+    kill -9 $(cat $MONITOR_PID)
+    # Verify it was actually killed.
+    if [ $? -eq 1 ]; then
+      printf "[$(timestamp)] [ERROR]: Unable to kill monitor process.\n" >> "$MONITOR_LOG"
+      exit 1
+    else 
+      printf "[$(timestamp)] [INFO]: Server monitor process killed successfully.\n" >> "$MONITOR_LOG"
+      # Remove the monitor PID file. 
+      rm -f "$WORLD_DIR/monitor.pid"
+    fi
+  fi
+  ) 9>"$MONITOR_LOCK_FILE"
+}
+# ---------------------------------------------------------------------------
+# Run the server monitor.
+#
+# @param 1 The world server to monitor.
+# ---------------------------------------------------------------------------
+serverMonitor() {
+  local WORLD_DIR MONITOR_LOG SERVER_LOG LAST_START_STATUS_LOG MONITOR_PID
+  WORLD_DIR="$WORLDS_LOCATION/$1"
+  MONITOR_LOG="$WORLD_DIR/logs/mscs.monitor.log"
+  SERVER_LOG="$WORLD_DIR/logs/latest.log"
+  LAST_START_STATUS_LOG="$WORLD_DIR/logs/last-start-status.log"
+  MONITOR_PID=$(cat "$WORLD_DIR/monitor.pid")
+  touch $LAST_START_STATUS_LOG
+
+  printf "[$(timestamp)] [INFO]: Server monitoring started for $1. Server PID: $(getJavaPID $1). Monitor PID: $MONITOR_PID.\n"
+  # Run monitor until the server is stopped and the PID file is removed (i.e. clean shutdown).
+  until  ! serverRunning $1 && [ ! -f "$WORLDS_LOCATION/$1.pid" ]; do
+    # If server isn't running and server PID file exists, server crashed.
+    if  ! serverRunning $1 && [ -f "$WORLDS_LOCATION/$1.pid" ]; then
+      printf "[$(timestamp)] [WARN]: Server crash detected. Attempting to restart $1...\n"
+      start $1
+      # Verify that the server restarted successfully. 
+      if [ $? -eq 0 ]; then
+        printf "[$(timestamp)] [INFO]: Server monitoring resumed for $1. Server PID: $(getJavaPID $1). Monitor PID: $MONITOR_PID.\n"
+        printf "    $1 automatically restarted from a crash (or in-game stop command)\n" > "$LAST_START_STATUS_LOG"
+        printf "    on $(timestamp). See\n" >> "$LAST_START_STATUS_LOG"
+        printf "    $WORLD_DIR/logs/mscs.monitor.log and\n" >> "$LAST_START_STATUS_LOG"
+        printf "    $WORLD_DIR/crash_reports/ and\n" >> "$LAST_START_STATUS_LOG"
+        printf "    $WORLD_DIR/logs/ for more information.\n" >> "$LAST_START_STATUS_LOG"
+      else
+        printf "[$(timestamp)] [ERROR]: Failed to restart $1.\n" 
+        stopServerMonitor $1
+      fi
+    # If server is running and server PID file doesn't exist, error occurred.
+    elif serverRunning $1 && [ ! -f "$WORLDS_LOCATION/$1.pid" ]; then
+      printf "[$(timestamp)] [ERROR]: PID file doesn't exist.\n"
+      stopServerMonitor $1
+    fi 
+  done
+}
+
+# ---------------------------------------------------------------------------
+# Start the server monitor.
+#
+# @param 1 The world server to monitor.
+# ---------------------------------------------------------------------------
+startServerMonitor() {
+  local WORLD_DIR MONITOR_LOG MONITOR_PID MONITOR_LOCK_FILE ACQUIRED_LOCK
+  WORLD_DIR="$WORLDS_LOCATION/$1"
+  MONITOR_LOG="$WORLD_DIR/logs/mscs.monitor.log"
+  MONITOR_PID="$WORLD_DIR/monitor.pid"
+  MONITOR_LOCK_FILE="$WORLD_DIR/monitor.lock"
+  RESTART_AFTER_CRASH=$(getMSCSValue "$1" "mscs-restart-after-crash" "$DEFAULT_RESTART_AFTER_CRASH")
+
+  # Verify option is enabled.
+  if [ "$RESTART_AFTER_CRASH" = "true" ]; then
+    # Verify that there is no monitor instance currently running.
+    (
+    $FLOCK -n 9
+    ACQUIRED_LOCK=$?
+    if [ "$ACQUIRED_LOCK" -eq 0 ]; then # Server monitor doesn't exist.
+      # Delete old log file greater than $LOG_DURATION, if it exists.
+      if [ -f "$MONITOR_LOG" ]; then
+        if [ "$LOG_DURATION" -gt 0 ]; then
+          find "$MONITOR_LOG" -type f -mtime +"$LOG_DURATION" -delete
+        fi
+      fi
+      # Run the server monitor.
+      # Nohup does not allow you to pass functions. However, the code below mimics nohup behavior by doing the following:
+        # Start subshell, ignore HUP signal, redirect stdin to /dev/null, redirect stdout and stderr to log file, run in background.
+      # Also store the PID of this process for later use.
+      ( trap "true" HUP ; pid=$(exec sh -c 'echo "$PPID"'); echo $pid > "$MONITOR_PID"; serverMonitor $1 ) </dev/null 2>&1 1>>"$MONITOR_LOG" & 
+    fi
+    ) 9>"$MONITOR_LOCK_FILE"
+  fi
+}
+
+# ---------------------------------------------------------------------------
 # Start the world server.  Generate the appropriate environment for the
 # server if it doesn't already exist.
 #
@@ -1333,14 +1420,15 @@ start() {
   fi
   # Make sure the EULA has been set to true.
   EULA=$(getEULAValue "$1")
-  if ! true_value "$EULA"; then
-    printf "\nWarning, the EULA has not been accepted for world %s.\n" "$1"
+  if [ $EULA != "true" ]; then
+    printf "\nError, the EULA has not been accepted for world %s.\n" "$1"
     printf "To accept the EULA, modify %s/eula.txt file.\n" "$WORLD_DIR"
+    exit 1
   fi
   # Rotate the world's log files.
   rotateLog "$1"
   # Make a mirror image of the world directory if requested.
-  if true_value $ENABLE_MIRROR; then
+  if [ $ENABLE_MIRROR -eq 1 ]; then
     # Make sure the main mirror folder exists.
     mkdir -p "$MIRROR_PATH"
     # If the symlink exists but the target doesn't, the
@@ -1403,7 +1491,7 @@ start() {
     exit 1
   fi
   # Start the Query handler if enabled.
-  if true_value "$(getServerPropertiesValue $1 'enable-query')"; then
+  if [ "$(getServerPropertiesValue $1 'enable-query')" = "true" ]; then
     queryStart "$1"
     # Sleep for a second to workaround issue with ssh using the forced
     # pseudo-terminal allocation command line option.
@@ -1411,6 +1499,8 @@ start() {
   fi
   # Create a PID file for the world server.
   echo $PID >"$WORLDS_LOCATION/$1.pid"
+  # Start the server crash monitor, if enabled.
+  startServerMonitor $1
 }
 
 # ---------------------------------------------------------------------------
@@ -1419,6 +1509,8 @@ start() {
 # @param 1 The world server to stop.
 # ---------------------------------------------------------------------------
 stop() {
+  # Stop the server monitor if it is running.
+  stopServerMonitor $1
   # Tell the server to stop.
   sendCommand $1 "stop"
   sendCommand $1 "end"
@@ -1427,7 +1519,7 @@ stop() {
     sleep 1
   done
   # Synchronize the mirror image of the world prior to closing, if required.
-  if true_value $ENABLE_MIRROR && [ -L "$WORLDS_LOCATION/$1/$1" ] && [ -d "$MIRROR_PATH/$1" ]; then
+  if [ $ENABLE_MIRROR -eq 1 ] && [ -L "$WORLDS_LOCATION/$1/$1" ] && [ -d "$MIRROR_PATH/$1" ]; then
     syncMirrorImage $1
     # Remove the symlink to the world-file mirror image.
     rm -f "$WORLDS_LOCATION/$1/$1"
@@ -1447,6 +1539,8 @@ stop() {
 # ---------------------------------------------------------------------------
 forceStop() {
   local WAIT
+  # Stop the server monitor if it is running.
+  stopServerMonitor $1
   # Try to stop the server cleanly first.
   sendCommand $1 "stop"
   sendCommand $1 "end"
@@ -1473,11 +1567,11 @@ worldBackup() {
   # Make sure that the backup location exists.
   if ! mkdir -p "$BACKUP_LOCATION"; then
     echo "Error creating backup dir $BACKUP_LOCATION"
-    # Return a false value (failure).
     return 1
   fi
-  # Synchronize the mirror image of the world prior to closing, if required.
-  if true_value $ENABLE_MIRROR && [ -L "$WORLDS_LOCATION/$1/$1" ] && [ -d "$MIRROR_PATH/$1" ]; then
+  # Synchronize the mirror image of the world prior to closing, if
+  # required.
+  if [ $ENABLE_MIRROR -eq 1 ] && [ -L "$WORLDS_LOCATION/$1/$1" ] && [ -d "$MIRROR_PATH/$1" ]; then
     syncMirrorImage $1
   fi
   EXCLUDE_OPTION=" \
@@ -1507,18 +1601,15 @@ worldBackup() {
   # Create the backup.
   if ! $RDIFF_BACKUP -v5 --print-statistics $EXCLUDE_OPTION "$WORLDS_LOCATION/$1" "$BACKUP_LOCATION/$1" >>"$BACKUP_LOG"; then
     echo "Error doing backup of world $1"
-    # Return a false value (failure).
     return 1
   fi
   # Cleanup old backups.
   if [ $BACKUP_DURATION -gt 0 ]; then
     if ! $RDIFF_BACKUP --remove-older-than ${BACKUP_DURATION}D --force "$BACKUP_LOCATION/$1" >>"$BACKUP_LOG"; then
       echo "Error cleaning old backups of world $1"
-      # Return a false value (failure).
       return 1
     fi
   fi
-  # Return a true value (success).
   return 0
 }
 
@@ -1557,12 +1648,10 @@ worldBackupRestore() {
     else
       echo "Restoring backup failed: $1 $2"
       rm -rf "$TARGET_TMP"
-      # Return a false value (failure).
       return 1
     fi
   else
     echo "No backups found for world $1"
-    # Return a false value (failure).
     return 1
   fi
 }
@@ -1843,7 +1932,7 @@ querySendPacket() {
       print map { pack ("C", hex($_)) } ($packet =~ /(..)/g);
     ' -- -packet="$PACKET" >>"$WORLD_DIR/query.in"
     # Give the Query server a moment to respond.
-    timeout 1 sh -c "while [ ! -s '$WORLD_DIR/query.out' ]; do :; done"
+    sleep 1
     # Unpack the response packet from the query.out buffer file. There are a
     # variable amount of null bytes at the start of the response packet, so
     # find the start of the response by searching for the packet type and ID.
@@ -1866,9 +1955,9 @@ querySendPacket() {
       printf "%s\n", join "\t", unpack ($format, $packed);
     ' -- -response="$RESPONSE" -format="$4"
 
-  # If the response is empty and the query.in and query.out files have NOT been created,
+  # If the response is empty and both the query.in and query.out files have NOT been created,
   # the world is still starting up and the status query will return as such.
-  # See lines 1985-1987.
+  # See the worldStatus function.
 
   # If the response is empty and the query.in and query.out files HAVE been created,
   # something went wrong. We try restarting the query handler again.
@@ -1911,7 +2000,7 @@ querySendChallengePacket() {
 # ---------------------------------------------------------------------------
 queryStatus() {
   local PACKET TOKEN
-  if true_value "$(getServerPropertiesValue $1 'enable-query')"; then
+  if [ "$(getServerPropertiesValue $1 'enable-query')" = "true" ]; then
     # Send a challenge packet to the Minecraft query server.
     TOKEN=$(querySendChallengePacket $1 | cut -f 3)
     if [ -n "$TOKEN" ]; then
@@ -1961,7 +2050,7 @@ queryStatus() {
 # ---------------------------------------------------------------------------
 queryDetailedStatus() {
   local CHALLENGE ID PACKET TOKEN
-  if true_value "$(getServerPropertiesValue $1 'enable-query')"; then
+  if [ "$(getServerPropertiesValue $1 'enable-query')" = "true" ]; then
     # Send a challenge packet to the Minecraft query server.
     CHALLENGE=$(querySendChallengePacket $1)
     ID=$(echo "$CHALLENGE" | cut -f 2)
@@ -2021,7 +2110,7 @@ queryDetailedStatusJSON() {
 queryNumUsers() {
   local NUM_USERS
   NUM_USERS=$(queryStatus $1 | cut -f6)
-  # Return 0 users if query server not available.
+  # Return 0 if query server not available
   [ -z "$NUM_USERS" ] && NUM_USERS=0
   printf "$NUM_USERS"
 }
@@ -2032,8 +2121,11 @@ queryNumUsers() {
 # @param 1 The world server of interest.
 # ---------------------------------------------------------------------------
 worldStatus() {
-  local STATUS NUM MAX PLAYERS COUNTER VERSION
-  if serverRunning $1; then
+  local WORLD_DIR LAST_START_STATUS_LOG MONITOR_PID STATUS NUM MAX PLAYERS COUNTER VERSION 
+  WORLD_DIR="$WORLDS_LOCATION/$1"
+  MONITOR_PID="$WORLD_DIR/monitor.pid"
+  LAST_START_STATUS_LOG="$WORLD_DIR/logs/last-start-status.log"
+  if  serverRunning $1; then
     STATUS=$(queryDetailedStatus $1)
     if [ -n "$STATUS" ]; then
       NUM=$(printf "%s" "$STATUS" | cut -f 19)
@@ -2050,19 +2142,30 @@ worldStatus() {
         done
         printf "    Players: %s.\n" "$PLAYERS"
       fi
-    elif true_value "$(getServerPropertiesValue $1 'enable-query')" &&
+    elif [ "$(getServerPropertiesValue $1 'enable-query')" = "true" ] &&
       [ -e "$WORLD_DIR/query.in" ] && [ -e "$WORLD_DIR/query.out" ]; then
       printf "running (query server offline).\n"
-    elif true_value "$(getServerPropertiesValue $1 'enable-query')" &&
+    elif [ "$(getServerPropertiesValue $1 'enable-query')" = "true" ] &&
       [ ! -e "$WORLD_DIR/query.in" ] && [ ! -e "$WORLD_DIR/query.out" ]; then
       printf "world starting up.\n"
     else
       printf "running.\n"
-    fi
+    fi 
     printf "    Memory used: $(getJavaMemory "$1" | awk '{$1=int(100 * $1/1024/1024)/100"GB";}{ print;}')"
     printf " ($(getMSCSValue "$1" "mscs-maximum-memory" "$DEFAULT_MAXIMUM_MEMORY" | rev | cut -c 2- | rev | awk '{$1=int($1/1024)"GB";}{ print;}') allocated).\n"
-    printf "    Process ID: %d.\n" $(getJavaPID "$1")
-  elif ! true_value "$(getMSCSValue $1 'mscs-enabled')"; then
+    printf "    Server PID: %d.\n" $(getJavaPID "$1")
+    # Display crash monitor PID if it's running (i.e. monitor.pid file exists and not empty).
+    if [ -f "$MONITOR_PID" ] && [ -s "$MONITOR_PID" ]; then
+      printf "    Crash Monitor PID: $(cat $MONITOR_PID)\n"
+    fi
+    # If the last-status log exists and not empty, then last restart was from a crash.
+    # Display notice once.
+    if [ -f "$LAST_START_STATUS_LOG" ] && [ -s "$LAST_START_STATUS_LOG" ]; then
+      printf "$(cat $LAST_START_STATUS_LOG)\n"
+      # Remove it so user doesn't see it next time they run the status command.
+      rm -f $LAST_START_STATUS_LOG
+    fi
+  elif [ "$(getMSCSValue $1 'mscs-enabled')" = "false" ]; then
     printf "disabled.\n"
   else
     printf "not running.\n"
@@ -2096,7 +2199,7 @@ worldStatusJSON() {
 # ---------------------------------------------------------------------------
 
 # Make sure that Java, Perl, libjson-perl, libwww-perl, Python, Wget,
-# Rdiff-backup, Rsync, and Socat are installed.
+# Rdiff-backup, Rsync, Socat and flock are installed.
 # ---------------------------------------------------------------------------
 if [ ! -e "$JAVA" ]; then
   echo "ERROR: Java not found!"
@@ -2159,6 +2262,12 @@ if [ ! -e "$SOCAT" ]; then
   echo "ERROR: socat not found!"
   echo "Try installing this with:"
   echo "sudo apt-get install socat"
+  exit 1
+fi
+if [ ! -e "$FLOCK" ]; then
+  echo "ERROR: flock not found!"
+  echo "Try installing this with:"
+  echo "sudo apt-get install util-linux"
   exit 1
 fi
 
@@ -2224,46 +2333,48 @@ fi
 if [ ! -s "$MSCS_DEFAULTS" ]; then
   mscs_defaults >$MSCS_DEFAULTS
 fi
+
 # Default values in the script can be overridden by adding certain key/value
 # pairs to one of the mscs.defaults files mentioned above. Default values in
 # the script will be used unless overridden in one these files.
 #
 # The following keys are available:
-#   mscs-location                - Location of the mscs files.
-#   mscs-worlds-location         - Location of world files.
-#   mscs-versions-url            - URL to download the version_manifest.json file.
-#   mscs-versions-json           - Location of the version_manifest.json file.
-#   mscs-versions-duration       - Duration (in minutes) to keep the version_manifest.json file before updating.
-#   mscs-lockfile-duration       - Duration (in minutes) to keep lock files before removing.
-#   mscs-default-world           - Default world name.
-#   mscs-default-port            - Default Port.
-#   mscs-default-ip              - Default IP address.
-#   mscs-default-version-type    - Default version type (release or snapshot).
-#   mscs-default-client-version  - Default version of the client software.
-#   mscs-default-client-jar      - Default .jar file for the client software.
-#   mscs-default-client-url      - Default download URL for the client software.
-#   mscs-default-client-location - Default location of the client .jar file.
-#   mscs-default-server-version  - Default version of the server software.
-#   mscs-default-jvm-args        - Default arguments for the JVM.
-#   mscs-default-server-jar      - Default .jar file for the server software.
-#   mscs-default-server-url      - Default download URL for the server software.
-#   mscs-default-server-args     - Default arguments for a world server.
-#   mscs-default-initial-memory  - Default initial amount of memory for a world server.
-#   mscs-default-maximum-memory  - Default maximum amount of memory for a world server.
-#   mscs-default-server-location - Default location of the server .jar file.
-#   mscs-default-server-command  - Default command to run for a world server.
-#   mscs-backup-location         - Location to store backup files.
-#   mscs-backup-log              - Lcation of the backup log file.
-#   mscs-backup-excluded-files   - Comma separated list of files and directories excluded from backups.
-#   mscs-backup-duration         - Length in days that backups survive.
-#   mscs-log-duration            - Length in days that logs survive.
-#   mscs-detailed-listing        - Properties to return for detailed listings.
-#   mscs-enable-mirror           - Enable the mirror option by default for worlds (default disabled).
-#   mscs-mirror-path             - Default path for the mirror files.
-#   mscs-overviewer-bin          - Location of Overviewer.
-#   mscs-overviewer-url          - URL for Overviewer.
-#   mscs-maps-location           - Location of Overviewer generated map files.
-#   mscs-maps-url                - URL for accessing Overviewer generated maps.
+#   mscs-location                    - Location of the mscs files.
+#   mscs-worlds-location             - Location of world files.
+#   mscs-versions-url                - URL to download the version_manifest.json file.
+#   mscs-versions-json               - Location of the version_manifest.json file.
+#   mscs-versions-duration           - Duration (in minutes) to keep the version_manifest.json file before updating.
+#   mscs-lockfile-duration           - Duration (in minutes) to keep lock files before removing.
+#   mscs-default-world               - Default world name.
+#   mscs-default-port                - Default Port.
+#   mscs-default-ip                  - Default IP address.
+#   mscs-default-version-type        - Default version type (release or snapshot).
+#   mscs-default-client-version      - Default version of the client software.
+#   mscs-default-client-jar          - Default .jar file for the client software.
+#   mscs-default-client-url          - Default download URL for the client software.
+#   mscs-default-client-location     - Default location of the client .jar file.
+#   mscs-default-server-version      - Default version of the server software.
+#   mscs-default-jvm-args            - Default arguments for the JVM.
+#   mscs-default-server-jar          - Default .jar file for the server software.
+#   mscs-default-server-url          - Default download URL for the server software.
+#   mscs-default-server-args         - Default arguments for a world server.
+#   mscs-default-initial-memory      - Default initial amount of memory for a world server.
+#   mscs-default-maximum-memory      - Default maximum amount of memory for a world server.
+#   mscs-default-server-location     - Default location of the server .jar file.
+#   mscs-default-server-command      - Default command to run for a world server.
+#   mscs-default-restart-after-crash - Default behavior if to restart the server after crash is detected (default disabled).
+#   mscs-backup-location             - Location to store backup files.
+#   mscs-backup-log                  - Location of the backup log file.
+#   mscs-backup-excluded-files       - Comma separated list of files and directories excluded from backups.
+#   mscs-backup-duration             - Length in days that backups survive.
+#   mscs-log-duration                - Length in days that logs survive.
+#   mscs-detailed-listing            - Properties to return for detailed listings.
+#   mscs-enable-mirror               - Enable the mirror option by default for worlds (default disabled).
+#   mscs-mirror-path                 - Default path for the mirror files.
+#   mscs-overviewer-bin              - Location of Overviewer.
+#   mscs-overviewer-url              - URL for Overviewer.
+#   mscs-maps-location               - Location of Overviewer generated map files.
+#   mscs-maps-url                    - URL for accessing Overviewer generated maps.
 #
 # The following variables may be used in some of the key values:
 #   $JAVA                - The Java virtual machine.
@@ -2302,6 +2413,7 @@ fi
 #   mscs-default-maximum-memory=2048M
 #   mscs-default-server-location=/opt/mscs/server
 #   mscs-default-server-command=$JAVA -Xms$INITIAL_MEMORY -Xmx$MAXIMUM_MEMORY $JVM_ARGS -jar $SERVER_LOCATION/$SERVER_JAR $SERVER_ARGS
+#   mscs-default-restart-after-crash=false
 #   mscs-backup-location=/opt/mscs/backups
 #   mscs-backup-log=/opt/mscs/backups/backup.log
 #   mscs-backup-excluded_files=
@@ -2349,25 +2461,27 @@ DEFAULT_INITIAL_MEMORY=$(getDefaultsValue 'mscs-default-initial-memory' '128M')
 DEFAULT_MAXIMUM_MEMORY=$(getDefaultsValue 'mscs-default-maximum-memory' '2048M')
 DEFAULT_SERVER_LOCATION=$(getDefaultsValue 'mscs-default-server-location' $LOCATION'/server')
 DEFAULT_SERVER_COMMAND=$(getDefaultsValue 'mscs-default-server-command' '$JAVA -Xms$INITIAL_MEMORY -Xmx$MAXIMUM_MEMORY $JVM_ARGS -jar $SERVER_LOCATION/$SERVER_JAR $SERVER_ARGS')
+DEFAULT_RESTART_AFTER_CRASH=$(getDefaultsValue 'mscs-default-restart-after-crash' 'false')
 # Each world server can override the default values in a similar manner by
 # adding certain key/value pairs to the world's mscs.properties file.
 #
 # The following keys are available:
-#   mscs-enabled         - Enable or disable the world server.
-#   mscs-version-type    - Assign the version type (release or snapshot).
-#   mscs-client-version  - Assign the version of the client software.
-#   mscs-client-jar      - Assign the .jar file for the client software.
-#   mscs-client-url      - Assign the download URL for the client software.
-#   mscs-client-location - Assign the location of the client .jar file.
-#   mscs-server-version  - Assign the version of the server software.
-#   mscs-jvm-args        - Assign the arguments to the JVM.
-#   mscs-server-jar      - Assign the .jar file for the server software.
-#   mscs-server-url      - Assign the download URL for the server software.
-#   mscs-server-args     - Assign the arguments to the server.
-#   mscs-initial-memory  - Assign the initial amount of memory for the server.
-#   mscs-maximum-memory  - Assign the maximum amount of memory for the server.
-#   mscs-server-location - Assign the location of the server .jar file.
-#   mscs-server-command  - Assign the command to run for the server.
+#   mscs-enabled             - Enable or disable the world server.
+#   mscs-version-type        - Assign the version type (release or snapshot).
+#   mscs-client-version      - Assign the version of the client software.
+#   mscs-client-jar          - Assign the .jar file for the client software.
+#   mscs-client-url          - Assign the download URL for the client software.
+#   mscs-client-location     - Assign the location of the client .jar file.
+#   mscs-server-version      - Assign the version of the server software.
+#   mscs-jvm-args            - Assign the arguments to the JVM.
+#   mscs-server-jar          - Assign the .jar file for the server software.
+#   mscs-server-url          - Assign the download URL for the server software.
+#   mscs-server-args         - Assign the arguments to the server.
+#   mscs-initial-memory      - Assign the initial amount of memory for the server.
+#   mscs-maximum-memory      - Assign the maximum amount of memory for the server.
+#   mscs-server-location     - Assign the location of the server .jar file.
+#   mscs-server-command      - Assign the command to run for the server.
+#   mscs-restart-after-crash - Restart the server after a crash (default disabled).
 #
 # Like above, the following variables may be used in some of the key values:
 #   $JAVA                - The Java virtual machine.
@@ -2397,6 +2511,7 @@ DEFAULT_SERVER_COMMAND=$(getDefaultsValue 'mscs-default-server-command' '$JAVA -
 #   mscs-maximum-memory=2048M
 #   mscs-server-location=/opt/mscs/server
 #   mscs-server-command=$JAVA -Xms$INITIAL_MEMORY -Xmx$MAXIMUM_MEMORY $JVM_ARGS -jar $SERVER_LOCATION/$SERVER_JAR $SERVER_ARGS
+#   mscs-restart-after-crash=false
 
 # World (Server Instance) Configuration
 # ---------------------------------------------------------------------------
@@ -2408,6 +2523,8 @@ VERSIONS_JSON=$(getDefaultsValue 'mscs-versions-json' $LOCATION'/version_manifes
 VERSIONS_DURATION=$(getDefaultsValue 'mscs-versions-duration' '30')
 # The duration (in minutes) to keep lock files before removing.
 LOCKFILE_DURATION=$(getDefaultsValue 'mscs-lockfile-duration' '1440')
+# Enable the option to restart the server after a crash is detected (default disabled).
+RESTART_AFTER_CRASH=$(getDefaultsValue 'mscs-restart-after-crash' 'false')
 
 # Backup Configuration
 # ---------------------------------------------------------------------------
@@ -2456,10 +2573,9 @@ OVERVIEWER_URL=$(getDefaultsValue 'mscs-overviewer-url' 'http://overviewer.org')
 MAPS_LOCATION=$(getDefaultsValue 'mscs-maps-location' $LOCATION'/maps')
 MAPS_URL=$(getDefaultsValue 'mscs-maps-url' 'http://minecraft.server.com/maps')
 
-# Allow function importing via source command for tests.
+# allow function importing via source command for tests
 if printf $0 | grep -qs "runtests\.sh"; then
-  # File was sourced, don't execute below here.
-  # Return a true value (success).
+  # file was sourced, don't execute below here
   return 0
 fi
 
@@ -2937,7 +3053,7 @@ case "$COMMAND" in
       if serverRunning $WORLD; then
         printf " $WORLD"
         sendCommand $WORLD "save-all"
-        if true_value $ENABLE_MIRROR; then
+        if [ $ENABLE_MIRROR -eq 1 ]; then
           sendCommand $WORLD "save-off"
           sleep 20
           syncMirrorImage $WORLD
