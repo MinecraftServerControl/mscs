@@ -1330,7 +1330,7 @@ stopServerMonitor() {
   local WORLD_DIR MONITOR_LOG MONITOR_PID MONITOR_LOCK_FILE ACQUIRED_LOCK
   WORLD_DIR="$WORLDS_LOCATION/$1"
   MONITOR_LOG="$WORLD_DIR/logs/mscs.monitor.log"
-  MONITOR_PID="$WORLD_DIR/monitor.pid"
+  MONITOR_PID=$(cat "$WORLD_DIR/monitor.pid")
   MONITOR_LOCK_FILE="$WORLD_DIR/monitor.lock"
   # Check if server monitor instance currently running.
   (
@@ -1339,7 +1339,7 @@ stopServerMonitor() {
   if [ "$ACQUIRED_LOCK" -eq 1 ]; then # Server monitor is running.
     printf "[$(timestamp)] [INFO]: Stop command received for server monitor. Attempting to kill server monitor...\n" >> "$MONITOR_LOG"
     # Kill the server monitor.
-    kill -9 $(cat $MONITOR_PID)
+    kill -9 "$MONITOR_PID"
     # Verify it was actually killed.
     if [ $? -eq 1 ]; then
       printf "[$(timestamp)] [ERROR]: Unable to kill monitor process.\n" >> "$MONITOR_LOG"
@@ -1411,7 +1411,7 @@ startServerMonitor() {
     # Verify that there is no monitor instance currently running.
     (
     $FLOCK -n 9
-    ACQUIRED_LOCK=$?
+    ACQUIRED_LOCK="$?"
     if [ "$ACQUIRED_LOCK" -eq 0 ]; then # Server monitor doesn't exist.
       # Delete old log file greater than $LOG_DURATION, if it exists.
       if [ -f "$MONITOR_LOG" ]; then
@@ -1423,7 +1423,7 @@ startServerMonitor() {
       # Nohup does not allow you to pass functions. However, the code below mimics nohup behavior by doing the following:
         # Start subshell, ignore HUP signal, redirect stdin to /dev/null, redirect stdout and stderr to log file, run in background.
       # Also store the PID of this process for later use.
-      ( trap "" HUP ; echo $(exec sh -c 'echo "$PPID"') > "$MONITOR_PID"; echo $pid > "$MONITOR_PID"; serverMonitor $1 ) </dev/null 2>&1 1>>"$MONITOR_LOG" & 
+      ( trap "" HUP ; echo $(exec sh -c 'echo "$PPID"') > "$MONITOR_PID"; serverMonitor $1 ) </dev/null 2>&1 1>>"$MONITOR_LOG" & 
     fi
     ) 9>"$MONITOR_LOCK_FILE"
   fi
@@ -2159,7 +2159,10 @@ queryNumUsers() {
 # @param 1 The world server of interest.
 # ---------------------------------------------------------------------------
 worldStatus() {
-  local STATUS NUM MAX PLAYERS COUNTER VERSION
+  local WORLD_DIR LAST_START_STATUS_LOG MONITOR_PID STATUS NUM MAX PLAYERS COUNTER VERSION
+  WORLD_DIR="$WORLDS_LOCATION/$1"
+  MONITOR_PID="$WORLD_DIR/monitor.pid"
+  LAST_START_STATUS_LOG="$WORLD_DIR/logs/last-start-status.log"
   if serverRunning $1; then
     STATUS=$(queryDetailedStatus $1)
     if [ -n "$STATUS" ]; then
