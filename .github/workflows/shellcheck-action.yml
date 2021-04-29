@@ -1,0 +1,33 @@
+# GitHub Actions (https://docs.github.com/en/actions/learn-github-actions) workflow 
+# GitHub Actions enables automated builds, tests, and more through GitHub hosted infrastructure.
+
+# Name of the workflow
+name: shellcheck
+
+# Controls when the workflow will run
+on:
+  # Triggers the workflow on push or pull request events but only for the main branch
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+# A workflow is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  # This workflow contains a single job called "run-shellcheck"
+  run-shellcheck:
+    # The type of operating system (called a "runner") that the that the job will run on
+    # GitHub provides these for free!
+    runs-on: ubuntu-latest
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      # Checks-out the MSCS repository under $GITHUB_WORKSPACE, so jobs can access the code
+      # This is a GitHub-created action
+      - uses: actions/checkout@v2
+      # Runs the ShellCheck action (https://github.com/marketplace/actions/shellcheck)
+      # This is a community-created action
+      - name: Run ShellCheck
+        uses: ludeeus/action-shellcheck@master
