@@ -2018,8 +2018,14 @@ worldStatus() {
     else
       printf "running.\n"
     fi
-    printf "    Memory used: $(getJavaMemory "$1" | awk '{$1=int(100 * $1/1024/1024)/100"GB";}{ print;}')"
-    printf " ($(getMSCSValue "$1" "mscs-maximum-memory" "$DEFAULT_MAXIMUM_MEMORY" | rev | cut -c 2- | rev | awk '{$1=int($1/1024)"GB";}{ print;}') allocated).\n"
+    USED_MEM=$(
+      getJavaMemory "$1" | awk '{$1=int(100 * $1/1024/1024)/100"GB";}{ print;}'
+    )
+    ALLOCATED_MEM=$(
+      getMSCSValue "$1" "mscs-maximum-memory" "$DEFAULT_MAXIMUM_MEMORY" | \
+      rev | cut -c 2- | rev | awk '{$1=int($1/1024)"GB";}{ print;}'
+    )
+    printf "    Memory used: %s (%s allocated).\n" "$USED_MEM" "$ALLOCATED_MEM"
     printf "    Process ID: %d.\n" $(getJavaPID "$1")
   elif ! true_value "$(getMSCSValue $1 'mscs-enabled')"; then
     printf "disabled.\n"
