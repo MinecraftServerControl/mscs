@@ -327,7 +327,6 @@ EOF
 # @return The Java PID.
 # ---------------------------------------------------------------------------
 getJavaPID() {
-  local PID MCUSER
   MCUSER=$(whoami)
   PID=$(
     ps -a -U $MCUSER -o pid,comm,args -ww | $PERL -sne '
@@ -344,7 +343,6 @@ getJavaPID() {
 # @return The amount of memory used.
 # ---------------------------------------------------------------------------
 getJavaMemory() {
-  local PID
   PID=$(getJavaPID "$1")
   ps --no-headers -p $PID -o rss
 }
@@ -356,7 +354,6 @@ getJavaMemory() {
 # @return 0 (success) for true values, 1 (failure) for false values.
 # ---------------------------------------------------------------------------
 true_value() {
-  local VALUE
   VALUE=$(echo "$1" | tr '[:upper:]' '[:lower:]')
   # Look for TRUE values.
   if [ "$VALUE" = "1" ] || [ "$VALUE" = "true" ] || [ "$VALUE" = "yes" ] || [ "$VALUE" = "on" ]; then
@@ -415,7 +412,6 @@ sendCommand() {
 # @return A 0 if the list contains the item, a 1 otherwise.
 # ---------------------------------------------------------------------------
 listContains() {
-  local MATCH ITEM
   MATCH=1
   for ITEM in $2; do
     if [ "$ITEM" = "$1" ]; then
@@ -433,7 +429,6 @@ listContains() {
 # @return The result of the comparison: -1, 0, 1.
 # ---------------------------------------------------------------------------
 compareTime() {
-  local T1 T2
   T1=$(date --date="$1" +%s)
   T2=$(date --date="$2" +%s)
   printf $(($T1 < $T2 ? -1 : $T1 > $T2 ? 1 : 0))
@@ -447,7 +442,6 @@ compareTime() {
 # @return The result of the comparison: -1, 0, 1.
 # ---------------------------------------------------------------------------
 compareMinecraftVersions() {
-  local T1 T2
   T1=$(getMinecraftVersionReleaseTime "$1")
   T2=$(getMinecraftVersionReleaseTime "$2")
   compareTime "$T1" "$T2"
@@ -511,7 +505,6 @@ enableWorld() {
 # @param 4 The IP address of the new imported world.
 # ---------------------------------------------------------------------------
 importWorld() {
-  local NAME
   mkdir -p "$WORLDS_LOCATION/$2"
   cp -R $1/* $WORLDS_LOCATION/$2
   chown $(id -un):$(id -gn) -R $WORLDS_LOCATION/$2
@@ -528,7 +521,6 @@ importWorld() {
 # @return The list of enabled worlds.
 # ---------------------------------------------------------------------------
 getEnabledWorlds() {
-  local WORLD WORLDS
   mkdir -p "$WORLDS_LOCATION"
   WORLDS=""
   for WORLD in $(ls $WORLDS_LOCATION); do
@@ -547,7 +539,6 @@ getEnabledWorlds() {
 # @return The list of disabled worlds.
 # ---------------------------------------------------------------------------
 getDisabledWorlds() {
-  local WORLD WORLDS
   WORLDS=""
   for WORLD in $(ls $WORLDS_LOCATION); do
     if [ -d $WORLDS_LOCATION/$WORLD ]; then
@@ -575,7 +566,6 @@ getAvailableWorlds() {
 # @return A 0 if the world is enabled, a 1 otherwise.
 # ---------------------------------------------------------------------------
 isWorldEnabled() {
-  local WORLDS
   WORLDS=$(getEnabledWorlds)
   if [ -n "$1" ] && listContains "$1" "$WORLDS"; then
     # Return a true value (success).
@@ -593,7 +583,6 @@ isWorldEnabled() {
 # @return A 0 if the world is disabled, a 1 otherwise.
 # ---------------------------------------------------------------------------
 isWorldDisabled() {
-  local WORLDS
   WORLDS=$(getDisabledWorlds)
   if [ -n "$1" ] && listContains "$1" "$WORLDS"; then
     # Return a true value (success).
@@ -611,7 +600,6 @@ isWorldDisabled() {
 # @return A 0 if the world is available, a 1 otherwise.
 # ---------------------------------------------------------------------------
 isWorldAvailable() {
-  local WORLDS
   WORLDS=$(getAvailableWorlds)
   if [ -n "$1" ] && listContains "$1" "$WORLDS"; then
     # Return a true value (success).
@@ -630,7 +618,6 @@ isWorldAvailable() {
 # @param 3 The default value.
 # ---------------------------------------------------------------------------
 getValue() {
-  local KEY VALUE
   # Make sure the file exists.
   if [ -e "$1" ]; then
     # Find the key/value combo.
@@ -668,7 +655,6 @@ getValue() {
 # @param 3 The value to assign to the key.
 # ---------------------------------------------------------------------------
 setValue() {
-  local KEY_VALUE
   # Make sure that the file exists.
   touch "$1"
   # Replace the key/value combo if it already exists, otherwise just
@@ -705,7 +691,6 @@ getDefaultsValue() {
 # @param 1 The world server of interest.
 # ---------------------------------------------------------------------------
 getEULAValue() {
-  local EULA_FILE
   EULA_FILE=$WORLDS_LOCATION/$1/eula.txt
   getValue "$EULA_FILE" "eula" "false" | $PERL -ne 'print lc'
 }
@@ -718,7 +703,6 @@ getEULAValue() {
 # @param 3 The default value.
 # ---------------------------------------------------------------------------
 getMSCSValue() {
-  local PROPERTY_FILE
   PROPERTY_FILE=$WORLDS_LOCATION/$1/mscs.properties
   getValue "$PROPERTY_FILE" "$2" "$3"
 }
@@ -731,7 +715,6 @@ getMSCSValue() {
 # @param 3 The value to assign to the key.
 # ---------------------------------------------------------------------------
 setMSCSValue() {
-  local PROPERTY_FILE
   PROPERTY_FILE=$WORLDS_LOCATION/$1/mscs.properties
   setValue "$PROPERTY_FILE" "$2" "$3"
 }
@@ -744,7 +727,6 @@ setMSCSValue() {
 # @param 3 The default value.
 # ---------------------------------------------------------------------------
 getServerPropertiesValue() {
-  local PROPERTY_FILE
   PROPERTY_FILE="$WORLDS_LOCATION/$1/server.properties"
   getValue "$PROPERTY_FILE" "$2" "$3"
 }
@@ -757,7 +739,6 @@ getServerPropertiesValue() {
 # @param 3 The value to assign to the key.
 # ---------------------------------------------------------------------------
 setServerPropertiesValue() {
-  local PROPERTY_FILE
   PROPERTY_FILE=$WORLDS_LOCATION/$1/server.properties
   setValue "$PROPERTY_FILE" "$2" "$3"
 }
@@ -801,7 +782,6 @@ updateVersionsJSON() {
 # @return The current Minecraft version number.
 # ---------------------------------------------------------------------------
 getCurrentMinecraftVersion() {
-  local VERSION TYPE
   # Determine the version type for the current world.
   TYPE=$(getMSCSValue "$1" "mscs-version-type" "$DEFAULT_VERSION_TYPE")
   # Extract the current version information.
@@ -897,7 +877,6 @@ getMinecraftVersionReleaseTime() {
 # @return CLIENT_VERSION
 # ---------------------------------------------------------------------------
 getClientVersion() {
-  local CURRENT_VERSION
   CURRENT_VERSION=$(getCurrentMinecraftVersion "$1")
   if [ $? -ne 0 ]; then
     printf "$CURRENT_VERSION\n"
@@ -919,7 +898,6 @@ getClientVersion() {
 # @return CLIENT_JAR
 # ---------------------------------------------------------------------------
 getClientJar() {
-  local CURRENT_VERSION CLIENT_VERSION
   CURRENT_VERSION=$(getCurrentMinecraftVersion "$1")
   if [ $? -ne 0 ]; then
     printf "$CURRENT_VERSION\n"
@@ -946,7 +924,6 @@ getClientJar() {
 # @return CLIENT_LOCATION
 # ---------------------------------------------------------------------------
 getClientLocation() {
-  local CURRENT_VERSION CLIENT_VERSION
   CURRENT_VERSION=$(getCurrentMinecraftVersion "$1")
   if [ $? -ne 0 ]; then
     printf "$CURRENT_VERSION\n"
@@ -973,7 +950,6 @@ getClientLocation() {
 # @return CLIENT_URL
 # ---------------------------------------------------------------------------
 getClientURL() {
-  local CURRENT_VERSION CLIENT_VERSION URL
   CURRENT_VERSION=$(getCurrentMinecraftVersion "$1")
   if [ $? -ne 0 ]; then
     printf "$CURRENT_VERSION\n"
@@ -1006,7 +982,6 @@ getClientURL() {
 # @return SERVER_VERSION
 # ---------------------------------------------------------------------------
 getServerVersion() {
-  local CURRENT_VERSION
   CURRENT_VERSION=$(getCurrentMinecraftVersion "$1")
   if [ $? -ne 0 ]; then
     printf "$CURRENT_VERSION\n"
@@ -1028,7 +1003,6 @@ getServerVersion() {
 # @return SERVER_JAR
 # ---------------------------------------------------------------------------
 getServerJar() {
-  local CURRENT_VERSION SERVER_VERSION SERVER_JAR
   CURRENT_VERSION=$(getCurrentMinecraftVersion "$1")
   if [ $? -ne 0 ]; then
     printf "$CURRENT_VERSION\n"
@@ -1055,7 +1029,6 @@ getServerJar() {
 # @return SERVER_LOCATION
 # ---------------------------------------------------------------------------
 getServerLocation() {
-  local CURRENT_VERSION SERVER_VERSION
   CURRENT_VERSION=$(getCurrentMinecraftVersion "$1")
   if [ $? -ne 0 ]; then
     printf "$CURRENT_VERSION\n"
@@ -1082,7 +1055,6 @@ getServerLocation() {
 # @return SERVER_URL
 # ---------------------------------------------------------------------------
 getServerURL() {
-  local CURRENT_VERSION SERVER_VERSION URL
   CURRENT_VERSION=$(getCurrentMinecraftVersion "$1")
   if [ $? -ne 0 ]; then
     printf "$CURRENT_VERSION\n"
@@ -1115,8 +1087,6 @@ getServerURL() {
 # @return SERVER_COMMAND
 # ---------------------------------------------------------------------------
 getServerCommand() {
-  local CURRENT_VERSION SERVER_VERSION SERVER_JAR SERVER_LOCATION
-  local SERVER_ARGS INITIAL_MEMORY MAXIMUM_MEMORY
   CURRENT_VERSION=$(getCurrentMinecraftVersion "$1")
   if [ $? -ne 0 ]; then
     printf "$CURRENT_VERSION\n"
@@ -1188,7 +1158,6 @@ getServerCommand() {
 # @return TRUE if lock file created, FALSE otherwise.
 # ---------------------------------------------------------------------------
 createLockFile() {
-  local PID LOCKFILE
   LOCKFILE=$WORLDS_LOCATION/$1/lock-$2.pid
   # Delete the old LOCKFILE.
   find $LOCKFILE -mmin +"$LOCKFILE_DURATION" -delete >/dev/null 2>&1
@@ -1240,7 +1209,6 @@ removeLockFile() {
 # @param 1 The world server generating the log to rotate.
 # ---------------------------------------------------------------------------
 rotateLog() {
-  local WORLD_DIR DATE LOG NUM
   WORLD_DIR="$WORLDS_LOCATION/$1"
   # Make sure the log directory exists.
   mkdir -p "$WORLD_DIR/logs"
@@ -1272,7 +1240,6 @@ rotateLog() {
 # @param 1 The world server generating the log to watch.
 # ---------------------------------------------------------------------------
 watchLog() {
-  local WORLD_DIR
   WORLD_DIR="$WORLDS_LOCATION/$1"
   # Make sure that the latest.log file exists.
   if [ -e "$WORLD_DIR/logs/latest.log" ]; then
@@ -1304,7 +1271,6 @@ syncMirrorImage() {
 # @param 1 The world server to connect to.
 # ---------------------------------------------------------------------------
 serverConsole() {
-  local LINE WORLD_DIR
   # Make sure that the world's directory exists.
   WORLD_DIR="$WORLDS_LOCATION/$1"
   # Follow the console output buffer file.
@@ -1322,7 +1288,6 @@ serverConsole() {
 # @param 1 The world server to start.
 # ---------------------------------------------------------------------------
 start() {
-  local EULA PID SERVER_COMMAND WORLD_DIR
   WORLD_DIR="$WORLDS_LOCATION/$1"
   # Make sure that the server software exists.
   updateServerSoftware "$1"
@@ -1453,7 +1418,6 @@ stop() {
 # @param 1 The world server to forcibly stop.
 # ---------------------------------------------------------------------------
 forceStop() {
-  local WAIT
   # Try to stop the server cleanly first.
   sendCommand $1 "stop"
   sendCommand $1 "end"
@@ -1476,7 +1440,6 @@ forceStop() {
 # @return A 0 if backup successful, a 1 otherwise
 # ---------------------------------------------------------------------------
 worldBackup() {
-  local EXCLUDE_OPTION
   # Make sure that the backup location exists.
   if ! mkdir -p "$BACKUP_LOCATION"; then
     echo "Error creating backup dir $BACKUP_LOCATION"
@@ -1535,7 +1498,6 @@ worldBackup() {
 # @param 1 The world server of interest.
 # ---------------------------------------------------------------------------
 worldBackupList() {
-  local SEC TYPE
   if [ -d $BACKUP_LOCATION/$1 ]; then
     # Grab the list of backups for the world server.
     $RDIFF_BACKUP --parsable-output -l $BACKUP_LOCATION/$1 |
@@ -1553,7 +1515,6 @@ worldBackupList() {
 # @return A 0 on success, a 1 otherwise.
 # ---------------------------------------------------------------------------
 worldBackupRestore() {
-  local TARGET TARGET_TMP
   TARGET="$WORLDS_LOCATION/$1"
   TARGET_TMP="${TARGET}_bktmp"
   rm -rf "$TARGET_TMP"
@@ -1580,7 +1541,6 @@ worldBackupRestore() {
 # @param 1 The world to update.
 # ---------------------------------------------------------------------------
 updateClientSoftware() {
-  local CLIENT_JAR CLIENT_LOCATION CLIENT_URL CLIENT_VERSION SHA1 SHA1_FILE
   CLIENT_JAR=$(getClientJar "$1")
   if [ $? -ne 0 ]; then
     printf "$CLIENT_JAR\n"
@@ -1631,7 +1591,6 @@ updateClientSoftware() {
 # @param 1 The world server to update.
 # ---------------------------------------------------------------------------
 updateServerSoftware() {
-  local SERVER_JAR SERVER_LOCATION SERVER_URL SERVER_VERSION SHA1 SHA1_FILE
   SERVER_JAR=$(getServerJar "$1")
   if [ $? -ne 0 ]; then
     printf "$SERVER_JAR\n"
@@ -1682,7 +1641,6 @@ updateServerSoftware() {
 # @param 1 The world server to map with Overviewer.
 # ---------------------------------------------------------------------------
 overviewer() {
-  local SETTINGS_FILE LOG_FILE VERSION_TEST
   SETTINGS_FILE="$WORLDS_LOCATION/$1/overviewer-settings.py"
   LOG_FILE="$WORLDS_LOCATION/$1/logs/overviewer.log"
   VERSION_TEST=$(compareMinecraftVersions $(getServerVersion $1) 1.7.2)
@@ -1797,7 +1755,6 @@ overviewer() {
 # @param 1 The world server to start a Query handler for.
 # ---------------------------------------------------------------------------
 queryStart() {
-  local WORLD_DIR SERVER_IP SERVER_PID QUERY_PORT
   # Grab the location of the world's directory.
   WORLD_DIR="$WORLDS_LOCATION/$1"
   # Determine the IP address and port used by the query server.
@@ -1833,7 +1790,6 @@ queryStart() {
 # @return The response from the Query server in the requested format.
 # ---------------------------------------------------------------------------
 querySendPacket() {
-  local ID PACKET RESPONSE WORLD_DIR
   # The packet identifier.
   ID="00000001"
   # The world's directory.
@@ -1894,7 +1850,6 @@ querySendPacket() {
 #           token      - The token.
 # ---------------------------------------------------------------------------
 querySendChallengePacket() {
-  local PACKET
   # Use an empty packet.
   PACKET="00000000"
   # Send the challenge packet to the Minecraft query server.
@@ -1917,7 +1872,6 @@ querySendChallengePacket() {
 #           hostip     - The host's IP address.
 # ---------------------------------------------------------------------------
 queryStatus() {
-  local PACKET TOKEN
   if true_value "$(getServerPropertiesValue $1 'enable-query')"; then
     # Send a challenge packet to the Minecraft query server.
     TOKEN=$(querySendChallengePacket $1 | cut -f 3)
@@ -1967,7 +1921,6 @@ queryStatus() {
 #           players    - The players currently logged onto the world.
 # ---------------------------------------------------------------------------
 queryDetailedStatus() {
-  local CHALLENGE ID PACKET TOKEN
   if true_value "$(getServerPropertiesValue $1 'enable-query')"; then
     # Send a challenge packet to the Minecraft query server.
     CHALLENGE=$(querySendChallengePacket $1)
@@ -1991,7 +1944,6 @@ queryDetailedStatus() {
 # @return Query values in JSON format.
 # ---------------------------------------------------------------------------
 queryDetailedStatusJSON() {
-  local STATUS JSON MOTD GAMETYPE GAMEID VERSION PLUGINS MAP NUMPLAYERS MAXPLAYERS HOSTPORT HOSTIP PLAYERS COUNTER
   STATUS=$(queryDetailedStatus $1)
   if [ -n "$STATUS" ]; then
     MOTD=$(printf "%s" "$STATUS" | cut -f 7)
@@ -2026,7 +1978,6 @@ queryDetailedStatusJSON() {
 # @return Number of active users.
 # ---------------------------------------------------------------------------
 queryNumUsers() {
-  local NUM_USERS
   NUM_USERS=$(queryStatus $1 | cut -f6)
   # Return 0 users if query server not available.
   [ -z "$NUM_USERS" ] && NUM_USERS=0
@@ -2039,7 +1990,6 @@ queryNumUsers() {
 # @param 1 The world server of interest.
 # ---------------------------------------------------------------------------
 worldStatus() {
-  local STATUS NUM MAX PLAYERS COUNTER VERSION
   if serverRunning $1; then
     STATUS=$(queryDetailedStatus $1)
     if [ -n "$STATUS" ]; then
@@ -2083,7 +2033,6 @@ worldStatus() {
 # @return The status of the world in JSON format.
 # ---------------------------------------------------------------------------
 worldStatusJSON() {
-  local RUNNING QUERY PID MEMORY
   if serverRunning $1; then
     RUNNING="true"
     QUERY="$(queryDetailedStatusJSON $1)"
