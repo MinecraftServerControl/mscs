@@ -1,3 +1,4 @@
+#!/bin/sh
 # start with clean slate
 [ -f $MSCS_DEFAULTS ] && rm $MSCS_DEFAULTS
 
