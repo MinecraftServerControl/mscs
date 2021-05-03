@@ -523,7 +523,8 @@ importWorld() {
 getEnabledWorlds() {
   mkdir -p "$WORLDS_LOCATION"
   WORLDS=""
-  for WORLD in $(ls $WORLDS_LOCATION); do
+  for WORLD in "$WORLDS_LOCATION"/*; do
+    WORLD=$(basename "$WORLD")
     if [ -d $WORLDS_LOCATION/$WORLD ]; then
       if true_value "$(getMSCSValue $WORLD 'mscs-enabled' 'true')"; then
         WORLDS="$WORLDS $WORLD"
@@ -540,7 +541,8 @@ getEnabledWorlds() {
 # ---------------------------------------------------------------------------
 getDisabledWorlds() {
   WORLDS=""
-  for WORLD in $(ls $WORLDS_LOCATION); do
+  for WORLD in "$WORLDS_LOCATION"/*; do
+    WORLD=$(basename "$WORLD")
     if [ -d $WORLDS_LOCATION/$WORLD ]; then
       if ! true_value "$(getMSCSValue $WORLD 'mscs-enabled' 'true')"; then
         WORLDS="$WORLDS $WORLD"
