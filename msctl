@@ -333,7 +333,7 @@ getJavaPID() {
       if ($_ =~ /^\s*(\d+)\s+java.+mscs-world=\Q$world\E$/) { print $1; }
     ' -- -world="$1"
   )
-  printf "%d\n" $PID
+  printf "%d\n" "$PID"
 }
 
 # ---------------------------------------------------------------------------
@@ -370,7 +370,7 @@ true_value() {
     # Return a false value (failure).
     return 1
   fi
-  printf "Invalid true/false value: \"$1\"\n" >&2
+  printf "Invalid true/false value: \"%s\"\n" "$1" >&2
   # Return a false value (failure) in case of invalid true/false input.
   return 1
 }
@@ -431,7 +431,7 @@ listContains() {
 compareTime() {
   T1=$(date --date="$1" +%s)
   T2=$(date --date="$2" +%s)
-  printf $(($T1 < $T2 ? -1 : $T1 > $T2 ? 1 : 0))
+  printf "%d" $(($T1 < $T2 ? -1 : $T1 > $T2 ? 1 : 0))
 }
 
 # ---------------------------------------------------------------------------
@@ -530,7 +530,7 @@ getEnabledWorlds() {
       fi
     fi
   done
-  printf "$WORLDS"
+  printf "%s" "$WORLDS"
 }
 
 # ---------------------------------------------------------------------------
@@ -547,7 +547,7 @@ getDisabledWorlds() {
       fi
     fi
   done
-  printf "$WORLDS"
+  printf "%s" "$WORLDS"
 }
 
 # ---------------------------------------------------------------------------
@@ -556,7 +556,7 @@ getDisabledWorlds() {
 # @return The list of all available worlds.
 # ---------------------------------------------------------------------------
 getAvailableWorlds() {
-  printf "$(getEnabledWorlds) $(getDisabledWorlds)"
+  printf "%s" "$(getEnabledWorlds) $(getDisabledWorlds)"
 }
 
 # ---------------------------------------------------------------------------
@@ -641,9 +641,9 @@ getValue() {
   # Return the value if found, the default value if not.
   if [ -n "$KEY" ] && [ -n "$VALUE" ]; then
     # $VALUE may contains flag-like strings not intended for printf
-    printf -- "$VALUE"
+    printf "%s" "$VALUE"
   else
-    printf -- "$3"
+    printf "%s" "$3"
   fi
 }
 
@@ -671,7 +671,7 @@ setValue() {
     ' -- -key="$2" -value="$3" > $1
     rm $1.bak
   else
-    printf "$2=$3\n" >>"$1"
+    printf "%s=%s\n" "$2" "$3" >>"$1"
   fi
 }
 
@@ -797,7 +797,7 @@ getCurrentMinecraftVersion() {
     printf "Error detecting the current Minecraft version.\n"
     exit 1
   fi
-  printf "$VERSION"
+  printf "%s" "$VERSION"
 }
 
 # ---------------------------------------------------------------------------
@@ -879,7 +879,7 @@ getMinecraftVersionReleaseTime() {
 getClientVersion() {
   CURRENT_VERSION=$(getCurrentMinecraftVersion "$1")
   if [ $? -ne 0 ]; then
-    printf "$CURRENT_VERSION\n"
+    printf "%s\n" "$CURRENT_VERSION"
     exit 1
   fi
   # Get the client version, use the default version if not provided.
@@ -900,12 +900,12 @@ getClientVersion() {
 getClientJar() {
   CURRENT_VERSION=$(getCurrentMinecraftVersion "$1")
   if [ $? -ne 0 ]; then
-    printf "$CURRENT_VERSION\n"
+    printf "%s\n" "$CURRENT_VERSION"
     exit 1
   fi
   CLIENT_VERSION=$(getClientVersion "$1")
   if [ $? -ne 0 ]; then
-    printf "$CLIENT_VERSION\n"
+    printf "%s\n" "$CLIENT_VERSION"
     exit 1
   fi
   # Get the client jar, use the default value if not provided.
@@ -926,12 +926,12 @@ getClientJar() {
 getClientLocation() {
   CURRENT_VERSION=$(getCurrentMinecraftVersion "$1")
   if [ $? -ne 0 ]; then
-    printf "$CURRENT_VERSION\n"
+    printf "%s\n" "$CURRENT_VERSION"
     exit 1
   fi
   CLIENT_VERSION=$(getClientVersion "$1")
   if [ $? -ne 0 ]; then
-    printf "$CLIENT_VERSION\n"
+    printf "%s\n" "$CLIENT_VERSION"
     exit 1
   fi
   # Get the client location, use the default value if not provided.
@@ -952,12 +952,12 @@ getClientLocation() {
 getClientURL() {
   CURRENT_VERSION=$(getCurrentMinecraftVersion "$1")
   if [ $? -ne 0 ]; then
-    printf "$CURRENT_VERSION\n"
+    printf "%s\n" "$CURRENT_VERSION"
     exit 1
   fi
   CLIENT_VERSION=$(getClientVersion "$1")
   if [ $? -ne 0 ]; then
-    printf "$CLIENT_VERSION\n"
+    printf "%s\n" "$CLIENT_VERSION"
     exit 1
   fi
   # Get the client download URL, use the default value if not provided.
@@ -972,7 +972,7 @@ getClientURL() {
   if [ -z "$URL" ]; then
     URL=$(getMinecraftVersionDownloadURL $CLIENT_VERSION 'client')
   fi
-  printf "$URL"
+  printf "%s" "$URL"
 }
 
 # ---------------------------------------------------------------------------
@@ -984,7 +984,7 @@ getClientURL() {
 getServerVersion() {
   CURRENT_VERSION=$(getCurrentMinecraftVersion "$1")
   if [ $? -ne 0 ]; then
-    printf "$CURRENT_VERSION\n"
+    printf "%s\n" "$CURRENT_VERSION"
     exit 1
   fi
   # Get the server version, use the default version if not provided.
@@ -1005,12 +1005,12 @@ getServerVersion() {
 getServerJar() {
   CURRENT_VERSION=$(getCurrentMinecraftVersion "$1")
   if [ $? -ne 0 ]; then
-    printf "$CURRENT_VERSION\n"
+    printf "%s\n" "$CURRENT_VERSION"
     exit 1
   fi
   SERVER_VERSION=$(getServerVersion "$1")
   if [ $? -ne 0 ]; then
-    printf "$SERVER_VERSION\n"
+    printf "%s\n" "$SERVER_VERSION"
     exit 1
   fi
   # Get the server jar, use the default value if not provided.
@@ -1031,12 +1031,12 @@ getServerJar() {
 getServerLocation() {
   CURRENT_VERSION=$(getCurrentMinecraftVersion "$1")
   if [ $? -ne 0 ]; then
-    printf "$CURRENT_VERSION\n"
+    printf "%s\n" "$CURRENT_VERSION"
     exit 1
   fi
   SERVER_VERSION=$(getServerVersion "$1")
   if [ $? -ne 0 ]; then
-    printf "$SERVER_VERSION\n"
+    printf "%s\n" "$SERVER_VERSION"
     exit 1
   fi
   # Get the server location, use the default value if not provided.
@@ -1057,12 +1057,12 @@ getServerLocation() {
 getServerURL() {
   CURRENT_VERSION=$(getCurrentMinecraftVersion "$1")
   if [ $? -ne 0 ]; then
-    printf "$CURRENT_VERSION\n"
+    printf "%s\n" "$CURRENT_VERSION"
     exit 1
   fi
   SERVER_VERSION=$(getServerVersion "$1")
   if [ $? -ne 0 ]; then
-    printf "$SERVER_VERSION\n"
+    printf "%s\n" "$SERVER_VERSION"
     exit 1
   fi
   # Get the server download URL, use the default value if not provided.
@@ -1077,7 +1077,7 @@ getServerURL() {
   if [ -z "$URL" ]; then
     URL=$(getMinecraftVersionDownloadURL $SERVER_VERSION 'server')
   fi
-  printf "$URL"
+  printf "%s" "$URL"
 }
 
 # ---------------------------------------------------------------------------
@@ -1089,22 +1089,22 @@ getServerURL() {
 getServerCommand() {
   CURRENT_VERSION=$(getCurrentMinecraftVersion "$1")
   if [ $? -ne 0 ]; then
-    printf "$CURRENT_VERSION\n"
+    printf "%s\n" "$CURRENT_VERSION"
     exit 1
   fi
   SERVER_VERSION=$(getServerVersion "$1")
   if [ $? -ne 0 ]; then
-    printf "$SERVER_VERSION\n"
+    printf "%s\n" "$SERVER_VERSION"
     exit 1
   fi
   SERVER_JAR=$(getServerJar "$1")
   if [ $? -ne 0 ]; then
-    printf "$SERVER_JAR\n"
+    printf "%s\n" "$SERVER_JAR"
     exit 1
   fi
   SERVER_LOCATION=$(getServerLocation "$1")
   if [ $? -ne 0 ]; then
-    printf "$SERVER_LOCATION\n"
+    printf "%s\n" "$SERVER_LOCATION"
     exit 1
   fi
   # Get the jvm arguments, use the default value if not provided.
@@ -1260,7 +1260,7 @@ syncMirrorImage() {
   # Sync the world server.
   $RSYNC -a --delete "$WORLDS_LOCATION/$1/$1/" "$WORLDS_LOCATION/$1/$1-original"
   if [ $? -ne 0 ]; then
-    printf "Error synchronizing mirror images for world $1.\n"
+    printf "Error synchronizing mirror images for world %s.\n" "$1"
     exit 1
   fi
 }
@@ -1323,7 +1323,7 @@ start() {
       # Restore the original world files.
       mv "$WORLD_DIR/$1-original" "$WORLD_DIR/$1"
       # Send notification.
-      printf "Warning, the mirror for %s was removed, restored latest world.\n" $1
+      printf "Warning, the mirror for %s was removed, restored latest world.\n" "$1"
     fi
     # If the symlink still exists, the server was stopped outside of mscs.
     # SO DONT RESET THE MIRROR, just keep using it.
@@ -1333,7 +1333,7 @@ start() {
       # Copy the world files over to the mirror.
       cp -a "$WORLD_DIR/$1" "$MIRROR_PATH/$1"
       if [ $? -ne 0 ]; then
-        printf "Error copying world data, could not copy to %s.\n" $MIRROR_PATH/$1
+        printf "Error copying world data, could not copy to %s/%s.\n" "$MIRROR_PATH" "$1"
         exit 1
       fi
       # Remove the world file backup directory just in case.
@@ -1349,11 +1349,11 @@ start() {
   # Delete any old console.in or console.out buffer files.
   rm -f "$WORLD_DIR/console.in" "$WORLD_DIR/console.out"
   # Initialize the console.in buffer file.
-  printf '' >$WORLD_DIR/console.in
+  printf "" >$WORLD_DIR/console.in
   # Get the server command for this world.
   SERVER_COMMAND=$(getServerCommand "$1")
   if [ $? -ne 0 ]; then
-    printf "$SERVER_COMMAND\n"
+    printf "%s\n" "$SERVER_COMMAND"
     exit 1
   fi
   # Start the server.
@@ -1543,22 +1543,22 @@ worldBackupRestore() {
 updateClientSoftware() {
   CLIENT_JAR=$(getClientJar "$1")
   if [ $? -ne 0 ]; then
-    printf "$CLIENT_JAR\n"
+    printf "%s\n" "$CLIENT_JAR"
     exit 1
   fi
   CLIENT_LOCATION=$(getClientLocation "$1")
   if [ $? -ne 0 ]; then
-    printf "$CLIENT_LOCATION\n"
+    printf "%s\n" "$CLIENT_LOCATION"
     exit 1
   fi
   CLIENT_URL=$(getClientURL "$1")
   if [ $? -ne 0 ]; then
-    printf "$CLIENT_URL\n"
+    printf "%s\n" "$CLIENT_URL"
     exit 1
   fi
   CLIENT_VERSION=$(getClientVersion "$1")
   if [ $? -ne 0 ]; then
-    printf "$CLIENT_VERSION\n"
+    printf "%s\n" "$CLIENT_VERSION"
     exit 1
   fi
   # Make sure the client software directory exists.
@@ -1593,22 +1593,22 @@ updateClientSoftware() {
 updateServerSoftware() {
   SERVER_JAR=$(getServerJar "$1")
   if [ $? -ne 0 ]; then
-    printf "$SERVER_JAR\n"
+    printf "%s\n" "$SERVER_JAR"
     exit 1
   fi
   SERVER_LOCATION=$(getServerLocation "$1")
   if [ $? -ne 0 ]; then
-    printf "$SERVER_LOCATION\n"
+    printf "%s\n" "$SERVER_LOCATION"
     exit 1
   fi
   SERVER_URL=$(getServerURL "$1")
   if [ $? -ne 0 ]; then
-    printf "$SERVER_URL\n"
+    printf "%s\n" "$SERVER_URL"
     exit 1
   fi
   SERVER_VERSION=$(getServerVersion "$1")
   if [ $? -ne 0 ]; then
-    printf "$SERVER_VERSION\n"
+    printf "%s\n" "$SERVER_VERSION"
     exit 1
   fi
   # Make sure the server software directory exists.
@@ -1650,9 +1650,9 @@ overviewer() {
   fi
   # Make sure that the backup of the world files are there before mapping.
   if [ ! -e "$BACKUP_LOCATION/$1/server.properties" ]; then
-    printf "\nError finding the backup for world $1.  To save server "
+    printf "\nError finding the backup for world %s.  To save server " "$1"
     printf "down time, mapping is run from the backup location.\n"
-    printf "Run '$PROG backup $1' before mapping.\n"
+    printf "Run '%s backup %s' before mapping.\n" "$PROG" "$1"
     return
   fi
   # Make sure the maps directory exists.
@@ -1663,33 +1663,33 @@ overviewer() {
   if [ ! -e $SETTINGS_FILE ]; then
     # Use the backup location so we minimize the time the server isn't saving data.
     printf "import os\n\n" >$SETTINGS_FILE
-    printf "worlds['$1'] = '$BACKUP_LOCATION/$1/$1-original' if os.path.exists('$BACKUP_LOCATION/$1/$1-original') else '$BACKUP_LOCATION/$1/$1'\n\n" >>$SETTINGS_FILE
+    printf "worlds['%s'] = '%s/%s/%s-original' if os.path.exists('%s/%s/%s-original') else '%s/%s/%s'\n\n" "$1" "$BACKUP_LOCATION" "$1" "$1" "$BACKUP_LOCATION" "$1" "$1" "$BACKUP_LOCATION" "$1" "$1" >>$SETTINGS_FILE
     printf "renders['overworld-render'] = {\n" >>$SETTINGS_FILE
-    printf "  'world': '$1',\n" >>$SETTINGS_FILE
+    printf "  'world': '%s',\n" "$1" >>$SETTINGS_FILE
     printf "  'title': 'Overworld',\n" >>$SETTINGS_FILE
     printf "  'dimension': 'overworld',\n" >>$SETTINGS_FILE
     printf "  'rendermode': 'normal'\n" >>$SETTINGS_FILE
     printf "}\n\n" >>$SETTINGS_FILE
     printf "renders['overworld-caves-render'] = {\n" >>$SETTINGS_FILE
-    printf "  'world': '$1',\n" >>$SETTINGS_FILE
+    printf "  'world': '%s',\n" "$1" >>$SETTINGS_FILE
     printf "  'title': 'Caves',\n" >>$SETTINGS_FILE
     printf "  'dimension': 'overworld',\n" >>$SETTINGS_FILE
     printf "  'rendermode': 'cave'\n" >>$SETTINGS_FILE
     printf "}\n\n" >>$SETTINGS_FILE
     printf "renders['nether-render'] = {\n" >>$SETTINGS_FILE
-    printf "  'world': '$1',\n" >>$SETTINGS_FILE
+    printf "  'world': '%s',\n" "$1" >>$SETTINGS_FILE
     printf "  'title': 'Nether',\n" >>$SETTINGS_FILE
     printf "  'dimension': 'nether',\n" >>$SETTINGS_FILE
     printf "  'rendermode': 'nether'\n" >>$SETTINGS_FILE
     printf "}\n\n" >>$SETTINGS_FILE
     printf "renders['end-render'] = {\n" >>$SETTINGS_FILE
-    printf "  'world': '$1',\n" >>$SETTINGS_FILE
+    printf "  'world': '%s',\n" "$1" >>$SETTINGS_FILE
     printf "  'title': 'End',\n" >>$SETTINGS_FILE
     printf "  'dimension': 'end',\n" >>$SETTINGS_FILE
     printf "  'rendermode': 'normal'\n" >>$SETTINGS_FILE
     printf "}\n\n" >>$SETTINGS_FILE
     printf "processes = 2\n" >>$SETTINGS_FILE
-    printf "outputdir = '$MAPS_LOCATION/$1'\n" >>$SETTINGS_FILE
+    printf "outputdir = '%s/%s'\n" "$MAPS_LOCATION" "$1" >>$SETTINGS_FILE
   fi
   # Announce the mapping of the world to players if the world is running.
   if serverRunning $1; then
@@ -1800,7 +1800,7 @@ querySendPacket() {
     # Add the magic bytes and create the hex string packet.
     PACKET=$(printf "FEFD%s%s%s" "$2" "$ID" "$3")
     # Remove any old responses from the query.out buffer file.
-    printf '' >"$WORLD_DIR/query.out"
+    printf "" >"$WORLD_DIR/query.out"
     # Pack the hex string packet and write it to the query.in buffer file.
     $PERL -se '
       print map { pack ("C", hex($_)) } ($packet =~ /(..)/g);
@@ -1981,7 +1981,7 @@ queryNumUsers() {
   NUM_USERS=$(queryStatus $1 | cut -f6)
   # Return 0 users if query server not available.
   [ -z "$NUM_USERS" ] && NUM_USERS=0
-  printf "$NUM_USERS"
+  printf "%s" "$NUM_USERS"
 }
 
 # ---------------------------------------------------------------------------
@@ -2413,7 +2413,7 @@ MAPS_LOCATION=$(getDefaultsValue 'mscs-maps-location' $LOCATION'/maps')
 MAPS_URL=$(getDefaultsValue 'mscs-maps-url' 'http://minecraft.server.com/maps')
 
 # Allow function importing via source command for tests.
-if printf $0 | grep -qs "runtests\.sh"; then
+if printf "%s" "$0" | grep -qs "runtests\.sh"; then
   # File was sourced, don't execute below here.
   # Return a true value (success).
   return 0
@@ -2446,18 +2446,18 @@ case "$COMMAND" in
       for arg in "$@"; do
         if isWorldEnabled "$arg"; then
           if serverRunning "$arg"; then
-            printf "Unable to start the requested worlds: world '$arg' already running.\n"
+            printf "Unable to start the requested worlds: world '%s' already running.\n" "$arg"
             exit 1
           else
             WORLDS="$WORLDS $arg"
           fi
         elif isWorldDisabled "$arg"; then
-            printf "Unable to start the requested worlds: world '$arg' is disabled.\n"
-            printf "Please enable the world first with '$PROG enable $arg'.\n"
+            printf "Unable to start the requested worlds: world '%s' is disabled.\n" "$arg"
+            printf "Please enable the world first with '%s enable %s'.\n" "$PROG" "$arg"
             exit 1
         else
-          printf "Unable to start the requested worlds: world '$arg' not recognized.\n"
-          printf "  Usage:  $PROG $COMMAND <world1> <world2> <...>\n"
+          printf "Unable to start the requested worlds: world '%s' not recognized.\n" "$arg"
+          printf "  Usage:  %s %s <world1> <world2> <...>\n" "$PROG" "$COMMAND"
           exit 1
         fi
       done
@@ -2466,7 +2466,7 @@ case "$COMMAND" in
     printf "Starting Minecraft Server:"
     for WORLD in $WORLDS; do
       if ! serverRunning $WORLD; then
-        printf " $WORLD"
+        printf " %s" "$WORLD"
         start $WORLD
       fi
     done
@@ -2478,18 +2478,18 @@ case "$COMMAND" in
       for arg in "$@"; do
         if isWorldEnabled "$arg"; then
           if ! serverRunning "$arg"; then
-            printf "Unable to stop the requested worlds: world '$arg' already stopped.\n"
+            printf "Unable to stop the requested worlds: world '%s' already stopped.\n" "$arg"
             exit 1
           else
             WORLDS="$WORLDS $arg"
           fi
         elif isWorldDisabled "$arg"; then
-            printf "Unable to stop the requested worlds: world '$arg' is disabled.\n"
-            printf "Please enable the world first with '$PROG enable $arg'.\n"
+            printf "Unable to stop the requested worlds: world '%s' is disabled.\n" "$arg"
+            printf "Please enable the world first with '%s enable %s'.\n" "$PROG" "$arg"
             exit 1
         else
-          printf "Unable to stop the requested worlds: world '$arg' not recognized.\n"
-          printf "  Usage:  $PROG $COMMAND <world1> <world2> <...>\n"
+          printf "Unable to stop the requested worlds: world '%s' not recognized.\n" "$arg"
+          printf "  Usage:  %s %s <world1> <world2> <...>\n" "$PROG" "$COMMAND"
           exit 1
         fi
       done
@@ -2505,7 +2505,7 @@ case "$COMMAND" in
     for WORLD in $WORLDS; do
       # Try to stop the world cleanly.
       if serverRunning $WORLD; then
-        printf " $WORLD"
+        printf " %s" "$WORLD"
         if [ $(queryNumUsers $WORLD) -gt 0 ]; then
           sendCommand $WORLD "say The server admin has initiated a server shut down."
           sendCommand $WORLD "say The server will shut down in 1 minute..."
@@ -2520,7 +2520,7 @@ case "$COMMAND" in
           stop $WORLD
         fi
       elif [ "$COMMAND" = "force-stop" ]; then
-        printf " $WORLD"
+        printf " %s" "$WORLD"
         forceStop $WORLD
       fi
     done
@@ -2535,12 +2535,12 @@ case "$COMMAND" in
         if isWorldEnabled "$arg"; then
           WORLDS="$WORLDS $arg"
         elif isWorldDisabled "$arg"; then
-            printf "Unable to start the requested worlds: world '$arg' is disabled.\n"
-            printf "Please enable the world first with '$PROG enable $arg'.\n"
+            printf "Unable to start the requested worlds: world '%s' is disabled.\n" "$arg"
+            printf "Please enable the world first with '%s enable %s'.\n" "$PROG" "$arg"
             exit 1
         else
-          printf "Unable to restart the requested worlds: world '$arg' not recognized.\n"
-          printf "  Usage:  $PROG $COMMAND <world1> <world2> <...>\n"
+          printf "Unable to restart the requested worlds: world '%s' not recognized.\n" "$arg"
+          printf "  Usage:  %s %s <world1> <world2> <...>\n" "$PROG" "$COMMAND"
           exit 1
         fi
       done
@@ -2555,7 +2555,7 @@ case "$COMMAND" in
     # running.
     printf "Restarting Minecraft Server:"
     for WORLD in $WORLDS; do
-      printf " $WORLD"
+      printf " %s" "$WORLD"
       if serverRunning $WORLD; then
         if [ $(queryNumUsers $WORLD) -gt 0 ]; then
           sendCommand $WORLD "say The server admin has initiated a server restart."
@@ -2579,12 +2579,11 @@ case "$COMMAND" in
   create | new)
     if [ -n "$1" ]; then
       if [ -z "$2" ]; then
-        printf 'Creating world at default port %s' \
-        $DEFAULT_PORT
+        printf 'Creating world at default port %s' $DEFAULT_PORT
         createWorld "$1" "$DEFAULT_PORT"
         printf ".\n"
       else
-        printf "Creating Minecraft world: $1"
+        printf "Creating Minecraft world: %s" "$1"
         createWorld "$1" "$2" "$3"
         printf ".\n"
       fi
@@ -2599,18 +2598,18 @@ case "$COMMAND" in
     # Verify the directory argument.
     if [ ! -d "$1" ] || [ ! -r "$1/server.properties" ]; then
       printf "Directory containing a Minecraft world was not provided.\n"
-      printf "  Usage: $PROG import <directory> <world> <port> [<ip>]\n"
+      printf "  Usage: %s import <directory> <world> <port> [<ip>]\n" "$PROG"
       exit 1
     fi
     # Verify the name and port arguments.
     if [ -z "$2" ] || [ -z "$3" ] || isWorldAvailable "$2"; then
       printf "An unused name and port for the world must be supplied.\n"
       printf "An IP address is optional and usually not needed.\n"
-      printf "  Usage: $PROG import <directory> <world> <port> [<ip>]\n"
+      printf "  Usage: %s import <directory> <world> <port> [<ip>]\n" "$PROG"
       exit 1
     fi
     # Import the world.
-    printf "Importing Minecraft world: $2"
+    printf "Importing Minecraft world: %s" "$2"
     importWorld "$1" "$2" "$3" "$4"
     printf ".\n"
     ;;
@@ -2618,13 +2617,13 @@ case "$COMMAND" in
     # Verify the original world argument.
     if [ -z "$1" ] || ! isWorldAvailable "$1"; then
       printf "A Minecraft world was not provided.\n"
-      printf "  Usage: $PROG rename <original world> <new world>\n"
+      printf "  Usage: %s rename <original world> <new world>\n" "$PROG"
       exit 1
     fi
     # Verify the new world argument.
     if [ -z "$2" ] || isWorldAvailable "$2"; then
       printf "Invalid name for the new world provided.\n"
-      printf "  Usage: $PROG rename <original world> <new world>\n"
+      printf "  Usage: %s rename <original world> <new world>\n" "$PROG"
       exit 1
     fi
     # Make sure the world is stopped.
@@ -2645,7 +2644,7 @@ case "$COMMAND" in
     PORT=$(getServerPropertiesValue "$1" "server-port" "$DEFAULT_PORT")
     IP=$(getServerPropertiesValue "$1" "server-ip" "$DEFAULT_IP")
     # Rename the world.
-    printf "Renaming Minecraft world: $1"
+    printf "Renaming Minecraft world: %s" "$1"
     mkdir -p "$WORLDS_LOCATION/$2"
     mv $WORLDS_LOCATION/$1 $WORLDS_LOCATION/$2
     if [ -d $WORLDS_LOCATION/$2/$1 ]; then
@@ -2657,16 +2656,16 @@ case "$COMMAND" in
   delete | remove)
     # Get list of enabled worlds.
     if ! isWorldAvailable "$1"; then
-      printf "World not found, unable to delete world '$1'.\n"
+      printf "World not found, unable to delete world '%s'.\n" "$1"
       exit 1
     fi
-    printf "Are you sure you wish to delete world '$1'? (y/n): "
+    printf "Are you sure you wish to delete world '%s'? (y/n): " "$1"
     read answer
     if [ "$answer" = "${answer#[Yy]}" ]; then
         printf "Aborted.\n"
         exit 1
     else
-      printf "Deleting Minecraft world: $1"
+      printf "Deleting Minecraft world: %s" "$1"
       if serverRunning "$1"; then
         # If the world server has users logged in, announce that the world is
         # being deleted.
@@ -2692,11 +2691,11 @@ case "$COMMAND" in
         if isWorldEnabled "$arg"; then
           WORLDS="$WORLDS $arg"
         elif isWorldDisabled "$arg"; then
-          printf "Unable to disable already disabled world '$arg'.\n"
+          printf "Unable to disable already disabled world '%s'.\n" "$arg"
           exit 1
         else
-          printf "World not found, unable to disable world '$arg'.\n"
-          printf "  Usage:  $PROG $COMMAND <world1> <world2> <...>\n"
+          printf "World not found, unable to disable world '%s'.\n" "$arg"
+          printf "  Usage:  %s %s <world1> <world2> <...>\n" "$PROG" "$COMMAND"
           exit 1
         fi
       done
@@ -2709,7 +2708,7 @@ case "$COMMAND" in
     fi
     printf "Disabling Minecraft world:"
     for WORLD in $WORLDS; do
-      printf " $WORLD"
+      printf " %s" "$WORLD"
       if serverRunning "$WORLD"; then
         # If the world server has users logged in, announce that the world is
         # being disabled.
@@ -2737,11 +2736,11 @@ case "$COMMAND" in
         if isWorldDisabled "$arg"; then
           WORLDS="$WORLDS $arg"
         elif isWorldEnabled "$arg"; then
-          printf "Unable to enable already enabled world '$arg'.\n"
+          printf "Unable to enable already enabled world '%s'.\n" "$arg"
           exit 1
         else
-          printf "World not found, unable to enable world '$arg'.\n"
-          printf "  Usage:  $PROG $COMMAND <world1> <world2> <...>\n"
+          printf "World not found, unable to enable world '%s'.\n" "$arg"
+          printf "  Usage:  %s %s <world1> <world2> <...>\n" "$PROG" "$COMMAND"
           exit 1
         fi
       done
@@ -2755,7 +2754,7 @@ case "$COMMAND" in
     printf "Enabling Minecraft world:"
     # Enable the world(s).
     for WORLD in $WORLDS; do
-      printf " $WORLD"
+      printf " %s" "$WORLD"
       # Enable the world.
       enableWorld "$WORLD"
       # Start the world.
@@ -2801,7 +2800,7 @@ case "$COMMAND" in
         # Simple list
         for WORLD in $WORLDS; do
           WPORT=$(getServerPropertiesValue "$WORLD" server-port "")
-          printf "  $WORLD: $WPORT"
+          printf "  %s: %s" "$WORLD" "$WPORT"
           if isWorldEnabled "$WORLD"; then
             printf '\n'
           else
@@ -2812,14 +2811,14 @@ case "$COMMAND" in
       list)
         # Detailed list
         for WORLD in $WORLDS; do
-          printf "  $WORLD:"
+          printf "  %s:" "$WORLD"
           if isWorldEnabled "$WORLD"; then
             printf '\n'
           else
             printf ' (disabled)\n'
           fi
           for PROP in $DETAILED_LISTING_PROPERTIES; do
-            printf "    $PROP="
+            printf "    %s=" "$PROP"
             getServerPropertiesValue "$WORLD" "$PROP" ""
           done
           printf '\n'
@@ -2834,8 +2833,8 @@ case "$COMMAND" in
         if isWorldAvailable "$arg"; then
           WORLDS="$WORLDS $arg"
         else
-          printf "World '$arg' not recognized.\n"
-          printf "  Usage:  $PROG $COMMAND <world1> <world2> <...>\n"
+          printf "World '%s' not recognized.\n" "$arg"
+          printf "  Usage:  %s %s <world1> <world2> <...>\n" "$PROG" "$COMMAND"
           exit 1
         fi
       done
@@ -2862,7 +2861,7 @@ case "$COMMAND" in
         # Show the status of each world requested.
         printf "Minecraft Server Status:\n"
         for WORLD in $WORLDS; do
-          printf "  $WORLD: "
+          printf "  %s: " "$WORLD"
           worldStatus $WORLD
         done
         ;;
@@ -2875,8 +2874,8 @@ case "$COMMAND" in
         if isWorldEnabled "$arg"; then
           WORLDS="$WORLDS $arg"
         else
-          printf "World '$arg' not recognized.\n"
-          printf "  Usage:  $PROG $COMMAND <world1> <world2> <...>\n"
+          printf "World '%s' not recognized.\n" "$arg"
+          printf "  Usage:  %s %s <world1> <world2> <...>\n" "$PROG" "$COMMAND"
           exit 1
         fi
       done
@@ -2891,7 +2890,7 @@ case "$COMMAND" in
     printf "Synchronizing Minecraft Server:"
     for WORLD in $WORLDS; do
       if serverRunning $WORLD; then
-        printf " $WORLD"
+        printf " %s" "$WORLD"
         sendCommand $WORLD "save-all"
         if true_value $ENABLE_MIRROR; then
           sendCommand $WORLD "save-off"
@@ -2915,14 +2914,14 @@ case "$COMMAND" in
       printf "Broadcasting command to world:"
       for WORLD in $WORLDS; do
         if serverRunning $WORLD; then
-          printf " $WORLD"
+          printf " %s" "$WORLD"
           sendCommand $WORLD "$*"
         fi
       done
       printf ".\n"
     else
-      printf "Usage:  $PROG $COMMAND <command>\n"
-      printf "   ie:  $PROG $COMMAND say Hello World!\n"
+      printf "Usage:  %s %s <command>\n" "$PROG" "$COMMAND"
+      printf "   ie:  %s %s say Hello World!\n" "$PROG" "$COMMAND"
       exit 1
     fi
     ;;
@@ -2931,44 +2930,44 @@ case "$COMMAND" in
     if isWorldEnabled "$1" && [ -n "$2" ]; then
       WORLD=$1
       shift 1
-      printf "Sending command to world: $WORLD - '$*'.\n"
+      printf "Sending command to world: %s - '%s'.\n" "$WORLD" "$*"
       sendCommand $WORLD "$*"
     else
-      printf "Minecraft world '$1' not enabled or not found!\n"
-      printf "Usage:  $PROG $COMMAND <world> <command>\n"
-      printf "   ie:  $PROG $COMMAND world say Hello World!\n"
+      printf "Minecraft world '%s' not enabled or not found!\n" "$1"
+      printf "Usage:  %s %s <world> <command>\n" "$PROG" "$COMMAND"
+      printf "   ie:  %s %s world say Hello World!\n" "$PROG" "$COMMAND"
       exit 1
     fi
     ;;
   console)
     # Check for the world command line argument.
     if isWorldEnabled "$1"; then
-      printf "Connecting to server console: $1.\n"
+      printf "Connecting to server console: %s.\n" "$1"
       printf "  Hit <Ctrl-D> to detach.\n"
       sleep 3
       serverConsole $1
     else
       if [ -n "$1" ]; then
-        printf "Minecraft world '$1' not enabled or not found!\n"
+        printf "Minecraft world '%s' not enabled or not found!\n" "$1"
       else
         printf "Minecraft world not provided!\n"
       fi
-      printf "  Usage:  $PROG $COMMAND <world>\n"
+      printf "  Usage:  %s %s <world>\n" "$PROG" "$COMMAND"
       exit 1
     fi
     ;;
   watch)
     # Check for the world command line argument.
     if isWorldEnabled "$1"; then
-      printf "Monitoring Minecraft Server: $1.\n"
+      printf "Monitoring Minecraft Server: %s.\n" "$1"
       watchLog $1
     else
       if [ -n "$1" ]; then
-        printf "Minecraft world '$1' not enabled or not found!\n"
+        printf "Minecraft world '%s' not enabled or not found!\n" "$1"
       else
         printf "Minecraft world not provided!\n"
       fi
-      printf "  Usage:  $PROG $COMMAND <world>\n"
+      printf "  Usage:  %s %s <world>\n" "$PROG" "$COMMAND"
       exit 1
     fi
     ;;
@@ -2979,8 +2978,8 @@ case "$COMMAND" in
         if isWorldEnabled "$arg"; then
           WORLDS="$WORLDS $arg"
         else
-          printf "World '$arg' does not exist or not enabled.\n"
-          printf "  Usage:  $PROG $COMMAND <world1> <world2> <...>\n"
+          printf "World '%s' does not exist or not enabled.\n" "$arg"
+          printf "  Usage:  %s %s <world1> <world2> <...>\n" "$PROG" "$COMMAND"
           exit 1
         fi
       done
@@ -2994,7 +2993,7 @@ case "$COMMAND" in
     # Rotate the log for each world requested.
     printf "Rotating Minecraft Server Log:"
     for WORLD in $WORLDS; do
-      printf " $WORLD"
+      printf " %s" "$WORLD"
       rotateLog $WORLD
     done
     printf ".\n"
@@ -3006,8 +3005,8 @@ case "$COMMAND" in
         if isWorldEnabled "$arg"; then
           WORLDS="$WORLDS $arg"
         else
-          printf "World '$arg' does not exist or not enabled.\n"
-          printf "  Usage:  $PROG $COMMAND <world1> <world2> <...>\n"
+          printf "World '%s' does not exist or not enabled.\n" "$arg"
+          printf "  Usage:  %s %s <world1> <world2> <...>\n" "$PROG" "$COMMAND"
           exit 1
         fi
       done
@@ -3021,7 +3020,7 @@ case "$COMMAND" in
     # Backup each world requested.
     printf "Backing up Minecraft Server:"
     for WORLD in $WORLDS; do
-      printf " $WORLD"
+      printf " %s" "$WORLD"
       # Create a lock file so that we don't create duplicate processes.
       if $(createLockFile $WORLD "backup"); then
         if serverRunning $WORLD; then
@@ -3038,7 +3037,7 @@ case "$COMMAND" in
         # Remove the lock file.
         removeLockFile $WORLD "backup"
       else
-        printf "\nError lock file for world $WORLD could not be created."
+        printf "\nError lock file for world %s could not be created." "$WORLD"
         printf "  Is the world already running a backup?\n"
       fi
     done
@@ -3048,27 +3047,27 @@ case "$COMMAND" in
     if isWorldEnabled "$1"; then
       worldBackupList "$1"
     elif [ -n "$1" ]; then
-      printf "World '$1' does not exist or not enabled.\n"
-      printf "  Usage:  $PROG $COMMAND <world>\n"
+      printf "World '%s' does not exist or not enabled.\n" "$1"
+      printf "  Usage:  %s %s <world>\n" "$PROG" "$COMMAND"
       exit 1
     else
       printf "World not supplied.\n"
-      printf "  Usage:  $PROG $COMMAND <world>\n"
+      printf "  Usage:  %s %s <world>\n" "$PROG" "$COMMAND"
       exit 1
     fi
     ;;
   restore-backup)
     if [ -z $1 ]; then
       printf "World not supplied.\n"
-      printf "  Usage:  $PROG $COMMAND <world> <datetime>\n"
+      printf "  Usage:  %s %s <world> <datetime>\n" "$PROG" "$COMMAND"
       exit 1
     elif ! isWorldAvailable "$1"; then
-      printf "World '$1' not recognized.\n"
-      printf "  Usage:  $PROG $COMMAND <world> <datetime>\n"
+      printf "World '%s' not recognized.\n" "$1"
+      printf "  Usage:  %s %s <world> <datetime>\n" "$PROG" "$COMMAND"
       exit 1
     elif serverRunning "$1"; then
-      printf "World '$1' is running. Stop it first\n"
-      printf "  $PROG stop $1\n"
+      printf "World '%s' is running. Stop it first\n" "$1"
+      printf "  %s stop %s\n" "$PROG" "$1"
       exit 1
     elif worldBackup "$1"; then
       worldBackupRestore "$1" "$2"
@@ -3095,8 +3094,8 @@ case "$COMMAND" in
         if isWorldEnabled "$arg"; then
           WORLDS="$WORLDS $arg"
         else
-          printf "World '$arg' does not exist or not enabled.\n"
-          printf "  Usage:  $PROG $COMMAND <world1> <world2> <...>\n"
+          printf "World '%s' does not exist or not enabled.\n" "$arg"
+          printf "  Usage:  %s %s <world1> <world2> <...>\n" "$PROG" "$COMMAND"
           exit 1
         fi
       done
@@ -3113,7 +3112,7 @@ case "$COMMAND" in
     for WORLD in $WORLDS; do
       if serverRunning $WORLD; then
         RUNNING="$RUNNING $WORLD"
-        printf " $WORLD"
+        printf " %s" "$WORLD"
         if [ $(queryNumUsers $WORLD) -gt 0 ]; then
           sendCommand $WORLD "say The server admin has initiated a software update."
           sendCommand $WORLD "say The server will restart and update in 1 minute..."
@@ -3128,7 +3127,7 @@ case "$COMMAND" in
     printf ".\n"
     printf "Backing up Minecraft Server:"
     for WORLD in $WORLDS; do
-      printf " $WORLD"
+      printf " %s" "$WORLD"
       worldBackup $WORLD
     done
     printf ".\n"
@@ -3136,7 +3135,7 @@ case "$COMMAND" in
     if [ "$COMMAND" = "force-update" ]; then
       printf "Removing Minecraft Server software:"
       for WORLD in $WORLDS; do
-        printf " $WORLD"
+        printf " %s" "$WORLD"
         rm -f $(getServerLocation "$WORLD")/$(getServerJar "$WORLD")
       done
       printf ".\n"
@@ -3144,13 +3143,13 @@ case "$COMMAND" in
     # Update the server software.
     printf "Updating Server Software:"
     for WORLD in $WORLDS; do
-      printf " $WORLD"
+      printf " %s" "$WORLD"
       updateServerSoftware "$WORLD"
     done
     printf ".\n"
     printf "Restarting Minecraft Server:"
     for WORLD in $RUNNING; do
-      printf " $WORLD"
+      printf " %s" "$WORLD"
       start $WORLD
     done
     printf ".\n"
@@ -3169,8 +3168,8 @@ case "$COMMAND" in
         if isWorldEnabled "$arg"; then
           WORLDS="$WORLDS $arg"
         else
-          printf "World '$arg' does not exist or not enabled.\n"
-          printf "  Usage:  $PROG $COMMAND <world1> <world2> <...>\n"
+          printf "World '%s' does not exist or not enabled.\n" "$arg"
+          printf "  Usage:  %s %s <world1> <world2> <...>\n" "$PROG" "$COMMAND"
           exit 1
         fi
       done
@@ -3184,14 +3183,14 @@ case "$COMMAND" in
     # Run Minecraft Overviewer on each world requested.
     printf "Running Minecraft Overviewer mapping:"
     for WORLD in $WORLDS; do
-      printf " $WORLD"
+      printf " %s" "$WORLD"
       # Create a lock file so that we don't create duplicate processes.
       if $(createLockFile $WORLD "overviewer"); then
         overviewer "$WORLD"
         # Remove the lock file.
         removeLockFile $WORLD "overviewer"
       else
-        printf "\nError lock file for world $WORLD could not be created."
+        printf "\nError lock file for world %s could not be created." "$WORLD"
         printf "  Is the world already running Overviewer?\n"
       fi
     done
@@ -3204,8 +3203,8 @@ case "$COMMAND" in
         if isWorldEnabled "$arg"; then
           WORLDS="$WORLDS $arg"
         else
-          printf "World '$arg' does not exist or not enabled.\n"
-          printf "  Usage:  $PROG $COMMAND <world1> <world2> <...>\n"
+          printf "World '%s' does not exist or not enabled.\n" "$arg"
+          printf "  Usage:  %s %s <world1> <world2> <...>\n" "$PROG" "$COMMAND"
           exit 1
         fi
       done
