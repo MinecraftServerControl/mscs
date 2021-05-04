@@ -2792,7 +2792,7 @@ case "$COMMAND" in
   create | new)
     if [ -n "$1" ]; then
       if [ -z "$2" ]; then
-        printf 'Creating world at default port %s' $DEFAULT_PORT
+        printf "Creating world at default port %s" "$DEFAULT_PORT"
         createWorld "$1" "$DEFAULT_PORT"
         printf ".\n"
       else
@@ -2801,8 +2801,8 @@ case "$COMMAND" in
         printf ".\n"
       fi
     elif [ -z "$(getAvailableWorlds)" ]; then
-      printf 'Creating default world "%s" at default port %s' \
-        $DEFAULT_WORLD $DEFAULT_PORT
+      printf "Creating default world '%s' at default port %s" \
+        "$DEFAULT_WORLD" "$DEFAULT_PORT"
       createWorld "$DEFAULT_WORLD" "$DEFAULT_PORT"
       printf ".\n"
     fi
