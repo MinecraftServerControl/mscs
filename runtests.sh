@@ -18,7 +18,7 @@ MSCS_DEFAULTS="/tmp/mscs.defaults"
 testworld="mscs-testdata"
 # tests will write to this propfile to verify parsing etc.
 propfile="$WORLDS_LOCATION/$testworld/mscs.properties"
-mkdir -p $(dirname "$propfile") || exit 1
+mkdir -p "$(dirname "$propfile")" || exit 1
 
 # run the tests; no news is good news!
 for t in tests/*; do
