@@ -41,7 +41,6 @@ PROG=$(basename $0)
 # ---------------------------------------------------------------------------
 # Detect its presence and location for later.
 JAVA=$(which java)
-PERL=$(which perl)
 PYTHON=$(which python)
 WGET=$(which wget)
 RDIFF_BACKUP=$(which rdiff-backup)
@@ -329,7 +328,7 @@ EOF
 getJavaPID() {
   MCUSER=$(whoami)
   PID=$(
-    ps -a -U $MCUSER -o pid,comm,args -ww | $PERL -sne '
+    ps -a -U $MCUSER -o pid,comm,args -ww | perl -sne '
       if ($_ =~ /^\s*(\d+)\s+java.+mscs-world=\Q$world\E$/) { print $1; }
     ' -- -world="$1"
   )
@@ -399,7 +398,7 @@ serverRunning() {
 # @param 2 The command to send.
 # ---------------------------------------------------------------------------
 sendCommand() {
-  echo "$2" | $PERL -e '
+  echo "$2" | perl -e '
     while (<>) { $_ =~ s/[\r\n]+//g; $cmd .= $_; } print "$cmd\r";
   ' >>$WORLDS_LOCATION/$1/console.in
 }
@@ -623,7 +622,7 @@ getValue() {
   # Make sure the file exists.
   if [ -e "$1" ]; then
     # Find the key/value combo.
-    KEY=$(cat $1 | $PERL -sne '
+    KEY=$(cat $1 | perl -sne '
       # Remove single and double quotes plus CR and LF.
       $_ =~ s/[\x22\x27\r\n]//g;
       # Remove comments that begin with # or ;.
@@ -631,7 +630,7 @@ getValue() {
       # Extract the key.
       if ($_ =~ /^\s*(\Q$key\E)\s*=\s*.*$/i) { print lc $1; }
     ' -- -key="$2")
-    VALUE=$(cat $1 | $PERL -sne '
+    VALUE=$(cat $1 | perl -sne '
       # Remove single and double quotes plus CR and LF.
       $_ =~ s/[\x22\x27\r\n]//g;
       # Remove comments that begin with # or ;.
@@ -661,13 +660,13 @@ setValue() {
   touch "$1"
   # Replace the key/value combo if it already exists, otherwise just
   # append it to the end of the file.
-  KEY_VALUE=$(cat $1 | $PERL -sne '
+  KEY_VALUE=$(cat $1 | perl -sne '
     $_ =~ s/[\r]//;
     if ($_ =~ /^(\Q$key\E=.*)$/) { print "$1"; }
   ' -- -key="$2")
   if [ -n "$KEY_VALUE" ]; then
     mv $1 $1.bak
-    cat $1.bak | $PERL -sne '
+    cat $1.bak | perl -sne '
       $_ =~ s/[\r]//;
       if ($_ =~ /^\Q$key\E=.*$/) { print "$key=$value\n"; } else { print; }
     ' -- -key="$2" -value="$3" > $1
@@ -694,7 +693,7 @@ getDefaultsValue() {
 # ---------------------------------------------------------------------------
 getEULAValue() {
   EULA_FILE=$WORLDS_LOCATION/$1/eula.txt
-  getValue "$EULA_FILE" "eula" "false" | $PERL -ne 'print lc'
+  getValue "$EULA_FILE" "eula" "false" | perl -ne 'print lc'
 }
 
 # ---------------------------------------------------------------------------
@@ -787,7 +786,7 @@ getCurrentMinecraftVersion() {
   # Determine the version type for the current world.
   TYPE=$(getMSCSValue "$1" "mscs-version-type" "$DEFAULT_VERSION_TYPE")
   # Extract the current version information.
-  VERSION=$(cat $VERSIONS_JSON | $PERL -0777 -sne '
+  VERSION=$(cat $VERSIONS_JSON | perl -0777 -sne '
     use JSON;
     $json = decode_json ($_);
     $version = $json->{latest}{$type};
@@ -810,7 +809,7 @@ getCurrentMinecraftVersion() {
 # @return The sha1sum for the Minecraft client or server.
 # ---------------------------------------------------------------------------
 getMinecraftVersionDownloadSHA1() {
-  cat $VERSIONS_JSON | $PERL -0777 -sne '
+  cat $VERSIONS_JSON | perl -0777 -sne '
     use JSON;
     use LWP::Simple;
     my $json = decode_json ($_);
@@ -836,7 +835,7 @@ getMinecraftVersionDownloadSHA1() {
 # @return The download URL for the Minecraft client or server.
 # ---------------------------------------------------------------------------
 getMinecraftVersionDownloadURL() {
-  cat $VERSIONS_JSON | $PERL -0777 -sne '
+  cat $VERSIONS_JSON | perl -0777 -sne '
     use JSON;
     use LWP::Simple;
     my $json = decode_json ($_);
@@ -861,7 +860,7 @@ getMinecraftVersionDownloadURL() {
 # @return The release time of the Minecraft version number.
 # ---------------------------------------------------------------------------
 getMinecraftVersionReleaseTime() {
-  cat $VERSIONS_JSON | $PERL -0777 -sne '
+  cat $VERSIONS_JSON | perl -0777 -sne '
     use JSON;
     $json = decode_json ($_);
     foreach $ver (@{$json->{versions}}) {
@@ -886,7 +885,7 @@ getClientVersion() {
   fi
   # Get the client version, use the default version if not provided.
   getMSCSValue "$1" "mscs-client-version" "$DEFAULT_CLIENT_VERSION" |
-    $PERL -sne '
+    perl -sne '
     $_ =~ s/\$CURRENT_VERSION/$current_version/g;
     $_ =~ s/[\s#%*+?^\${}()|[\]\\]/-/g;
     print;
@@ -912,7 +911,7 @@ getClientJar() {
   fi
   # Get the client jar, use the default value if not provided.
   getMSCSValue "$1" "mscs-client-jar" "$DEFAULT_CLIENT_JAR" |
-    $PERL -sne '
+    perl -sne '
     $_ =~ s/\$CURRENT_VERSION/$current_version/g;
     $_ =~ s/\$CLIENT_VERSION/$client_version/g;
     print;
@@ -938,7 +937,7 @@ getClientLocation() {
   fi
   # Get the client location, use the default value if not provided.
   getMSCSValue "$1" "mscs-client-location" "$DEFAULT_CLIENT_LOCATION" |
-    $PERL -sne '
+    perl -sne '
     $_ =~ s/\$CURRENT_VERSION/$current_version/g;
     $_ =~ s/\$CLIENT_VERSION/$client_version/g;
     print;
@@ -963,7 +962,7 @@ getClientURL() {
     exit 1
   fi
   # Get the client download URL, use the default value if not provided.
-  URL=$(getMSCSValue "$1" "mscs-client-url" "$DEFAULT_CLIENT_URL" | $PERL -sne '
+  URL=$(getMSCSValue "$1" "mscs-client-url" "$DEFAULT_CLIENT_URL" | perl -sne '
     $_ =~ s/\$CURRENT_VERSION/$current_version/g;
     $_ =~ s/\$CLIENT_VERSION/$client_version/g;
     $_ =~ s/\\\:/\:/g;
@@ -991,7 +990,7 @@ getServerVersion() {
   fi
   # Get the server version, use the default version if not provided.
   getMSCSValue "$1" "mscs-server-version" "$DEFAULT_SERVER_VERSION" |
-    $PERL -sne '
+    perl -sne '
     $_ =~ s/\$CURRENT_VERSION/$current_version/g;
     $_ =~ s/[\s#%*+?^\${}()|[\]\\]/-/g;
     print;
@@ -1017,7 +1016,7 @@ getServerJar() {
   fi
   # Get the server jar, use the default value if not provided.
   getMSCSValue "$1" "mscs-server-jar" "$DEFAULT_SERVER_JAR" |
-    $PERL -sne '
+    perl -sne '
     $_ =~ s/\$CURRENT_VERSION/$current_version/g;
     $_ =~ s/\$SERVER_VERSION/$server_version/g;
     print;
@@ -1043,7 +1042,7 @@ getServerLocation() {
   fi
   # Get the server location, use the default value if not provided.
   getMSCSValue "$1" "mscs-server-location" "$DEFAULT_SERVER_LOCATION" |
-    $PERL -sne '
+    perl -sne '
     $_ =~ s/\$CURRENT_VERSION/$current_version/g;
     $_ =~ s/\$SERVER_VERSION/$server_version/g;
     print;
@@ -1068,7 +1067,7 @@ getServerURL() {
     exit 1
   fi
   # Get the server download URL, use the default value if not provided.
-  URL=$(getMSCSValue "$1" "mscs-server-url" "$DEFAULT_SERVER_URL" | $PERL -sne '
+  URL=$(getMSCSValue "$1" "mscs-server-url" "$DEFAULT_SERVER_URL" | perl -sne '
     $_ =~ s/\$CURRENT_VERSION/$current_version/g;
     $_ =~ s/\$SERVER_VERSION/$server_version/g;
     $_ =~ s/\\\:/\:/g;
@@ -1127,7 +1126,7 @@ getServerCommand() {
   )
   # Get the server command, use the default value if not provided.
   getMSCSValue "$1" "mscs-server-command" "$DEFAULT_SERVER_COMMAND" |
-    $PERL -sne '
+    perl -sne '
     $_ =~ s/\$JAVA/$java/g;
     $_ =~ s/\$CURRENT_VERSION/$current_version/g;
     $_ =~ s/\$SERVER_VERSION/$server_version/g;
@@ -1230,7 +1229,7 @@ rotateLog() {
     cp /dev/null "$WORLD_DIR/server.log"
     # Rotate the files in the world's logs directory.
     for LOG in $(ls -r $WORLD_DIR/logs/$DATE-*.log.gz); do
-      NUM=$(echo $LOG | $PERL -sne 'print ($1 + 1) if ($_ =~ /\Q$date\E-(\d+)/)' -- -date="$DATE")
+      NUM=$(echo $LOG | perl -sne 'print ($1 + 1) if ($_ =~ /\Q$date\E-(\d+)/)' -- -date="$DATE")
       mv -f $LOG "$WORLD_DIR/logs/$DATE-$NUM.log.gz"
     done
   fi
@@ -1464,7 +1463,7 @@ worldBackup() {
   WORLD_BACKUP_EXCLUDED_FILES=$(getMSCSValue $1 "mscs-backup-excluded-files" "$BACKUP_EXCLUDED_FILES")
   #For each comma separated value, evaluate the $WORLD_NAME variable, and add to the list of rdiff_backup excluded files
   for EXCLUDED_USER_LOCATION in $WORLD_BACKUP_EXCLUDED_FILES; do
-    EVALUATED_EXCLUDED_USER_LOCATION=$(echo "$EXCLUDED_USER_LOCATION" | $PERL -sne '
+    EVALUATED_EXCLUDED_USER_LOCATION=$(echo "$EXCLUDED_USER_LOCATION" | perl -sne '
     $_ =~ s/\$WORLD_NAME/$world_name/g;
     print;
   ' -- -world_name="$1")
@@ -1804,7 +1803,7 @@ querySendPacket() {
     # Remove any old responses from the query.out buffer file.
     printf "" >"$WORLD_DIR/query.out"
     # Pack the hex string packet and write it to the query.in buffer file.
-    $PERL -se '
+    perl -se '
       print map { pack ("C", hex($_)) } ($packet =~ /(..)/g);
     ' -- -packet="$PACKET" >>"$WORLD_DIR/query.in"
     # Give the Query server a moment to respond.
@@ -1812,7 +1811,7 @@ querySendPacket() {
     # Unpack the response packet from the query.out buffer file. There are a
     # variable amount of null bytes at the start of the response packet, so
     # find the start of the response by searching for the packet type and ID.
-    RESPONSE=$(cat $WORLD_DIR/query.out | $PERL -0777 -sne '
+    RESPONSE=$(cat $WORLD_DIR/query.out | perl -0777 -sne '
       foreach (unpack "C*", $_) {
         $char = sprintf ("%.2x", $_);
         $char =~ s/0a/5c6e/;
@@ -1826,7 +1825,7 @@ querySendPacket() {
   # in the format requested.
   if [ -n "$RESPONSE" ]; then
     # Return the response in the format requested.
-    $PERL -se '
+    perl -se '
       $packed = join "", map { pack ("C", hex($_)) } ($response =~ /(..)/g);
       printf "%s\n", join "\t", unpack ($format, $packed);
     ' -- -response="$RESPONSE" -format="$4"
@@ -2068,27 +2067,27 @@ if [ ! -e "$JAVA" ]; then
   echo "sudo apt-get install default-jre"
   exit 1
 fi
-if [ ! -e "$PERL" ]; then
+if [ ! -e "$(which perl)" ]; then
   echo "ERROR: Perl not found!"
   echo "Try installing this with:"
   echo "sudo apt-get install perl"
   exit 1
 fi
-$PERL -e 'use JSON;' >/dev/null 2>&1
+perl -e 'use JSON;' >/dev/null 2>&1
 if [ $? -ne 0 ]; then
   echo "ERROR: libjson-perl not found!"
   echo "Try installing this with:"
   echo "sudo apt-get install libjson-perl"
   exit 1
 fi
-$PERL -e 'use LWP::Simple;' >/dev/null 2>&1
+perl -e 'use LWP::Simple;' >/dev/null 2>&1
 if [ $? -ne 0 ]; then
   echo "ERROR: libwww-perl not found!"
   echo "Try installing this with:"
   echo "sudo apt-get install libwww-perl"
   exit 1
 fi
-$PERL -e 'use LWP::Protocol::https;' >/dev/null 2>&1
+perl -e 'use LWP::Protocol::https;' >/dev/null 2>&1
 if [ $? -ne 0 ]; then
   echo "ERROR: liblwp-protocol-https-perl not found!"
   echo "Try installing this with:"
