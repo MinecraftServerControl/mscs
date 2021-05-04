@@ -4,7 +4,7 @@
 
 want='$JVM_ARGS'
 # verify DEFAULT_SERVER_COMMAND contains $JVM_ARGS string literal before -jar flag
-if ! printf "$DEFAULT_SERVER_COMMAND" | grep -qs -- ".*$want.*-jar"; then
+if ! printf "%s" "$DEFAULT_SERVER_COMMAND" | grep -qs -- ".*$want.*-jar"; then
     terr wrong DEFAULT_SERVER_COMMAND
     terr got \"$DEFAULT_SERVER_COMMAND\"
     terr want \"$want\" before '-jar'
@@ -34,7 +34,7 @@ getServerVersion () {
 
 # verify getServerCommand returns correct jvm args
 got=$(getServerCommand $testworld)
-if ! printf "$got" | grep -qs -- "$want"; then
+if ! printf "%s" "$got" | grep -qs -- "$want"; then
     terr "getServerCommand did not return the expected command"
     terr got $got
     terr want substring $want
