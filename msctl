@@ -41,7 +41,6 @@ PROG=$(basename $0)
 # ---------------------------------------------------------------------------
 # Detect its presence and location for later.
 JAVA=$(which java)
-PERL=$(which perl)
 PYTHON=$(which python3)
 WGET=$(which wget)
 RDIFF_BACKUP=$(which rdiff-backup)
