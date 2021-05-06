@@ -2141,7 +2141,7 @@ fi
 if [ ! -e "$PYTHON" ]; then
   echo "ERROR: Python not found!"
   echo "Try installing this with:"
-  echo "sudo apt-get install python"
+  echo "sudo apt-get install python3"
   exit 1
 fi
 if [ ! -e "$WGET" ]; then
