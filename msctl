@@ -41,7 +41,8 @@ PROG=$(basename $0)
 # ---------------------------------------------------------------------------
 # Detect its presence and location for later.
 JAVA=$(which java)
-PYTHON=$(which python)
+PERL=$(which perl)
+PYTHON=$(which python3)
 WGET=$(which wget)
 RDIFF_BACKUP=$(which rdiff-backup)
 RSYNC=$(which rsync)
@@ -2097,7 +2098,7 @@ fi
 if [ ! -e "$PYTHON" ]; then
   echo "ERROR: Python not found!"
   echo "Try installing this with:"
-  echo "sudo apt-get install python"
+  echo "sudo apt-get install python3"
   exit 1
 fi
 if [ ! -e "$WGET" ]; then
