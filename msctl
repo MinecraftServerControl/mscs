@@ -389,7 +389,7 @@ true_value() {
 # ---------------------------------------------------------------------------
 serverRunning() {
   # Try to determine if the world is running.
-  if [ $(getJavaPID "$1") -gt 0 ]; then
+  if [ "$(getJavaPID "$1")" -gt 0 ]; then
     # Return a true value (success).
     return 0
   else
@@ -517,7 +517,7 @@ importWorld() {
   local NAME
   mkdir -p "$WORLDS_LOCATION/$2"
   cp -R $1/* $WORLDS_LOCATION/$2
-  chown $(id -un):$(id -gn) -R $WORLDS_LOCATION/$2
+  chown "$(id -un)":"$(id -gn)" -R "$WORLDS_LOCATION/$2"
   NAME=$(getServerPropertiesValue $2 'level-name')
   if [ -d $WORLDS_LOCATION/$2/$NAME ]; then
     mv $WORLDS_LOCATION/$2/$NAME $WORLDS_LOCATION/$2/$2
@@ -1256,7 +1256,7 @@ rotateLog() {
   # Archive and rotate the log files for old Minecraft servers (Versions 1.7
   # and greater do this automatically).
   if [ -e "$WORLD_DIR/server.log" ] &&
-    [ $(wc -l <$WORLD_DIR/server.log) -ge 1 ]; then
+    [ "$(wc -l <$WORLD_DIR/server.log)" -ge 1 ]; then
     # Make a copy of the log file in the world's logs directory.
     DATE=$(date +%F)
     cp "$WORLD_DIR/server.log" "$WORLD_DIR/logs/$DATE-0.log"
@@ -1282,10 +1282,10 @@ watchLog() {
   # Make sure that the latest.log file exists.
   if [ -e "$WORLD_DIR/logs/latest.log" ]; then
     # Watch the log file of worlds running Minecraft 1.7 +.
-    tail -n0 -f --pid=$(getJavaPID "$1") $WORLD_DIR/logs/latest.log
+    tail -n0 -f --pid="$(getJavaPID "$1")" "$WORLD_DIR/logs/latest.log"
   elif [ -e "$WORLD_DIR/server.log" ]; then
     # Watch the log file of worlds running older Minecraft servers.
-    tail -n0 -f --pid=$(getJavaPID "$1") $WORLD_DIR/server.log
+    tail -n0 -f --pid="$(getJavaPID "$1")" "$WORLD_DIR/server.log"
   fi
 }
 
@@ -1592,7 +1592,7 @@ forceStop() {
     sleep 1
   done
   # Kill the process id of the world server.
-  kill -9 $(getJavaPID "$1") >/dev/null 2>&1
+  kill -9 "$(getJavaPID "$1")" >/dev/null 2>&1
   # Properly clean up.
   stop $1
 }
@@ -1813,7 +1813,7 @@ overviewer() {
   local SETTINGS_FILE LOG_FILE VERSION_TEST
   SETTINGS_FILE="$WORLDS_LOCATION/$1/overviewer-settings.py"
   LOG_FILE="$WORLDS_LOCATION/$1/logs/overviewer.log"
-  VERSION_TEST=$(compareMinecraftVersions $(getServerVersion $1) 1.7.2)
+  VERSION_TEST="$(compareMinecraftVersions $(getServerVersion $1) 1.7.2)"
   # Make sure this world has a server.properties file before mapping.
   if [ ! -e "$WORLDS_LOCATION/$1/server.properties" ]; then
     return
@@ -2133,7 +2133,7 @@ queryDetailedStatusJSON() {
     HOSTPORT=$(printf "%s" "$STATUS" | cut -f 23)
     HOSTIP=$(printf "%s" "$STATUS" | cut -f 25)
     if [ $NUMPLAYERS -gt 0 ]; then
-      PLAYERS=$(printf "%s\"" "$PLAYERS" $(printf "%s" "$STATUS" | cut -f $((30))))
+      PLAYERS="$(printf "%s\"" "$PLAYERS" $(printf "%s" "$STATUS" | cut -f $((30))))"
       COUNTER=1
       while [ $COUNTER -lt $NUMPLAYERS ]; do
         PLAYERS=$(printf "%s, \"%s\"" "$PLAYERS" $(printf "%s" "$STATUS" | cut -f $((30 + COUNTER))))
