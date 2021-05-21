@@ -3192,7 +3192,7 @@ case "$COMMAND" in
     for WORLD in $WORLDS; do
       printf " %s" "$WORLD"
       # Create a lock file so that we don't create duplicate processes.
-      if $(createLockFile $WORLD "overviewer"); then
+      if createLockFile "$WORLD" "overviewer"; then
         overviewer "$WORLD"
         # Remove the lock file.
         removeLockFile $WORLD "overviewer"
