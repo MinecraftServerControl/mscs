@@ -389,7 +389,7 @@ true_value() {
 # ---------------------------------------------------------------------------
 serverRunning() {
   # Try to determine if the world is running.
-  if [ "$(getJavaPID "$1")" -gt 0 ]; then
+  if [ "$(getJavaPID '$1')" -gt 0 ]; then
     # Return a true value (success).
     return 0
   else
