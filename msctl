@@ -1813,7 +1813,7 @@ overviewer() {
   local SETTINGS_FILE LOG_FILE VERSION_TEST
   SETTINGS_FILE="$WORLDS_LOCATION/$1/overviewer-settings.py"
   LOG_FILE="$WORLDS_LOCATION/$1/logs/overviewer.log"
-  VERSION_TEST="$(compareMinecraftVersions $(getServerVersion $1) 1.7.2)"
+  VERSION_TEST="$(compareMinecraftVersions "$(getServerVersion "$1")" 1.7.2)"
   # Make sure this world has a server.properties file before mapping.
   if [ ! -e "$WORLDS_LOCATION/$1/server.properties" ]; then
     return
