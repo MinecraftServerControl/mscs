@@ -3234,7 +3234,7 @@ case "$COMMAND" in
     for WORLD in $WORLDS; do
       printf " %s" "$WORLD"
       # Create a lock file so that we don't create duplicate processes.
-      if $(createLockFile $WORLD "backup"); then
+      if createLockFile $WORLD "backup"; then
         if serverRunning $WORLD; then
           sendCommand $WORLD "say Backing up the world."
           sendCommand $WORLD "save-all"
