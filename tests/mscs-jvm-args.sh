@@ -11,12 +11,14 @@ if ! printf "%s" "$DEFAULT_SERVER_COMMAND" | grep -qs -- ".*$want.*-jar"; then
 fi
 
 want="-Dtesting-the-jvmargs"
+propfile=""
 
 # write the config under test
 cat > "$propfile" <<EOF
 mscs-jvm-args=$want
 EOF
 
+testworld=""
 # verify getMSCSValue returns configured value
 got=$(getMSCSValue "$testworld" "mscs-jvm-args" "")
 if [ "$got" != "$want" ]; then
