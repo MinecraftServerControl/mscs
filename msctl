@@ -1228,7 +1228,8 @@ rotateLog() {
     # Empty the contents of the worlds log file.
     cp /dev/null "$WORLD_DIR/server.log"
     # Rotate the files in the world's logs directory.
-    for LOG in $(ls -r $WORLD_DIR/logs/$DATE-*.log.gz); do
+    for LOG in $WORLD_DIR/logs/$DATE-*.log.gz; do
+      [[ -e "$LOG" ]] || break  # handle the case of no log files
       NUM=$(echo $LOG | perl -sne 'print ($1 + 1) if ($_ =~ /\Q$date\E-(\d+)/)' -- -date="$DATE")
       mv -f $LOG "$WORLD_DIR/logs/$DATE-$NUM.log.gz"
     done
