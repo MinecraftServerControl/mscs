@@ -382,7 +382,7 @@ true_value() {
 # ---------------------------------------------------------------------------
 serverRunning() {
   # Try to determine if the world is running.
-  if [ $(getJavaPID "$1") -gt 0 ]; then
+  if [ "$(getJavaPID $1)" -gt 0 ]; then
     # Return a true value (success).
     return 0
   else
@@ -472,7 +472,7 @@ createWorld() {
 # ---------------------------------------------------------------------------
 deleteWorld() {
   # Delete the world directory.
-  rm -Rf "$WORLDS_LOCATION/$1"
+  rm -Rf "${WORLDS_LOCATION:?}/${1:?}"
 }
 
 # ---------------------------------------------------------------------------
@@ -506,7 +506,7 @@ enableWorld() {
 importWorld() {
   mkdir -p "$WORLDS_LOCATION/$2"
   cp -R $1/* $WORLDS_LOCATION/$2
-  chown $(id -un):$(id -gn) -R $WORLDS_LOCATION/$2
+  chown "$(id -un)":"$(id -gn)" -R "$WORLDS_LOCATION/$2"
   NAME=$(getServerPropertiesValue $2 'level-name')
   if [ -d $WORLDS_LOCATION/$2/$NAME ]; then
     mv $WORLDS_LOCATION/$2/$NAME $WORLDS_LOCATION/$2/$2
@@ -1220,7 +1220,7 @@ rotateLog() {
   # Archive and rotate the log files for old Minecraft servers (Versions 1.7
   # and greater do this automatically).
   if [ -e "$WORLD_DIR/server.log" ] &&
-    [ $(wc -l <$WORLD_DIR/server.log) -ge 1 ]; then
+    [ "$(wc -l <$WORLD_DIR/server.log)" -ge 1 ]; then
     # Make a copy of the log file in the world's logs directory.
     DATE=$(date +%F)
     cp "$WORLD_DIR/server.log" "$WORLD_DIR/logs/$DATE-0.log"
@@ -1228,7 +1228,8 @@ rotateLog() {
     # Empty the contents of the worlds log file.
     cp /dev/null "$WORLD_DIR/server.log"
     # Rotate the files in the world's logs directory.
-    for LOG in $(ls -r $WORLD_DIR/logs/$DATE-*.log.gz); do
+    for LOG in $WORLD_DIR/logs/$DATE-*.log.gz; do
+      [ -e "$LOG" ] || break  # handle the case of no log files
       NUM=$(echo $LOG | perl -sne 'print ($1 + 1) if ($_ =~ /\Q$date\E-(\d+)/)' -- -date="$DATE")
       mv -f $LOG "$WORLD_DIR/logs/$DATE-$NUM.log.gz"
     done
@@ -1245,10 +1246,10 @@ watchLog() {
   # Make sure that the latest.log file exists.
   if [ -e "$WORLD_DIR/logs/latest.log" ]; then
     # Watch the log file of worlds running Minecraft 1.7 +.
-    tail -n0 -f --pid=$(getJavaPID "$1") $WORLD_DIR/logs/latest.log
+    tail -n0 -f --pid="$(getJavaPID "$1")" "$WORLD_DIR/logs/latest.log"
   elif [ -e "$WORLD_DIR/server.log" ]; then
     # Watch the log file of worlds running older Minecraft servers.
-    tail -n0 -f --pid=$(getJavaPID "$1") $WORLD_DIR/server.log
+    tail -n0 -f --pid="$(getJavaPID "$1")" "$WORLD_DIR/server.log"
   fi
 }
 
@@ -1330,7 +1331,7 @@ start() {
     # SO DONT RESET THE MIRROR, just keep using it.
     if [ ! -L "$WORLD_DIR/$1" ]; then
       # Remove the mirror directory just in case.
-      rm -Rf "$MIRROR_PATH/$1"
+      rm -Rf "${MIRROR_PATH:?}/${1:?}"
       # Copy the world files over to the mirror.
       cp -a "$WORLD_DIR/$1" "$MIRROR_PATH/$1"
       if [ $? -ne 0 ]; then
@@ -1346,7 +1347,7 @@ start() {
     fi
   fi
   # Change to the world's directory.
-  cd $WORLD_DIR
+  cd $WORLD_DIR || exit
   # Delete any old console.in or console.out buffer files.
   rm -f "$WORLD_DIR/console.in" "$WORLD_DIR/console.out"
   # Initialize the console.in buffer file.
@@ -1405,7 +1406,7 @@ stop() {
     # Remove the symlink to the world-file mirror image.
     rm -f "$WORLDS_LOCATION/$1/$1"
     # Remove the world-file mirror image folder.
-    rm -Rf "$MIRROR_PATH/$1"
+    rm -Rf "${MIRROR_PATH:?}/${1:?}"
     # Move the world files back to their original path name.
     mv "$WORLDS_LOCATION/$1/$1-original" "$WORLDS_LOCATION/$1/$1"
   fi
@@ -1429,7 +1430,7 @@ forceStop() {
     sleep 1
   done
   # Kill the process id of the world server.
-  kill -9 $(getJavaPID "$1") >/dev/null 2>&1
+  kill -9 "$(getJavaPID "$1")" >/dev/null 2>&1
   # Properly clean up.
   stop $1
 }
@@ -1644,7 +1645,7 @@ updateServerSoftware() {
 overviewer() {
   SETTINGS_FILE="$WORLDS_LOCATION/$1/overviewer-settings.py"
   LOG_FILE="$WORLDS_LOCATION/$1/logs/overviewer.log"
-  VERSION_TEST=$(compareMinecraftVersions $(getServerVersion $1) 1.7.2)
+  VERSION_TEST="$(compareMinecraftVersions "$(getServerVersion "$1")" 1.7.2)"
   # Make sure this world has a server.properties file before mapping.
   if [ ! -e "$WORLDS_LOCATION/$1/server.properties" ]; then
     return
@@ -1958,10 +1959,10 @@ queryDetailedStatusJSON() {
     HOSTPORT=$(printf "%s" "$STATUS" | cut -f 23)
     HOSTIP=$(printf "%s" "$STATUS" | cut -f 25)
     if [ $NUMPLAYERS -gt 0 ]; then
-      PLAYERS=$(printf "%s\"" "$PLAYERS" $(printf "%s" "$STATUS" | cut -f $((30))))
+      PLAYERS="$(printf "%s\"" "$PLAYERS" "$(printf "%s" "$STATUS" | cut -f $((30)))")"
       COUNTER=1
       while [ $COUNTER -lt $NUMPLAYERS ]; do
-        PLAYERS=$(printf "%s, \"%s\"" "$PLAYERS" $(printf "%s" "$STATUS" | cut -f $((30 + COUNTER))))
+        PLAYERS="$(printf "%s, \"%s\"" "$PLAYERS" "$(printf "%s" "$STATUS" | cut -f $((30 + COUNTER)))")"
         COUNTER=$((COUNTER + 1))
       done
     fi
@@ -1998,12 +1999,12 @@ worldStatus() {
       MAX=$(printf "%s" "$STATUS" | cut -f 21)
       VERSION=$(printf "%s" "$STATUS" | cut -f 13)
       printf "running version %s (%d of %d users online).\n" "$VERSION" $NUM $MAX
-      printf "    Port: %d.\n" $(getServerPropertiesValue "$1" "server-port" "$DEFAULT_PORT")
+      printf "    Port: %d.\n" "$(getServerPropertiesValue "$1" "server-port" "$DEFAULT_PORT")"
       if [ $NUM -gt 0 ]; then
-        PLAYERS=$(printf "%s" $(printf "%s" "$STATUS" | cut -f 30))
+        PLAYERS="$(printf "%s" "$(printf "%s" "$STATUS" | cut -f 30)")"
         COUNTER=1
         while [ $COUNTER -lt $NUM ]; do
-          PLAYERS=$(printf "%s, %s" "$PLAYERS" $(printf "%s" "$STATUS" | cut -f $((30 + COUNTER))))
+          PLAYERS="$(printf "%s, %s" "$PLAYERS" "$(printf "%s" "$STATUS" | cut -f $((30 + COUNTER)))")"
           COUNTER=$((COUNTER + 1))
         done
         printf "    Players: %s.\n" "$PLAYERS"
@@ -2025,7 +2026,7 @@ worldStatus() {
       rev | cut -c 2- | rev | awk '{$1=int($1/1024)"GB";}{ print;}'
     )
     printf "    Memory used: %s (%s allocated).\n" "$USED_MEM" "$ALLOCATED_MEM"
-    printf "    Process ID: %d.\n" $(getJavaPID "$1")
+    printf "    Process ID: %d.\n" "$(getJavaPID "$1")"
   elif ! true_value "$(getMSCSValue $1 'mscs-enabled')"; then
     printf "disabled.\n"
   else
@@ -2414,7 +2415,7 @@ MIRROR_PATH=$(getDefaultsValue 'mscs-mirror-path' '/dev/shm/mscs')
 
 # Minecraft Overviewer Mapping Software Options
 # ---------------------------------------------------------------------------
-OVERVIEWER_BIN=$(getDefaultsValue 'mscs-overviewer-bin' $(which overviewer.py))
+OVERVIEWER_BIN=$(getDefaultsValue 'mscs-overviewer-bin' "$(which overviewer.py)")
 OVERVIEWER_URL=$(getDefaultsValue 'mscs-overviewer-url' 'http://overviewer.org')
 MAPS_LOCATION=$(getDefaultsValue 'mscs-maps-location' $LOCATION'/maps')
 MAPS_URL=$(getDefaultsValue 'mscs-maps-url' 'http://minecraft.server.com/maps')
@@ -2513,7 +2514,7 @@ case "$COMMAND" in
       # Try to stop the world cleanly.
       if serverRunning $WORLD; then
         printf " %s" "$WORLD"
-        if [ $(queryNumUsers $WORLD) -gt 0 ]; then
+        if [ "$(queryNumUsers $WORLD)" -gt 0 ]; then
           sendCommand $WORLD "say The server admin has initiated a server shut down."
           sendCommand $WORLD "say The server will shut down in 1 minute..."
           sleep 60
@@ -2564,7 +2565,7 @@ case "$COMMAND" in
     for WORLD in $WORLDS; do
       printf " %s" "$WORLD"
       if serverRunning $WORLD; then
-        if [ $(queryNumUsers $WORLD) -gt 0 ]; then
+        if [ "$(queryNumUsers $WORLD)" -gt 0 ]; then
           sendCommand $WORLD "say The server admin has initiated a server restart."
           sendCommand $WORLD "say The server will restart in 1 minute..."
           sleep 60
@@ -2637,7 +2638,7 @@ case "$COMMAND" in
     if serverRunning "$1"; then
       # If the world server has users logged in, announce that the world is
       # being modified.
-      if [ $(queryNumUsers "$1") -gt 0 ]; then
+      if [ "$(queryNumUsers "$1")" -gt 0 ]; then
         sendCommand "$1" "say The server admin is modifying this world."
         sendCommand "$1" "say The server will be restarted in 1 minute..."
         sleep 60
@@ -2676,7 +2677,7 @@ case "$COMMAND" in
       if serverRunning "$1"; then
         # If the world server has users logged in, announce that the world is
         # being deleted.
-        if [ $(queryNumUsers "$1") -gt 0 ]; then
+        if [ "$(queryNumUsers "$1")" -gt 0 ]; then
           sendCommand "$1" "say The server admin is deleting this world."
           sendCommand "$1" "say The server will be deleted in 1 minute..."
           sleep 60
@@ -2719,7 +2720,7 @@ case "$COMMAND" in
       if serverRunning "$WORLD"; then
         # If the world server has users logged in, announce that the world is
         # being disabled.
-        if [ $(queryNumUsers "$WORLD") -gt 0 ]; then
+        if [ "$(queryNumUsers "$WORLD")" -gt 0 ]; then
           sendCommand "$WORLD" "say The server admin is disabling this world."
           sendCommand "$WORLD" "say The server will be disabled in 1 minute..."
           sleep 60
@@ -3029,7 +3030,7 @@ case "$COMMAND" in
     for WORLD in $WORLDS; do
       printf " %s" "$WORLD"
       # Create a lock file so that we don't create duplicate processes.
-      if $(createLockFile $WORLD "backup"); then
+      if createLockFile $WORLD "backup"; then
         if serverRunning $WORLD; then
           sendCommand $WORLD "say Backing up the world."
           sendCommand $WORLD "save-all"
@@ -3120,7 +3121,7 @@ case "$COMMAND" in
       if serverRunning $WORLD; then
         RUNNING="$RUNNING $WORLD"
         printf " %s" "$WORLD"
-        if [ $(queryNumUsers $WORLD) -gt 0 ]; then
+        if [ "$(queryNumUsers $WORLD)" -gt 0 ]; then
           sendCommand $WORLD "say The server admin has initiated a software update."
           sendCommand $WORLD "say The server will restart and update in 1 minute..."
           sleep 60
@@ -3143,7 +3144,7 @@ case "$COMMAND" in
       printf "Removing Minecraft Server software:"
       for WORLD in $WORLDS; do
         printf " %s" "$WORLD"
-        rm -f $(getServerLocation "$WORLD")/$(getServerJar "$WORLD")
+        rm -f "$(getServerLocation "$WORLD")"/"$(getServerJar "$WORLD")"
       done
       printf ".\n"
     fi
@@ -3192,7 +3193,7 @@ case "$COMMAND" in
     for WORLD in $WORLDS; do
       printf " %s" "$WORLD"
       # Create a lock file so that we don't create duplicate processes.
-      if $(createLockFile $WORLD "overviewer"); then
+      if createLockFile "$WORLD" "overviewer"; then
         overviewer "$WORLD"
         # Remove the lock file.
         removeLockFile $WORLD "overviewer"
