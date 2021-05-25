@@ -26,7 +26,7 @@ MSCS_DEFAULTS="$LOCATION/mscs.defaults"
 
 # Run the msctl script.
 if [ "$USER_NAME" = "$(whoami)" ]; then
-  msctl -p "$PROG" -l "$LOCATION" -c "$MSCS_DEFAULTS" "$*"
+  msctl -p "$PROG" -l "$LOCATION" -c "$MSCS_DEFAULTS" "$@"
 else
   sudo "PATH=$PATH" -u "$USER_NAME" -H msctl -p "$PROG" -l "$LOCATION" -c "$MSCS_DEFAULTS" "$@"
 fi
