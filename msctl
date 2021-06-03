@@ -35,7 +35,7 @@
 
 # Get executable name
 # ---------------------------------------------------------------------------
-PROG=$(basename $0)
+PROG=$(basename "$0")
 
 # Required Software
 # ---------------------------------------------------------------------------
@@ -330,10 +330,9 @@ EOF
 # @return The Java PID.
 # ---------------------------------------------------------------------------
 getJavaPID() {
-  local PID MCUSER
   MCUSER=$(whoami)
   PID=$(
-    ps -a -U $MCUSER -o pid,comm,args -ww | $PERL -sne '
+    ps -a -U "$MCUSER" -o pid,comm,args -ww | perl -sne '
       if ($_ =~ /^\s*(\d+)\s+java.+mscs-world=\Q$world\E$/) { print $1; }
     ' -- -world="$1"
   )
@@ -347,9 +346,8 @@ getJavaPID() {
 # @return The amount of memory used.
 # ---------------------------------------------------------------------------
 getJavaMemory() {
-  local PID
   PID=$(getJavaPID "$1")
-  ps --no-headers -p $PID -o rss
+  ps --no-headers -p "$PID" -o rss
 }
 
 # ---------------------------------------------------------------------------
@@ -359,7 +357,6 @@ getJavaMemory() {
 # @return 0 (success) for true values, 1 (failure) for false values.
 # ---------------------------------------------------------------------------
 true_value() {
-  local VALUE
   VALUE=$(echo "$1" | tr '[:upper:]' '[:lower:]')
   # Look for TRUE values.
   if [ "$VALUE" = "1" ] || [ "$VALUE" = "true" ] || [ "$VALUE" = "yes" ] || [ "$VALUE" = "on" ]; then
@@ -389,7 +386,7 @@ true_value() {
 # ---------------------------------------------------------------------------
 serverRunning() {
   # Try to determine if the world is running.
-  if [ "$(getJavaPID $1)" -gt 0 ]; then
+  if [ "$(getJavaPID "$1")" -gt 0 ]; then
     # Return a true value (success).
     return 0
   else
@@ -405,9 +402,9 @@ serverRunning() {
 # @param 2 The command to send.
 # ---------------------------------------------------------------------------
 sendCommand() {
-  echo "$2" | $PERL -e '
+  echo "$2" | perl -e '
     while (<>) { $_ =~ s/[\r\n]+//g; $cmd .= $_; } print "$cmd\r";
-  ' >>$WORLDS_LOCATION/$1/console.in
+  ' >> "$WORLDS_LOCATION/$1/console.in"
 }
 
 # ---------------------------------------------------------------------------
@@ -418,7 +415,6 @@ sendCommand() {
 # @return A 0 if the list contains the item, a 1 otherwise.
 # ---------------------------------------------------------------------------
 listContains() {
-  local MATCH ITEM
   MATCH=1
   for ITEM in $2; do
     if [ "$ITEM" = "$1" ]; then
@@ -436,7 +432,6 @@ listContains() {
 # @return The result of the comparison: -1, 0, 1.
 # ---------------------------------------------------------------------------
 compareTime() {
-  local T1 T2
   T1=$(date --date="$1" +%s)
   T2=$(date --date="$2" +%s)
   printf "%d" $((T1 < T2 ? -1 : T1 > T2 ? 1 : 0))
@@ -450,7 +445,6 @@ compareTime() {
 # @return The result of the comparison: -1, 0, 1.
 # ---------------------------------------------------------------------------
 compareMinecraftVersions() {
-  local T1 T2
   T1=$(getMinecraftVersionReleaseTime "$1")
   T2=$(getMinecraftVersionReleaseTime "$2")
   compareTime "$T1" "$T2"
@@ -514,13 +508,12 @@ enableWorld() {
 # @param 4 The IP address of the new imported world.
 # ---------------------------------------------------------------------------
 importWorld() {
-  local NAME
   mkdir -p "$WORLDS_LOCATION/$2"
-  cp -R $1/* $WORLDS_LOCATION/$2
+  cp -R "$1"/* "$WORLDS_LOCATION/$2"
   chown "$(id -un)":"$(id -gn)" -R "$WORLDS_LOCATION/$2"
-  NAME=$(getServerPropertiesValue $2 'level-name')
-  if [ -d $WORLDS_LOCATION/$2/$NAME ]; then
-    mv $WORLDS_LOCATION/$2/$NAME $WORLDS_LOCATION/$2/$2
+  NAME=$(getServerPropertiesValue "$2" "level-name")
+  if [ -d "$WORLDS_LOCATION/$2/$NAME" ]; then
+    mv "$WORLDS_LOCATION/$2/$NAME" "$WORLDS_LOCATION/$2/$2"
   fi
   createWorld "$2" "$3" "$4"
 }
@@ -531,13 +524,12 @@ importWorld() {
 # @return The list of enabled worlds.
 # ---------------------------------------------------------------------------
 getEnabledWorlds() {
-  local WORLD WORLDS
   mkdir -p "$WORLDS_LOCATION"
   WORLDS=""
   for WORLD in "$WORLDS_LOCATION"/*; do
     WORLD=$(basename "$WORLD")
-    if [ -d $WORLDS_LOCATION/$WORLD ]; then
-      if true_value "$(getMSCSValue $WORLD 'mscs-enabled' 'true')"; then
+    if [ -d "$WORLDS_LOCATION/$WORLD" ]; then
+      if true_value "$(getMSCSValue "$WORLD" "mscs-enabled" "true")"; then
         WORLDS="$WORLDS $WORLD"
       fi
     fi
@@ -551,12 +543,11 @@ getEnabledWorlds() {
 # @return The list of disabled worlds.
 # ---------------------------------------------------------------------------
 getDisabledWorlds() {
-  local WORLD WORLDS
   WORLDS=""
   for WORLD in "$WORLDS_LOCATION"/*; do
     WORLD=$(basename "$WORLD")
-    if [ -d $WORLDS_LOCATION/$WORLD ]; then
-      if ! true_value "$(getMSCSValue $WORLD 'mscs-enabled' 'true')"; then
+    if [ -d "$WORLDS_LOCATION/$WORLD" ]; then
+      if ! true_value "$(getMSCSValue "$WORLD" "mscs-enabled" "true")"; then
         WORLDS="$WORLDS $WORLD"
       fi
     fi
@@ -570,7 +561,7 @@ getDisabledWorlds() {
 # @return The list of all available worlds.
 # ---------------------------------------------------------------------------
 getAvailableWorlds() {
-  printf "%s" "$(getEnabledWorlds) $(getDisabledWorlds)"
+  printf "%s %s" "$(getEnabledWorlds)" "$(getDisabledWorlds)"
 }
 
 # ---------------------------------------------------------------------------
@@ -580,7 +571,6 @@ getAvailableWorlds() {
 # @return A 0 if the world is enabled, a 1 otherwise.
 # ---------------------------------------------------------------------------
 isWorldEnabled() {
-  local WORLDS
   WORLDS=$(getEnabledWorlds)
   if [ -n "$1" ] && listContains "$1" "$WORLDS"; then
     # Return a true value (success).
@@ -598,7 +588,6 @@ isWorldEnabled() {
 # @return A 0 if the world is disabled, a 1 otherwise.
 # ---------------------------------------------------------------------------
 isWorldDisabled() {
-  local WORLDS
   WORLDS=$(getDisabledWorlds)
   if [ -n "$1" ] && listContains "$1" "$WORLDS"; then
     # Return a true value (success).
@@ -616,7 +605,6 @@ isWorldDisabled() {
 # @return A 0 if the world is available, a 1 otherwise.
 # ---------------------------------------------------------------------------
 isWorldAvailable() {
-  local WORLDS
   WORLDS=$(getAvailableWorlds)
   if [ -n "$1" ] && listContains "$1" "$WORLDS"; then
     # Return a true value (success).
@@ -635,26 +623,25 @@ isWorldAvailable() {
 # @param 3 The default value.
 # ---------------------------------------------------------------------------
 getValue() {
-  local KEY VALUE
   # Make sure the file exists.
   if [ -e "$1" ]; then
     # Find the key/value combo.
-    KEY=$(cat $1 | $PERL -sne '
+    KEY=$(perl -sne '
       # Remove single and double quotes plus CR and LF.
       $_ =~ s/[\x22\x27\r\n]//g;
       # Remove comments that begin with # or ;.
       $_ =~ s/^\s*[\x23\x3B].*//;
       # Extract the key.
       if ($_ =~ /^\s*(\Q$key\E)\s*=\s*.*$/i) { print lc $1; }
-    ' -- -key="$2")
-    VALUE=$(cat $1 | $PERL -sne '
+    ' -- -key="$2" < "$1")
+    VALUE=$(perl -sne '
       # Remove single and double quotes plus CR and LF.
       $_ =~ s/[\x22\x27\r\n]//g;
       # Remove comments that begin with # or ;.
       $_ =~ s/^\s*[\x23\x3B].*//;
       # Extract the value.
       if ($_ =~ /^\s*\Q$key\E\s*=\s*(.*)$/i) { print $1; }
-    ' -- -key="$2")
+    ' -- -key="$2" < "$1")
   fi
   # Return the value if found, the default value if not.
   if [ -n "$KEY" ] && [ -n "$VALUE" ]; then
@@ -673,22 +660,21 @@ getValue() {
 # @param 3 The value to assign to the key.
 # ---------------------------------------------------------------------------
 setValue() {
-  local KEY_VALUE
   # Make sure that the file exists.
   touch "$1"
   # Replace the key/value combo if it already exists, otherwise just
   # append it to the end of the file.
-  KEY_VALUE=$(cat $1 | $PERL -sne '
+  KEY_VALUE=$(perl -sne '
     $_ =~ s/[\r]//;
     if ($_ =~ /^(\Q$key\E=.*)$/) { print "$1"; }
-  ' -- -key="$2")
+  ' -- -key="$2" < "$1")
   if [ -n "$KEY_VALUE" ]; then
-    mv $1 $1.bak
-    cat $1.bak | $PERL -sne '
+    mv "$1" "$1.bak"
+    perl -sne '
       $_ =~ s/[\r]//;
       if ($_ =~ /^\Q$key\E=.*$/) { print "$key=$value\n"; } else { print; }
-    ' -- -key="$2" -value="$3" > $1
-    rm $1.bak
+    ' -- -key="$2" -value="$3" < "$1.bak" > "$1"
+    rm "$1.bak"
   else
     printf "%s=%s\n" "$2" "$3" >>"$1"
   fi
@@ -710,9 +696,8 @@ getDefaultsValue() {
 # @param 1 The world server of interest.
 # ---------------------------------------------------------------------------
 getEULAValue() {
-  local EULA_FILE
   EULA_FILE=$WORLDS_LOCATION/$1/eula.txt
-  getValue "$EULA_FILE" "eula" "false" | $PERL -ne 'print lc'
+  getValue "$EULA_FILE" "eula" "false" | perl -ne 'print lc'
 }
 
 # ---------------------------------------------------------------------------
@@ -723,7 +708,6 @@ getEULAValue() {
 # @param 3 The default value.
 # ---------------------------------------------------------------------------
 getMSCSValue() {
-  local PROPERTY_FILE
   PROPERTY_FILE=$WORLDS_LOCATION/$1/mscs.properties
   getValue "$PROPERTY_FILE" "$2" "$3"
 }
@@ -736,7 +720,6 @@ getMSCSValue() {
 # @param 3 The value to assign to the key.
 # ---------------------------------------------------------------------------
 setMSCSValue() {
-  local PROPERTY_FILE
   PROPERTY_FILE=$WORLDS_LOCATION/$1/mscs.properties
   setValue "$PROPERTY_FILE" "$2" "$3"
 }
@@ -749,7 +732,6 @@ setMSCSValue() {
 # @param 3 The default value.
 # ---------------------------------------------------------------------------
 getServerPropertiesValue() {
-  local PROPERTY_FILE
   PROPERTY_FILE="$WORLDS_LOCATION/$1/server.properties"
   getValue "$PROPERTY_FILE" "$2" "$3"
 }
@@ -762,7 +744,6 @@ getServerPropertiesValue() {
 # @param 3 The value to assign to the key.
 # ---------------------------------------------------------------------------
 setServerPropertiesValue() {
-  local PROPERTY_FILE
   PROPERTY_FILE=$WORLDS_LOCATION/$1/server.properties
   setValue "$PROPERTY_FILE" "$2" "$3"
 }
@@ -771,12 +752,12 @@ setServerPropertiesValue() {
 # Update the version_manifest.json file.
 # ---------------------------------------------------------------------------
 updateVersionsJSON() {
-  if [ -s $VERSIONS_JSON ]; then
+  if [ -s "$VERSIONS_JSON" ]; then
     # Make a backup copy of the version_manifest.json file.
     cp -p "$VERSIONS_JSON" "$VERSIONS_JSON.bak"
     # Delete the version_manifest.json file if it is old.
     find "$VERSIONS_JSON" -mmin +"$VERSIONS_DURATION" -delete
-    if [ -s $VERSIONS_JSON ]; then
+    if [ -s "$VERSIONS_JSON" ]; then
       printf "The cached copy of the version manifest is up to date.\n"
       printf "Use the force-update option to ensure a new copy is downloaded.\n"
     else
@@ -784,15 +765,15 @@ updateVersionsJSON() {
     fi
   fi
   # Download the version_manifest.json file if it does not exist.
-  if [ ! -s $VERSIONS_JSON ]; then
+  if [ ! -s "$VERSIONS_JSON" ]; then
     printf "Downloading current Minecraft version manifest.\n"
     $WGET --no-use-server-timestamps -qO "$VERSIONS_JSON" "$MINECRAFT_VERSIONS_URL"
     if [ $? -ne 0 ]; then
-      if [ -s $VERSIONS_JSON.bak ]; then
-        printf "Error downloading the version manifest, using a backup.\n"
+      if [ -s "$VERSIONS_JSON.bak" ]; then
+        printf "Error downloading the version manifest, using a backup.\n" 1>&2
         cp -p "$VERSIONS_JSON.bak" "$VERSIONS_JSON"
       else
-        printf "Error downloading the version manifest, exiting.\n"
+        printf "Error downloading the version manifest, exiting.\n" 1>&2
         exit 1
       fi
     fi
@@ -806,20 +787,19 @@ updateVersionsJSON() {
 # @return The current Minecraft version number.
 # ---------------------------------------------------------------------------
 getCurrentMinecraftVersion() {
-  local VERSION TYPE
   # Determine the version type for the current world.
   TYPE=$(getMSCSValue "$1" "mscs-version-type" "$DEFAULT_VERSION_TYPE")
   # Extract the current version information.
-  VERSION=$(cat $VERSIONS_JSON | $PERL -0777 -sne '
+  VERSION=$(perl -0777 -sne '
     use JSON;
     $json = decode_json ($_);
     $version = $json->{latest}{$type};
     $version =~ s/[\s#%*+?^\${}()|[\]\\]/-/g;
     print $version;
-  ' -- -type="$TYPE")
+  ' -- -type="$TYPE" < "$VERSIONS_JSON")
   # Print an error and exit if the version string is empty.
   if [ -z "$VERSION" ]; then
-    printf "Error detecting the current Minecraft version.\n"
+    printf "Error detecting the current Minecraft version.\n" 1>&2
     exit 1
   fi
   printf "%s" "$VERSION"
@@ -833,7 +813,7 @@ getCurrentMinecraftVersion() {
 # @return The sha1sum for the Minecraft client or server.
 # ---------------------------------------------------------------------------
 getMinecraftVersionDownloadSHA1() {
-  cat $VERSIONS_JSON | $PERL -0777 -sne '
+  perl -0777 -sne '
     use JSON;
     use LWP::Simple;
     my $json = decode_json ($_);
@@ -848,7 +828,7 @@ getMinecraftVersionDownloadSHA1() {
     }
     $json = decode_json (get ($v->{url}));
     print $json->{downloads}{$type}{sha1};
-  ' -- -version="$1" -type="$2"
+  ' -- -version="$1" -type="$2" < "$VERSIONS_JSON"
 }
 
 # ---------------------------------------------------------------------------
@@ -859,7 +839,7 @@ getMinecraftVersionDownloadSHA1() {
 # @return The download URL for the Minecraft client or server.
 # ---------------------------------------------------------------------------
 getMinecraftVersionDownloadURL() {
-  cat $VERSIONS_JSON | $PERL -0777 -sne '
+  perl -0777 -sne '
     use JSON;
     use LWP::Simple;
     my $json = decode_json ($_);
@@ -874,7 +854,7 @@ getMinecraftVersionDownloadURL() {
     }
     $json = decode_json (get ($v->{url}));
     print $json->{downloads}{$type}{url};
-  ' -- -version="$1" -type="$2"
+  ' -- -version="$1" -type="$2" < "$VERSIONS_JSON"
 }
 
 # ---------------------------------------------------------------------------
@@ -884,7 +864,7 @@ getMinecraftVersionDownloadURL() {
 # @return The release time of the Minecraft version number.
 # ---------------------------------------------------------------------------
 getMinecraftVersionReleaseTime() {
-  cat $VERSIONS_JSON | $PERL -0777 -sne '
+  perl -0777 -sne '
     use JSON;
     $json = decode_json ($_);
     foreach $ver (@{$json->{versions}}) {
@@ -892,7 +872,7 @@ getMinecraftVersionReleaseTime() {
       $id =~ s/[\s#%*+?^\${}()|[\]\\]/-/g;
       print $ver->{releaseTime} if ($id eq "$version");
     }
-  ' -- -version="$1"
+  ' -- -version="$1" < "$VERSIONS_JSON"
 }
 
 # ---------------------------------------------------------------------------
@@ -902,15 +882,11 @@ getMinecraftVersionReleaseTime() {
 # @return CLIENT_VERSION
 # ---------------------------------------------------------------------------
 getClientVersion() {
-  local CURRENT_VERSION
   CURRENT_VERSION=$(getCurrentMinecraftVersion "$1")
-  if [ $? -ne 0 ]; then
-    printf "%s\n" "$CURRENT_VERSION"
-    exit 1
-  fi
+  [ -n "$CURRENT_VERSION" ] || exit 1
   # Get the client version, use the default version if not provided.
   getMSCSValue "$1" "mscs-client-version" "$DEFAULT_CLIENT_VERSION" |
-    $PERL -sne '
+    perl -sne '
     $_ =~ s/\$CURRENT_VERSION/$current_version/g;
     $_ =~ s/[\s#%*+?^\${}()|[\]\\]/-/g;
     print;
@@ -924,20 +900,13 @@ getClientVersion() {
 # @return CLIENT_JAR
 # ---------------------------------------------------------------------------
 getClientJar() {
-  local CURRENT_VERSION CLIENT_VERSION
   CURRENT_VERSION=$(getCurrentMinecraftVersion "$1")
-  if [ $? -ne 0 ]; then
-    printf "%s\n" "$CURRENT_VERSION"
-    exit 1
-  fi
+  [ -n "$CURRENT_VERSION" ] || exit 1
   CLIENT_VERSION=$(getClientVersion "$1")
-  if [ $? -ne 0 ]; then
-    printf "%s\n" "$CLIENT_VERSION"
-    exit 1
-  fi
+  [ -n "$CLIENT_VERSION" ] || exit 1
   # Get the client jar, use the default value if not provided.
   getMSCSValue "$1" "mscs-client-jar" "$DEFAULT_CLIENT_JAR" |
-    $PERL -sne '
+    perl -sne '
     $_ =~ s/\$CURRENT_VERSION/$current_version/g;
     $_ =~ s/\$CLIENT_VERSION/$client_version/g;
     print;
@@ -951,20 +920,13 @@ getClientJar() {
 # @return CLIENT_LOCATION
 # ---------------------------------------------------------------------------
 getClientLocation() {
-  local CURRENT_VERSION CLIENT_VERSION
   CURRENT_VERSION=$(getCurrentMinecraftVersion "$1")
-  if [ $? -ne 0 ]; then
-    printf "%s\n" "$CURRENT_VERSION"
-    exit 1
-  fi
+  [ -n "$CURRENT_VERSION" ] || exit 1
   CLIENT_VERSION=$(getClientVersion "$1")
-  if [ $? -ne 0 ]; then
-    printf "%s\n" "$CLIENT_VERSION"
-    exit 1
-  fi
+  [ -n "$CLIENT_VERSION" ] || exit 1
   # Get the client location, use the default value if not provided.
   getMSCSValue "$1" "mscs-client-location" "$DEFAULT_CLIENT_LOCATION" |
-    $PERL -sne '
+    perl -sne '
     $_ =~ s/\$CURRENT_VERSION/$current_version/g;
     $_ =~ s/\$CLIENT_VERSION/$client_version/g;
     print;
@@ -978,19 +940,12 @@ getClientLocation() {
 # @return CLIENT_URL
 # ---------------------------------------------------------------------------
 getClientURL() {
-  local CURRENT_VERSION CLIENT_VERSION URL
   CURRENT_VERSION=$(getCurrentMinecraftVersion "$1")
-  if [ $? -ne 0 ]; then
-    printf "%s\n" "$CURRENT_VERSION"
-    exit 1
-  fi
+  [ -n "$CURRENT_VERSION" ] || exit 1
   CLIENT_VERSION=$(getClientVersion "$1")
-  if [ $? -ne 0 ]; then
-    printf "%s\n" "$CLIENT_VERSION"
-    exit 1
-  fi
+  [ -n "$CLIENT_VERSION" ] || exit 1
   # Get the client download URL, use the default value if not provided.
-  URL=$(getMSCSValue "$1" "mscs-client-url" "$DEFAULT_CLIENT_URL" | $PERL -sne '
+  URL=$(getMSCSValue "$1" "mscs-client-url" "$DEFAULT_CLIENT_URL" | perl -sne '
     $_ =~ s/\$CURRENT_VERSION/$current_version/g;
     $_ =~ s/\$CLIENT_VERSION/$client_version/g;
     $_ =~ s/\\\:/\:/g;
@@ -999,7 +954,7 @@ getClientURL() {
   # If the download URL was not specified, extract it from the version
   # manifest.
   if [ -z "$URL" ]; then
-    URL=$(getMinecraftVersionDownloadURL $CLIENT_VERSION 'client')
+    URL=$(getMinecraftVersionDownloadURL "$CLIENT_VERSION" "client")
   fi
   printf "%s" "$URL"
 }
@@ -1011,15 +966,11 @@ getClientURL() {
 # @return SERVER_VERSION
 # ---------------------------------------------------------------------------
 getServerVersion() {
-  local CURRENT_VERSION
   CURRENT_VERSION=$(getCurrentMinecraftVersion "$1")
-  if [ $? -ne 0 ]; then
-    printf "%s\n" "$CURRENT_VERSION"
-    exit 1
-  fi
+  [ -n "$CURRENT_VERSION" ] || exit 1
   # Get the server version, use the default version if not provided.
   getMSCSValue "$1" "mscs-server-version" "$DEFAULT_SERVER_VERSION" |
-    $PERL -sne '
+    perl -sne '
     $_ =~ s/\$CURRENT_VERSION/$current_version/g;
     $_ =~ s/[\s#%*+?^\${}()|[\]\\]/-/g;
     print;
@@ -1033,20 +984,13 @@ getServerVersion() {
 # @return SERVER_JAR
 # ---------------------------------------------------------------------------
 getServerJar() {
-  local CURRENT_VERSION SERVER_VERSION SERVER_JAR
   CURRENT_VERSION=$(getCurrentMinecraftVersion "$1")
-  if [ $? -ne 0 ]; then
-    printf "%s\n" "$CURRENT_VERSION"
-    exit 1
-  fi
+  [ -n "$CURRENT_VERSION" ] || exit 1
   SERVER_VERSION=$(getServerVersion "$1")
-  if [ $? -ne 0 ]; then
-    printf "%s\n" "$SERVER_VERSION"
-    exit 1
-  fi
+  [ -n "$SERVER_VERSION" ] || exit 1
   # Get the server jar, use the default value if not provided.
   getMSCSValue "$1" "mscs-server-jar" "$DEFAULT_SERVER_JAR" |
-    $PERL -sne '
+    perl -sne '
     $_ =~ s/\$CURRENT_VERSION/$current_version/g;
     $_ =~ s/\$SERVER_VERSION/$server_version/g;
     print;
@@ -1060,20 +1004,13 @@ getServerJar() {
 # @return SERVER_LOCATION
 # ---------------------------------------------------------------------------
 getServerLocation() {
-  local CURRENT_VERSION SERVER_VERSION
   CURRENT_VERSION=$(getCurrentMinecraftVersion "$1")
-  if [ $? -ne 0 ]; then
-    printf "%s\n" "$CURRENT_VERSION"
-    exit 1
-  fi
+  [ -n "$CURRENT_VERSION" ] || exit 1
   SERVER_VERSION=$(getServerVersion "$1")
-  if [ $? -ne 0 ]; then
-    printf "%s\n" "$SERVER_VERSION"
-    exit 1
-  fi
+  [ -n "$SERVER_VERSION" ] || exit 1
   # Get the server location, use the default value if not provided.
   getMSCSValue "$1" "mscs-server-location" "$DEFAULT_SERVER_LOCATION" |
-    $PERL -sne '
+    perl -sne '
     $_ =~ s/\$CURRENT_VERSION/$current_version/g;
     $_ =~ s/\$SERVER_VERSION/$server_version/g;
     print;
@@ -1087,19 +1024,12 @@ getServerLocation() {
 # @return SERVER_URL
 # ---------------------------------------------------------------------------
 getServerURL() {
-  local CURRENT_VERSION SERVER_VERSION URL
   CURRENT_VERSION=$(getCurrentMinecraftVersion "$1")
-  if [ $? -ne 0 ]; then
-    printf "%s\n" "$CURRENT_VERSION"
-    exit 1
-  fi
+  [ -n "$CURRENT_VERSION" ] || exit 1
   SERVER_VERSION=$(getServerVersion "$1")
-  if [ $? -ne 0 ]; then
-    printf "%s\n" "$SERVER_VERSION"
-    exit 1
-  fi
+  [ -n "$SERVER_VERSION" ] || exit 1
   # Get the server download URL, use the default value if not provided.
-  URL=$(getMSCSValue "$1" "mscs-server-url" "$DEFAULT_SERVER_URL" | $PERL -sne '
+  URL=$(getMSCSValue "$1" "mscs-server-url" "$DEFAULT_SERVER_URL" | perl -sne '
     $_ =~ s/\$CURRENT_VERSION/$current_version/g;
     $_ =~ s/\$SERVER_VERSION/$server_version/g;
     $_ =~ s/\\\:/\:/g;
@@ -1108,7 +1038,7 @@ getServerURL() {
   # If the download URL was not specified, extract it from the version
   # manifest.
   if [ -z "$URL" ]; then
-    URL=$(getMinecraftVersionDownloadURL $SERVER_VERSION 'server')
+    URL=$(getMinecraftVersionDownloadURL "$SERVER_VERSION" "server")
   fi
   printf "%s" "$URL"
 }
@@ -1120,28 +1050,14 @@ getServerURL() {
 # @return SERVER_COMMAND
 # ---------------------------------------------------------------------------
 getServerCommand() {
-  local CURRENT_VERSION SERVER_VERSION SERVER_JAR SERVER_LOCATION
-  local SERVER_ARGS INITIAL_MEMORY MAXIMUM_MEMORY
   CURRENT_VERSION=$(getCurrentMinecraftVersion "$1")
-  if [ $? -ne 0 ]; then
-    printf "%s\n" "$CURRENT_VERSION"
-    exit 1
-  fi
+  [ -n "$CURRENT_VERSION" ] || exit 1
   SERVER_VERSION=$(getServerVersion "$1")
-  if [ $? -ne 0 ]; then
-    printf "%s\n" "$SERVER_VERSION"
-    exit 1
-  fi
+  [ -n "$SERVER_VERSION" ] || exit 1
   SERVER_JAR=$(getServerJar "$1")
-  if [ $? -ne 0 ]; then
-    printf "%s\n" "$SERVER_JAR"
-    exit 1
-  fi
+  [ -n "$SERVER_JAR" ] || exit 1
   SERVER_LOCATION=$(getServerLocation "$1")
-  if [ $? -ne 0 ]; then
-    printf "%s\n" "$SERVER_LOCATION"
-    exit 1
-  fi
+  [ -n "$SERVER_LOCATION" ] || exit 1
   # Get the jvm arguments, use the default value if not provided.
   JVM_ARGS=$(
     getMSCSValue "$1" "mscs-jvm-args" "$DEFAULT_JVM_ARGS"
@@ -1160,7 +1076,7 @@ getServerCommand() {
   )
   # Get the server command, use the default value if not provided.
   getMSCSValue "$1" "mscs-server-command" "$DEFAULT_SERVER_COMMAND" |
-    $PERL -sne '
+    perl -sne '
     $_ =~ s/\$JAVA/$java/g;
     $_ =~ s/\$CURRENT_VERSION/$current_version/g;
     $_ =~ s/\$SERVER_VERSION/$server_version/g;
@@ -1193,22 +1109,21 @@ getServerCommand() {
 # @return TRUE if lock file created, FALSE otherwise.
 # ---------------------------------------------------------------------------
 createLockFile() {
-  local PID LOCKFILE
   LOCKFILE=$WORLDS_LOCATION/$1/lock-$2.pid
   # Delete the old LOCKFILE.
-  find $LOCKFILE -mmin +"$LOCKFILE_DURATION" -delete >/dev/null 2>&1
+  find "$LOCKFILE" -mmin +"$LOCKFILE_DURATION" -delete >/dev/null 2>&1
   # Check to see if the LOCKFILE exists.
-  if [ -s $LOCKFILE ]; then
-    PID=$(cat $LOCKFILE)
+  if [ -s "$LOCKFILE" ]; then
+    PID=$(cat "$LOCKFILE")
     # LOCKFILE exists, check to see if its process is running.
-    ps -p $PID >/dev/null 2>&1
+    ps -p "$PID" >/dev/null 2>&1
     if [ $? -eq 0 ]; then
       # LOCKFILE exists and the process is running.
       # Return a false value (failure).
       return 1
     else
       # Process not found assume it is not running.
-      echo $$ >$LOCKFILE
+      echo $$ > "$LOCKFILE"
       if [ $? -ne 0 ]; then
         # Error creating LOCKFILE.
         # Return a false value (failure).
@@ -1217,7 +1132,7 @@ createLockFile() {
     fi
   else
     # LOCKFILE does not exists.
-    echo $$ >$LOCKFILE
+    echo $$ > "$LOCKFILE"
     if [ $? -ne 0 ]; then
       # Error creating LOCKFILE.
       # Return a false value (failure).
@@ -1236,7 +1151,7 @@ createLockFile() {
 # @param 2 The type of lock file.
 # ---------------------------------------------------------------------------
 removeLockFile() {
-  rm -f $WORLDS_LOCATION/$1/lock-$2.pid
+  rm -f "$WORLDS_LOCATION/$1/lock-$2.pid"
 }
 
 # ---------------------------------------------------------------------------
@@ -1245,7 +1160,6 @@ removeLockFile() {
 # @param 1 The world server generating the log to rotate.
 # ---------------------------------------------------------------------------
 rotateLog() {
-  local WORLD_DIR DATE LOG NUM
   WORLD_DIR="$WORLDS_LOCATION/$1"
   # Make sure the log directory exists.
   mkdir -p "$WORLD_DIR/logs"
@@ -1256,7 +1170,7 @@ rotateLog() {
   # Archive and rotate the log files for old Minecraft servers (Versions 1.7
   # and greater do this automatically).
   if [ -e "$WORLD_DIR/server.log" ] &&
-    [ "$(wc -l <$WORLD_DIR/server.log)" -ge 1 ]; then
+    [ "$(wc -l < "$WORLD_DIR/server.log")" -ge 1 ]; then
     # Make a copy of the log file in the world's logs directory.
     DATE=$(date +%F)
     cp "$WORLD_DIR/server.log" "$WORLD_DIR/logs/$DATE-0.log"
@@ -1264,9 +1178,10 @@ rotateLog() {
     # Empty the contents of the worlds log file.
     cp /dev/null "$WORLD_DIR/server.log"
     # Rotate the files in the world's logs directory.
-    for LOG in $(ls -r $WORLD_DIR/logs/$DATE-*.log.gz); do
-      NUM=$(echo $LOG | $PERL -sne 'print ($1 + 1) if ($_ =~ /\Q$date\E-(\d+)/)' -- -date="$DATE")
-      mv -f $LOG "$WORLD_DIR/logs/$DATE-$NUM.log.gz"
+    for LOG in "$WORLD_DIR"/logs/"$DATE"-*.log.gz; do
+      [ -e "$LOG" ] || break  # handle the case of no log files
+      NUM=$(echo "$LOG" | perl -sne 'print ($1 + 1) if ($_ =~ /\Q$date\E-(\d+)/)' -- -date="$DATE")
+      mv -f "$LOG" "$WORLD_DIR/logs/$DATE-$NUM.log.gz"
     done
   fi
 }
@@ -1277,7 +1192,6 @@ rotateLog() {
 # @param 1 The world server generating the log to watch.
 # ---------------------------------------------------------------------------
 watchLog() {
-  local WORLD_DIR
   WORLD_DIR="$WORLDS_LOCATION/$1"
   # Make sure that the latest.log file exists.
   if [ -e "$WORLD_DIR/logs/latest.log" ]; then
@@ -1298,7 +1212,7 @@ syncMirrorImage() {
   # Sync the world server.
   $RSYNC -a --delete "$WORLDS_LOCATION/$1/$1/" "$WORLDS_LOCATION/$1/$1-original"
   if [ $? -ne 0 ]; then
-    printf "Error synchronizing mirror images for world %s.\n" "$1"
+    printf "Error synchronizing mirror images for world %s.\n" "$1" 1>&2
     exit 1
   fi
 }
@@ -1309,14 +1223,13 @@ syncMirrorImage() {
 # @param 1 The world server to connect to.
 # ---------------------------------------------------------------------------
 serverConsole() {
-  local LINE WORLD_DIR
   # Make sure that the world's directory exists.
   WORLD_DIR="$WORLDS_LOCATION/$1"
   # Follow the console output buffer file.
-  tail -f --pid=$$ $WORLD_DIR/console.out &
+  tail -f --pid=$$ "$WORLD_DIR/console.out" &
   # Copy user input to the console input buffer file.
   while read LINE; do
-    echo "$LINE" >>$WORLD_DIR/console.in
+    echo "$LINE" >> "$WORLD_DIR/console.in"
   done
 }
 
@@ -1444,7 +1357,6 @@ startServerMonitor() {
 # @param 1 The world server to start.
 # ---------------------------------------------------------------------------
 start() {
-  local EULA PID SERVER_COMMAND WORLD_DIR
   WORLD_DIR="$WORLDS_LOCATION/$1"
   # Make sure that the server software exists.
   updateServerSoftware "$1"
@@ -1469,7 +1381,7 @@ start() {
   # Rotate the world's log files.
   rotateLog "$1"
   # Make a mirror image of the world directory if requested.
-  if true_value $ENABLE_MIRROR; then
+  if true_value "$ENABLE_MIRROR"; then
     # Make sure the main mirror folder exists.
     mkdir -p "$MIRROR_PATH"
     # If the symlink exists but the target doesn't, the
@@ -1490,11 +1402,11 @@ start() {
       # Copy the world files over to the mirror.
       cp -a "$WORLD_DIR/$1" "$MIRROR_PATH/$1"
       if [ $? -ne 0 ]; then
-        printf "Error copying world data, could not copy to %s/%s.\n" "$MIRROR_PATH" "$1"
+        printf "Error copying world data, could not copy to %s/%s.\n" "$MIRROR_PATH" "$1" 1>&2
         exit 1
       fi
       # Remove the world file backup directory just in case.
-      rm -Rf "$WORLD_DIR/$1-original"
+      rm -Rf "${WORLD_DIR:?}/${1:?}-original"
       # Rename the original world file directory.
       mv "$WORLD_DIR/$1" "$WORLD_DIR/$1-original"
       # Create a symlink from the world file directory's original name to the mirrored files.
@@ -1502,24 +1414,21 @@ start() {
     fi
   fi
   # Change to the world's directory.
-  cd $WORLD_DIR || exit
+  cd "$WORLD_DIR" || exit 1
   # Delete any old console.in or console.out buffer files.
   rm -f "$WORLD_DIR/console.in" "$WORLD_DIR/console.out"
   # Initialize the console.in buffer file.
-  printf "" >$WORLD_DIR/console.in
+  printf "" > "$WORLD_DIR/console.in"
   # Get the server command for this world.
   SERVER_COMMAND=$(getServerCommand "$1")
-  if [ $? -ne 0 ]; then
-    printf "%s\n" "$SERVER_COMMAND"
-    exit 1
-  fi
+  [ -n "$SERVER_COMMAND" ] || exit 1
   # Start the server.
   nohup sh -c "tail -f --pid=\$$ $WORLD_DIR/console.in | {
     $SERVER_COMMAND mscs-world=$1 > $WORLD_DIR/console.out 2>&1; kill \$$;
   }" >/dev/null 2>&1 &
   # Verify the server is running.
   if [ $? -ne 0 ]; then
-    printf "Error starting the server.\n"
+    printf "Error starting the server.\n" 1>&2
     exit 1
   fi
   # Turn on terminal echo to work around issue with some server software.
@@ -1527,19 +1436,19 @@ start() {
   # Retrieve the process ID for the server.
   sleep 1
   PID=$(getJavaPID "$1")
-  if [ $PID -eq 0 ]; then
-    printf "Error starting the server: couldn't retrieve the server's process ID.\n"
+  if [ "$PID" -eq 0 ]; then
+    printf "Error starting the server: couldn't retrieve the server's process ID.\n" 1>&2
     exit 1
   fi
   # Start the Query handler if enabled.
-  if true_value "$(getServerPropertiesValue $1 'enable-query')"; then
+  if true_value "$(getServerPropertiesValue "$1" "enable-query")"; then
     queryStart "$1"
     # Sleep for a second to workaround issue with ssh using the forced
     # pseudo-terminal allocation command line option.
     sleep 1
   fi
   # Create a PID file for the world server.
-  echo $PID >"$WORLDS_LOCATION/$1.pid"
+  echo "$PID" >"$WORLDS_LOCATION/$1.pid"
   # Start the server crash monitor, if enabled.
   startServerMonitor $1
 }
@@ -1553,15 +1462,15 @@ stop() {
   # Stop the server monitor if it is running.
   stopServerMonitor $1
   # Tell the server to stop.
-  sendCommand $1 "stop"
-  sendCommand $1 "end"
+  sendCommand "$1" "stop"
+  sendCommand "$1" "end"
   # Wait for the server to shut down.
-  while serverRunning $1; do
+  while serverRunning "$1"; do
     sleep 1
   done
   # Synchronize the mirror image of the world prior to closing, if required.
-  if true_value $ENABLE_MIRROR && [ -L "$WORLDS_LOCATION/$1/$1" ] && [ -d "$MIRROR_PATH/$1" ]; then
-    syncMirrorImage $1
+  if true_value "$ENABLE_MIRROR" && [ -L "$WORLDS_LOCATION/$1/$1" ] && [ -d "$MIRROR_PATH/$1" ]; then
+    syncMirrorImage "$1"
     # Remove the symlink to the world-file mirror image.
     rm -f "$WORLDS_LOCATION/$1/$1"
     # Remove the world-file mirror image folder.
@@ -1579,22 +1488,21 @@ stop() {
 # @param 1 The world server to forcibly stop.
 # ---------------------------------------------------------------------------
 forceStop() {
-  local WAIT
   # Stop the server monitor if it is running.
   stopServerMonitor $1
   # Try to stop the server cleanly first.
-  sendCommand $1 "stop"
-  sendCommand $1 "end"
+  sendCommand "$1" "stop"
+  sendCommand "$1" "end"
   # Wait for the server to shut down.
   WAIT=0
-  while serverRunning $1 && [ $WAIT -le 20 ]; do
+  while serverRunning "$1" && [ "$WAIT" -le 20 ]; do
     WAIT=$((WAIT + 1))
     sleep 1
   done
   # Kill the process id of the world server.
   kill -9 "$(getJavaPID "$1")" >/dev/null 2>&1
   # Properly clean up.
-  stop $1
+  stop "$1"
 }
 
 # ---------------------------------------------------------------------------
@@ -1604,16 +1512,15 @@ forceStop() {
 # @return A 0 if backup successful, a 1 otherwise
 # ---------------------------------------------------------------------------
 worldBackup() {
-  local EXCLUDE_OPTION
   # Make sure that the backup location exists.
   if ! mkdir -p "$BACKUP_LOCATION"; then
-    echo "Error creating backup dir $BACKUP_LOCATION"
+    printf "Error creating backup dir %s\n" "$BACKUP_LOCATION" 1>&2
     # Return a false value (failure).
     return 1
   fi
   # Synchronize the mirror image of the world prior to closing, if required.
-  if true_value $ENABLE_MIRROR && [ -L "$WORLDS_LOCATION/$1/$1" ] && [ -d "$MIRROR_PATH/$1" ]; then
-    syncMirrorImage $1
+  if true_value "$ENABLE_MIRROR" && [ -L "$WORLDS_LOCATION/$1/$1" ] && [ -d "$MIRROR_PATH/$1" ]; then
+    syncMirrorImage "$1"
   fi
   EXCLUDE_OPTION=" \
     --exclude $WORLDS_LOCATION/$1/console.out \
@@ -1624,10 +1531,10 @@ worldBackup() {
   OLD_IFS=$IFS
   IFS=,
   # Check for world-specific excluded files
-  WORLD_BACKUP_EXCLUDED_FILES=$(getMSCSValue $1 "mscs-backup-excluded-files" "$BACKUP_EXCLUDED_FILES")
+  WORLD_BACKUP_EXCLUDED_FILES=$(getMSCSValue "$1" "mscs-backup-excluded-files" "$BACKUP_EXCLUDED_FILES")
   #For each comma separated value, evaluate the $WORLD_NAME variable, and add to the list of rdiff_backup excluded files
   for EXCLUDED_USER_LOCATION in $WORLD_BACKUP_EXCLUDED_FILES; do
-    EVALUATED_EXCLUDED_USER_LOCATION=$(echo "$EXCLUDED_USER_LOCATION" | $PERL -sne '
+    EVALUATED_EXCLUDED_USER_LOCATION=$(echo "$EXCLUDED_USER_LOCATION" | perl -sne '
     $_ =~ s/\$WORLD_NAME/$world_name/g;
     print;
   ' -- -world_name="$1")
@@ -1640,15 +1547,16 @@ worldBackup() {
     EXCLUDE_OPTION="$EXCLUDE_OPTION --exclude $WORLDS_LOCATION/$1/$1"
   fi
   # Create the backup.
-  if ! $RDIFF_BACKUP -v5 --print-statistics $EXCLUDE_OPTION "$WORLDS_LOCATION/$1" "$BACKUP_LOCATION/$1" >>"$BACKUP_LOG"; then
-    echo "Error doing backup of world $1"
+  # shellcheck disable=SC2086
+  if ! "$RDIFF_BACKUP" -v5 --print-statistics $EXCLUDE_OPTION "$WORLDS_LOCATION/$1" "$BACKUP_LOCATION/$1" >>"$BACKUP_LOG"; then
+    printf "Error doing backup of world %s\n" "$1" 1>&2
     # Return a false value (failure).
     return 1
   fi
   # Cleanup old backups.
-  if [ $BACKUP_DURATION -gt 0 ]; then
-    if ! $RDIFF_BACKUP --remove-older-than ${BACKUP_DURATION}D --force "$BACKUP_LOCATION/$1" >>"$BACKUP_LOG"; then
-      echo "Error cleaning old backups of world $1"
+  if [ "$BACKUP_DURATION" -gt 0 ]; then
+    if ! $RDIFF_BACKUP --remove-older-than "$BACKUP_DURATION"D --force "$BACKUP_LOCATION/$1" >>"$BACKUP_LOG"; then
+      printf "Error cleaning old backups of world %s\n" "$1" 1>&2
       # Return a false value (failure).
       return 1
     fi
@@ -1663,12 +1571,11 @@ worldBackup() {
 # @param 1 The world server of interest.
 # ---------------------------------------------------------------------------
 worldBackupList() {
-  local SEC TYPE
-  if [ -d $BACKUP_LOCATION/$1 ]; then
+  if [ -d "$BACKUP_LOCATION/$1" ]; then
     # Grab the list of backups for the world server.
-    $RDIFF_BACKUP --parsable-output -l $BACKUP_LOCATION/$1 |
+    $RDIFF_BACKUP --parsable-output -l "$BACKUP_LOCATION/$1" |
       while read SEC TYPE; do
-        date --date=\@$SEC --rfc-3339=seconds | tr ' ' T
+        date --date=\@"$SEC" --rfc-3339=seconds | tr ' ' T
       done
   fi
 }
@@ -1681,22 +1588,21 @@ worldBackupList() {
 # @return A 0 on success, a 1 otherwise.
 # ---------------------------------------------------------------------------
 worldBackupRestore() {
-  local TARGET TARGET_TMP
   TARGET="$WORLDS_LOCATION/$1"
   TARGET_TMP="${TARGET}_bktmp"
-  rm -rf "$TARGET_TMP"
-  if [ -d $BACKUP_LOCATION/$1 ]; then
-    if $RDIFF_BACKUP -r $2 "$BACKUP_LOCATION/$1" "$TARGET_TMP"; then
+  rm -Rf "${TARGET_TMP:?}"
+  if [ -d "$BACKUP_LOCATION/$1" ]; then
+    if $RDIFF_BACKUP -r "$2" "$BACKUP_LOCATION/$1" "$TARGET_TMP"; then
       rm -r "$TARGET"
       mv "$TARGET_TMP" "$TARGET"
     else
-      echo "Restoring backup failed: $1 $2"
-      rm -rf "$TARGET_TMP"
+      printf "Restoring backup failed: %s %s\n" "$1" "$2" 1>&2
+      rm -Rf "${TARGET_TMP:?}"
       # Return a false value (failure).
       return 1
     fi
   else
-    echo "No backups found for world $1"
+    printf "No backups found for world %s\n" "$1" 1>&2
     # Return a false value (failure).
     return 1
   fi
@@ -1708,27 +1614,14 @@ worldBackupRestore() {
 # @param 1 The world to update.
 # ---------------------------------------------------------------------------
 updateClientSoftware() {
-  local CLIENT_JAR CLIENT_LOCATION CLIENT_URL CLIENT_VERSION SHA1 SHA1_FILE
   CLIENT_JAR=$(getClientJar "$1")
-  if [ $? -ne 0 ]; then
-    printf "%s\n" "$CLIENT_JAR"
-    exit 1
-  fi
+  [ -n "$CLIENT_JAR" ] || exit 1
   CLIENT_LOCATION=$(getClientLocation "$1")
-  if [ $? -ne 0 ]; then
-    printf "%s\n" "$CLIENT_LOCATION"
-    exit 1
-  fi
+  [ -n "$CLIENT_LOCATION" ] || exit 1
   CLIENT_URL=$(getClientURL "$1")
-  if [ $? -ne 0 ]; then
-    printf "%s\n" "$CLIENT_URL"
-    exit 1
-  fi
+  [ -n "$CLIENT_URL" ] || exit 1
   CLIENT_VERSION=$(getClientVersion "$1")
-  if [ $? -ne 0 ]; then
-    printf "%s\n" "$CLIENT_VERSION"
-    exit 1
-  fi
+  [ -n "$CLIENT_VERSION" ] || exit 1
   # Make sure the client software directory exists.
   mkdir -p "$CLIENT_LOCATION"
   # Download the client jar if it is missing.
@@ -1737,17 +1630,17 @@ updateClientSoftware() {
     $WGET -qO "$CLIENT_LOCATION/$CLIENT_JAR" "$CLIENT_URL"
     # Report any errors.
     if [ $? -ne 0 ]; then
-      printf "Error downloading the Minecraft client software.\n"
+      printf "Error downloading the Minecraft client software.\n" 1>&2
       exit 1
     fi
-    SHA1=$(getMinecraftVersionDownloadSHA1 $CLIENT_VERSION 'client')
-    if [ -z $SHA1 ]; then
-      printf "Error retrieving the sha1 for the Minecraft client software.\n"
+    SHA1=$(getMinecraftVersionDownloadSHA1 "$CLIENT_VERSION" "client")
+    if [ -z "$SHA1" ]; then
+      printf "Error retrieving the sha1 for the Minecraft client software.\n" 1>&2
       exit 1
     fi
-    SHA1_FILE=$(sha1sum $CLIENT_LOCATION/$CLIENT_JAR | cut -d ' ' -f1)
-    if [ $SHA1 != "$SHA1_FILE" ]; then
-      printf "Error verifying the sha1 for the Minecraft client software.\n"
+    SHA1_FILE=$(sha1sum "$CLIENT_LOCATION/$CLIENT_JAR" | cut -d ' ' -f1)
+    if [ "$SHA1" != "$SHA1_FILE" ]; then
+      printf "Error verifying the sha1 for the Minecraft client software.\n" 1>&2
       exit 1
     fi
   fi
@@ -1759,27 +1652,14 @@ updateClientSoftware() {
 # @param 1 The world server to update.
 # ---------------------------------------------------------------------------
 updateServerSoftware() {
-  local SERVER_JAR SERVER_LOCATION SERVER_URL SERVER_VERSION SHA1 SHA1_FILE
   SERVER_JAR=$(getServerJar "$1")
-  if [ $? -ne 0 ]; then
-    printf "%s\n" "$SERVER_JAR"
-    exit 1
-  fi
+  [ -n "$SERVER_JAR" ] || exit 1
   SERVER_LOCATION=$(getServerLocation "$1")
-  if [ $? -ne 0 ]; then
-    printf "%s\n" "$SERVER_LOCATION"
-    exit 1
-  fi
+  [ -n "$SERVER_LOCATION" ] || exit 1
   SERVER_URL=$(getServerURL "$1")
-  if [ $? -ne 0 ]; then
-    printf "%s\n" "$SERVER_URL"
-    exit 1
-  fi
+  [ -n "$SERVER_URL" ] || exit 1
   SERVER_VERSION=$(getServerVersion "$1")
-  if [ $? -ne 0 ]; then
-    printf "%s\n" "$SERVER_VERSION"
-    exit 1
-  fi
+  [ -n "$SERVER_VERSION" ] || exit 1
   # Make sure the server software directory exists.
   mkdir -p "$SERVER_LOCATION"
   # Download the server jar if it is missing.
@@ -1788,17 +1668,17 @@ updateServerSoftware() {
     $WGET -qO "$SERVER_LOCATION/$SERVER_JAR" "$SERVER_URL"
     # Report any errors.
     if [ $? -ne 0 ]; then
-      printf "Error updating the Minecraft server software.\n"
+      printf "Error updating the Minecraft server software.\n" 1>&2
       exit 1
     fi
-    SHA1=$(getMinecraftVersionDownloadSHA1 $SERVER_VERSION 'server')
-    if [ -z $SHA1 ]; then
-      printf "Error retrieving the sha1 for the Minecraft server software.\n"
+    SHA1=$(getMinecraftVersionDownloadSHA1 "$SERVER_VERSION" "server")
+    if [ -z "$SHA1" ]; then
+      printf "Error retrieving the sha1 for the Minecraft server software.\n" 1>&2
       exit 1
     fi
-    SHA1_FILE=$(sha1sum $SERVER_LOCATION/$SERVER_JAR | cut -d ' ' -f1)
-    if [ $SHA1 != "$SHA1_FILE" ]; then
-      printf "Error verifying the sha1 for the Minecraft server software.\n"
+    SHA1_FILE=$(sha1sum "$SERVER_LOCATION/$SERVER_JAR" | cut -d ' ' -f1)
+    if [ "$SHA1" != "$SHA1_FILE" ]; then
+      printf "Error verifying the sha1 for the Minecraft server software.\n" 1>&2
     fi
   fi
 }
@@ -1810,7 +1690,6 @@ updateServerSoftware() {
 # @param 1 The world server to map with Overviewer.
 # ---------------------------------------------------------------------------
 overviewer() {
-  local SETTINGS_FILE LOG_FILE VERSION_TEST
   SETTINGS_FILE="$WORLDS_LOCATION/$1/overviewer-settings.py"
   LOG_FILE="$WORLDS_LOCATION/$1/logs/overviewer.log"
   VERSION_TEST="$(compareMinecraftVersions "$(getServerVersion "$1")" 1.7.2)"
@@ -1830,91 +1709,93 @@ overviewer() {
   # Make sure the Minecraft client is available.
   updateClientSoftware "$1"
   # Create a default Overviewer settings file if it is missing.
-  if [ ! -e $SETTINGS_FILE ]; then
+  if [ ! -e "$SETTINGS_FILE" ]; then
     # Use the backup location so we minimize the time the server isn't saving data.
-    printf "import os\n\n" >$SETTINGS_FILE
-    printf "worlds['%s'] = '%s/%s/%s-original' if os.path.exists('%s/%s/%s-original') else '%s/%s/%s'\n\n" "$1" "$BACKUP_LOCATION" "$1" "$1" "$BACKUP_LOCATION" "$1" "$1" "$BACKUP_LOCATION" "$1" "$1" >>$SETTINGS_FILE
-    printf "renders['overworld-render'] = {\n" >>$SETTINGS_FILE
-    printf "  'world': '%s',\n" "$1" >>$SETTINGS_FILE
-    printf "  'title': 'Overworld',\n" >>$SETTINGS_FILE
-    printf "  'dimension': 'overworld',\n" >>$SETTINGS_FILE
-    printf "  'rendermode': 'normal'\n" >>$SETTINGS_FILE
-    printf "}\n\n" >>$SETTINGS_FILE
-    printf "renders['overworld-caves-render'] = {\n" >>$SETTINGS_FILE
-    printf "  'world': '%s',\n" "$1" >>$SETTINGS_FILE
-    printf "  'title': 'Caves',\n" >>$SETTINGS_FILE
-    printf "  'dimension': 'overworld',\n" >>$SETTINGS_FILE
-    printf "  'rendermode': 'cave'\n" >>$SETTINGS_FILE
-    printf "}\n\n" >>$SETTINGS_FILE
-    printf "renders['nether-render'] = {\n" >>$SETTINGS_FILE
-    printf "  'world': '%s',\n" "$1" >>$SETTINGS_FILE
-    printf "  'title': 'Nether',\n" >>$SETTINGS_FILE
-    printf "  'dimension': 'nether',\n" >>$SETTINGS_FILE
-    printf "  'rendermode': 'nether'\n" >>$SETTINGS_FILE
-    printf "}\n\n" >>$SETTINGS_FILE
-    printf "renders['end-render'] = {\n" >>$SETTINGS_FILE
-    printf "  'world': '%s',\n" "$1" >>$SETTINGS_FILE
-    printf "  'title': 'End',\n" >>$SETTINGS_FILE
-    printf "  'dimension': 'end',\n" >>$SETTINGS_FILE
-    printf "  'rendermode': 'normal'\n" >>$SETTINGS_FILE
-    printf "}\n\n" >>$SETTINGS_FILE
-    printf "processes = 2\n" >>$SETTINGS_FILE
-    printf "outputdir = '%s/%s'\n" "$MAPS_LOCATION" "$1" >>$SETTINGS_FILE
+    {
+      printf "import os\n\n"
+      printf "worlds['%s'] = '%s/%s/%s-original' if os.path.exists('%s/%s/%s-original') else '%s/%s/%s'\n\n" "$1" "$BACKUP_LOCATION" "$1" "$1" "$BACKUP_LOCATION" "$1" "$1" "$BACKUP_LOCATION" "$1" "$1"
+      printf "renders['overworld-render'] = {\n"
+      printf "  'world': '%s',\n" "$1"
+      printf "  'title': 'Overworld',\n"
+      printf "  'dimension': 'overworld',\n"
+      printf "  'rendermode': 'normal'\n"
+      printf "}\n\n"
+      printf "renders['overworld-caves-render'] = {\n"
+      printf "  'world': '%s',\n" "$1"
+      printf "  'title': 'Caves',\n"
+      printf "  'dimension': 'overworld',\n"
+      printf "  'rendermode': 'cave'\n"
+      printf "}\n\n"
+      printf "renders['nether-render'] = {\n"
+      printf "  'world': '%s',\n" "$1"
+      printf "  'title': 'Nether',\n"
+      printf "  'dimension': 'nether',\n"
+      printf "  'rendermode': 'nether'\n"
+      printf "}\n\n"
+      printf "renders['end-render'] = {\n"
+      printf "  'world': '%s',\n" "$1"
+      printf "  'title': 'End',\n"
+      printf "  'dimension': 'end',\n"
+      printf "  'rendermode': 'normal'\n"
+      printf "}\n\n"
+      printf "processes = 2\n"
+      printf "outputdir = '%s/%s'\n" "$MAPS_LOCATION" "$1"
+    } > "$SETTINGS_FILE"
   fi
   # Announce the mapping of the world to players if the world is running.
-  if serverRunning $1; then
-    if [ $VERSION_TEST -ge 0 ]; then
-      sendCommand $1 'tellraw @a {
-        "text" : "",
-        "extra" : [
+  if serverRunning "$1"; then
+    if [ "$VERSION_TEST" -ge 0 ]; then
+      sendCommand "$1" "tellraw @a {
+        'text' : '',
+        'extra' : [
           {
-            "text" : "[Server] The world is about to be mapped with "
+            'text' : '[Server] The world is about to be mapped with '
           },
           {
-            "text" : "Overviewer",
-            "color" : "aqua",
-            "clickEvent" : {
-              "action" : "open_url",
-              "value" : "'$OVERVIEWER_URL'"
+            'text' : 'Overviewer',
+            'color' : 'aqua',
+            'clickEvent' : {
+              'action' : 'open_url',
+              'value' : '$OVERVIEWER_URL'
             }
           },
           {
-            "text" : "."
+            'text' : '.'
           }
         ]
-      }'
+      }"
     else
-      sendCommand $1 "say The world is about to be mapped with Overviewer."
+      sendCommand "$1" "say The world is about to be mapped with Overviewer."
     fi
   fi
   # Generate the map and POI.
-  $OVERVIEWER_BIN --config=$SETTINGS_FILE >>$LOG_FILE 2>&1
-  $OVERVIEWER_BIN --config=$SETTINGS_FILE --genpoi >>$LOG_FILE 2>&1
+  $OVERVIEWER_BIN --config="$SETTINGS_FILE" >> "$LOG_FILE" 2>&1
+  $OVERVIEWER_BIN --config="$SETTINGS_FILE" --genpoi >> "$LOG_FILE" 2>&1
   # Announce the location to access the world map to players.
-  if serverRunning $1; then
-    if [ $VERSION_TEST -ge 0 ]; then
-      sendCommand $1 'tellraw @a {
-        "text" : "",
-        "extra" : [
+  if serverRunning "$1"; then
+    if [ "$VERSION_TEST" -ge 0 ]; then
+      sendCommand "$1" "tellraw @a {
+        'text' : '',
+        'extra' : [
           {
-            "text" : "[Server] Mapping is complete. You can access the maps "
+            'text' : '[Server] Mapping is complete. You can access the maps '
           },
           {
-            "text" : "here",
-            "color" : "aqua",
-            "clickEvent" : {
-              "action" : "open_url",
-              "value" : "'$MAPS_URL'/'$1'"
+            'text' : 'here',
+            'color' : 'aqua',
+            'clickEvent' : {
+              'action' : 'open_url',
+              'value' : '$MAPS_URL/$1'
             }
           },
           {
-            "text" : "."
+            'text' : '.'
           }
         ]
-      }'
+      }"
     else
-      sendCommand $1 "say Mapping is complete.  You can access the maps at:"
-      sendCommand $1 "say $MAPS_URL/$1"
+      sendCommand "$1" "say Mapping is complete.  You can access the maps at:"
+      sendCommand "$1" "say $MAPS_URL/$1"
     fi
   fi
 }
@@ -1925,15 +1806,14 @@ overviewer() {
 # @param 1 The world server to start a Query handler for.
 # ---------------------------------------------------------------------------
 queryStart() {
-  local WORLD_DIR SERVER_IP SERVER_PID QUERY_PORT
   # Grab the location of the world's directory.
   WORLD_DIR="$WORLDS_LOCATION/$1"
   # Determine the IP address and port used by the query server.
-  SERVER_IP=$(getServerPropertiesValue $1 'server-ip' '127.0.0.1')
-  QUERY_PORT=$(getServerPropertiesValue $1 'query.port')
-  SERVER_PID=$(getJavaPID $1)
+  SERVER_IP=$(getServerPropertiesValue "$1" "server-ip" "127.0.0.1")
+  QUERY_PORT=$(getServerPropertiesValue "$1" "query.port")
+  SERVER_PID=$(getJavaPID "$1")
   # Delete any old query.in or query.out buffer files.
-  rm -Rf "$WORLD_DIR/query.in" "$WORLD_DIR/query.out"
+  rm -Rf "${WORLD_DIR:?}/query.in" "${WORLD_DIR:?}/query.out"
   # Start a tail process to watch for changes to the query.in file to pipe
   # to the Minecraft query server via socat.  The response from the query
   # server is piped into the query.out file.
@@ -1943,10 +1823,10 @@ queryStart() {
     while ! echo | $SOCAT - UDP-CONNECT:$SERVER_IP:$QUERY_PORT >/dev/null 2>&1; do
       sleep 0.1
     done;
-    printf '' >\"$WORLD_DIR/query.in\"
-    printf '' >\"$WORLD_DIR/query.out\"
-    tail -f --pid=$SERVER_PID \"$WORLD_DIR/query.in\" |
-    $SOCAT - UDP:$SERVER_IP:$QUERY_PORT > \"$WORLD_DIR/query.out\"
+    printf '' > '$WORLD_DIR/query.in'
+    printf '' > '$WORLD_DIR/query.out'
+    tail -f --pid='$SERVER_PID' '$WORLD_DIR/query.in' |
+    $SOCAT - UDP:$SERVER_IP:$QUERY_PORT > '$WORLD_DIR/query.out'
   " >/dev/null 2>&1 &
 }
 
@@ -1961,7 +1841,6 @@ queryStart() {
 # @return The response from the Query server in the requested format.
 # ---------------------------------------------------------------------------
 querySendPacket() {
-  local ID PACKET RESPONSE WORLD_DIR
   # The packet identifier.
   ID="00000001"
   # The world's directory.
@@ -1974,7 +1853,7 @@ querySendPacket() {
     # Remove any old responses from the query.out buffer file.
     printf "" >"$WORLD_DIR/query.out"
     # Pack the hex string packet and write it to the query.in buffer file.
-    $PERL -se '
+    perl -se '
       print map { pack ("C", hex($_)) } ($packet =~ /(..)/g);
     ' -- -packet="$PACKET" >>"$WORLD_DIR/query.in"
     # Give the Query server a moment to respond.
@@ -1982,7 +1861,7 @@ querySendPacket() {
     # Unpack the response packet from the query.out buffer file. There are a
     # variable amount of null bytes at the start of the response packet, so
     # find the start of the response by searching for the packet type and ID.
-    RESPONSE=$(cat $WORLD_DIR/query.out | $PERL -0777 -sne '
+    RESPONSE=$(perl -0777 -sne '
       foreach (unpack "C*", $_) {
         $char = sprintf ("%.2x", $_);
         $char =~ s/0a/5c6e/;
@@ -1990,13 +1869,13 @@ querySendPacket() {
       }
       $hex =~ s/^0*$type$id/$type$id/;
       print $hex;
-    ' -- -type="$2" -id="$ID")
+    ' -- -type="$2" -id="$ID" < "$WORLD_DIR/query.out")
   fi
   # If the response is not empty, return the response
   # in the format requested.
   if [ -n "$RESPONSE" ]; then
     # Return the response in the format requested.
-    $PERL -se '
+    perl -se '
       $packed = join "", map { pack ("C", hex($_)) } ($response =~ /(..)/g);
       printf "%s\n", join "\t", unpack ($format, $packed);
     ' -- -response="$RESPONSE" -format="$4"
@@ -2022,7 +1901,6 @@ querySendPacket() {
 #           token      - The token.
 # ---------------------------------------------------------------------------
 querySendChallengePacket() {
-  local PACKET
   # Use an empty packet.
   PACKET="00000000"
   # Send the challenge packet to the Minecraft query server.
@@ -2045,13 +1923,12 @@ querySendChallengePacket() {
 #           hostip     - The host's IP address.
 # ---------------------------------------------------------------------------
 queryStatus() {
-  local PACKET TOKEN
-  if true_value "$(getServerPropertiesValue $1 'enable-query')"; then
+  if true_value "$(getServerPropertiesValue "$1" "enable-query")"; then
     # Send a challenge packet to the Minecraft query server.
-    TOKEN=$(querySendChallengePacket $1 | cut -f 3)
+    TOKEN=$(querySendChallengePacket "$1" | cut -f 3)
     if [ -n "$TOKEN" ]; then
       # Use the challenge token for the packet.
-      PACKET=$(printf "%08x" $TOKEN)
+      PACKET=$(printf "%08x" "$TOKEN")
       # Send the information request packet to the Minecraft query server.
       querySendPacket "$1" "00" "$PACKET" "Cl>Z*Z*Z*Z*Z*s<Z*"
     fi
@@ -2095,15 +1972,14 @@ queryStatus() {
 #           players    - The players currently logged onto the world.
 # ---------------------------------------------------------------------------
 queryDetailedStatus() {
-  local CHALLENGE ID PACKET TOKEN
-  if true_value "$(getServerPropertiesValue $1 'enable-query')"; then
+  if true_value "$(getServerPropertiesValue "$1" "enable-query")"; then
     # Send a challenge packet to the Minecraft query server.
-    CHALLENGE=$(querySendChallengePacket $1)
+    CHALLENGE=$(querySendChallengePacket "$1")
     ID=$(echo "$CHALLENGE" | cut -f 2)
     TOKEN=$(echo "$CHALLENGE" | cut -f 3)
     if [ -n "$ID" ] && [ -n "$TOKEN" ]; then
       # Use the challenge token for the packet, with the ID on the end.
-      PACKET=$(printf "%08x%08x" $TOKEN $ID)
+      PACKET=$(printf "%08x%08x" "$TOKEN" "$ID")
       # Send the information request packet to the Minecraft query server.
       querySendPacket "$1" "00" "$PACKET" \
         "Cl>Z*CCZ*Z*Z*Z*Z*Z*Z*Z*Z*Z*Z*Z*Z*Z*Z*Z*Z*Z*Z*Z*CCZ*C(Z*)*"
@@ -2119,8 +1995,7 @@ queryDetailedStatus() {
 # @return Query values in JSON format.
 # ---------------------------------------------------------------------------
 queryDetailedStatusJSON() {
-  local STATUS JSON MOTD GAMETYPE GAMEID VERSION PLUGINS MAP NUMPLAYERS MAXPLAYERS HOSTPORT HOSTIP PLAYERS COUNTER
-  STATUS=$(queryDetailedStatus $1)
+  STATUS=$(queryDetailedStatus "$1")
   if [ -n "$STATUS" ]; then
     MOTD=$(printf "%s" "$STATUS" | cut -f 7)
     GAMETYPE=$(printf "%s" "$STATUS" | cut -f 9)
@@ -2132,11 +2007,11 @@ queryDetailedStatusJSON() {
     MAXPLAYERS=$(printf "%s" "$STATUS" | cut -f 21)
     HOSTPORT=$(printf "%s" "$STATUS" | cut -f 23)
     HOSTIP=$(printf "%s" "$STATUS" | cut -f 25)
-    if [ $NUMPLAYERS -gt 0 ]; then
-      PLAYERS="$(printf "%s\"" "$PLAYERS" $(printf "%s" "$STATUS" | cut -f $((30))))"
+    if [ "$NUMPLAYERS" -gt 0 ]; then
+      PLAYERS=$(printf "%s\"" "$PLAYERS" "$(printf "%s" "$STATUS" | cut -f $((30)))")
       COUNTER=1
-      while [ $COUNTER -lt $NUMPLAYERS ]; do
-        PLAYERS=$(printf "%s, \"%s\"" "$PLAYERS" $(printf "%s" "$STATUS" | cut -f $((30 + COUNTER))))
+      while [ "$COUNTER" -lt "$NUMPLAYERS" ]; do
+        PLAYERS=$(printf "%s, \"%s\"" "$PLAYERS" "$(printf "%s" "$STATUS" | cut -f $((30 + COUNTER)))")
         COUNTER=$((COUNTER + 1))
       done
     fi
@@ -2154,8 +2029,7 @@ queryDetailedStatusJSON() {
 # @return Number of active users.
 # ---------------------------------------------------------------------------
 queryNumUsers() {
-  local NUM_USERS
-  NUM_USERS=$(queryStatus $1 | cut -f6)
+  NUM_USERS=$(queryStatus "$1" | cut -f6)
   # Return 0 users if query server not available.
   [ -z "$NUM_USERS" ] && NUM_USERS=0
   printf "%s" "$NUM_USERS"
@@ -2167,31 +2041,30 @@ queryNumUsers() {
 # @param 1 The world server of interest.
 # ---------------------------------------------------------------------------
 worldStatus() {
-  local WORLD_DIR LAST_START_STATUS_LOG MONITOR_PID STATUS NUM MAX PLAYERS COUNTER VERSION
   WORLD_DIR="$WORLDS_LOCATION/$1"
   MONITOR_PID="$WORLD_DIR/monitor.pid"
   LAST_START_STATUS_LOG="$WORLD_DIR/logs/last-start-status.log"
-  if serverRunning $1; then
-    STATUS=$(queryDetailedStatus $1)
+  if serverRunning "$1"; then
+    STATUS=$(queryDetailedStatus "$1")
     if [ -n "$STATUS" ]; then
       NUM=$(printf "%s" "$STATUS" | cut -f 19)
       MAX=$(printf "%s" "$STATUS" | cut -f 21)
       VERSION=$(printf "%s" "$STATUS" | cut -f 13)
-      printf "running version %s (%d of %d users online).\n" "$VERSION" $NUM $MAX
-      printf "    Port: %d.\n" $(getServerPropertiesValue "$1" "server-port" "$DEFAULT_PORT")
-      if [ $NUM -gt 0 ]; then
-        PLAYERS=$(printf "%s" $(printf "%s" "$STATUS" | cut -f 30))
+      printf "running version %s (%d of %d users online).\n" "$VERSION" "$NUM" "$MAX"
+      printf "    Port: %d.\n" "$(getServerPropertiesValue "$1" "server-port" "$DEFAULT_PORT")"
+      if [ "$NUM" -gt 0 ]; then
+        PLAYERS=$(printf "%s" "$(printf "%s" "$STATUS" | cut -f 30)")
         COUNTER=1
-        while [ $COUNTER -lt $NUM ]; do
-          PLAYERS=$(printf "%s, %s" "$PLAYERS" $(printf "%s" "$STATUS" | cut -f $((30 + COUNTER))))
+        while [ "$COUNTER" -lt "$NUM" ]; do
+          PLAYERS=$(printf "%s, %s" "$PLAYERS" "$(printf "%s" "$STATUS" | cut -f $((30 + COUNTER)))")
           COUNTER=$((COUNTER + 1))
         done
         printf "    Players: %s.\n" "$PLAYERS"
       fi
-    elif true_value "$(getServerPropertiesValue $1 'enable-query')" &&
+    elif true_value "$(getServerPropertiesValue "$1" "enable-query")" &&
       [ -e "$WORLD_DIR/query.in" ] && [ -e "$WORLD_DIR/query.out" ]; then
       printf "running (query server offline).\n"
-    elif true_value "$(getServerPropertiesValue $1 'enable-query')" &&
+    elif true_value "$(getServerPropertiesValue "$1" "enable-query")" &&
       [ ! -e "$WORLD_DIR/query.in" ] && [ ! -e "$WORLD_DIR/query.out" ]; then
       printf "world starting up.\n"
     else
@@ -2205,7 +2078,7 @@ worldStatus() {
       rev | cut -c 2- | rev | awk '{$1=int($1/1024)"GB";}{ print;}'
     )
     printf "    Memory used: %s (%s allocated).\n" "$USED_MEM" "$ALLOCATED_MEM"
-    printf "    Process ID: %d.\n" $(getJavaPID "$1")
+    printf "    Process ID: %d.\n" "$(getJavaPID "$1")"
     # Display crash monitor PID if it's running (i.e. monitor.pid file exists and not empty).
     if [ -f "$MONITOR_PID" ] && [ -s "$MONITOR_PID" ]; then
       printf "    Crash Monitor PID: $(cat $MONITOR_PID)\n"
@@ -2217,7 +2090,7 @@ worldStatus() {
       # Remove it so user doesn't see it next time they run the status command.
       rm -f $LAST_START_STATUS_LOG
     fi
-  elif ! true_value "$(getMSCSValue $1 'mscs-enabled')"; then
+  elif ! true_value "$(getMSCSValue "$1" "mscs-enabled")"; then
     printf "disabled.\n"
   else
     printf "not running.\n"
@@ -2231,12 +2104,11 @@ worldStatus() {
 # @return The status of the world in JSON format.
 # ---------------------------------------------------------------------------
 worldStatusJSON() {
-  local RUNNING QUERY PID MEMORY
-  if serverRunning $1; then
+  if serverRunning "$1"; then
     RUNNING="true"
-    QUERY="$(queryDetailedStatusJSON $1)"
-    PID="$(getJavaPID $1)"
-    MEMORY="$(getJavaMemory $1)"
+    QUERY="$(queryDetailedStatusJSON "$1")"
+    PID="$(getJavaPID "$1")"
+    MEMORY="$(getJavaMemory "$1")"
   else
     RUNNING="false"
     QUERY="null"
@@ -2254,66 +2126,66 @@ worldStatusJSON() {
 # Rdiff-backup, Rsync, Socat and flock are installed.
 # ---------------------------------------------------------------------------
 if [ ! -e "$JAVA" ]; then
-  echo "ERROR: Java not found!"
-  echo "Try installing this with:"
-  echo "sudo apt-get install default-jre"
+  printf "ERROR: Java not found!\n" 1>&2
+  printf "Try installing this with:\n" 1>&2
+  printf "sudo apt-get install default-jre\n" 1>&2
   exit 1
 fi
-if [ ! -e "$PERL" ]; then
-  echo "ERROR: Perl not found!"
-  echo "Try installing this with:"
-  echo "sudo apt-get install perl"
+if [ ! -e "$(which perl)" ]; then
+  printf "ERROR: Perl not found!\n" 1>&2
+  printf "Try installing this with:\n" 1>&2
+  printf "sudo apt-get install perl\n" 1>&2
   exit 1
 fi
-$PERL -e 'use JSON;' >/dev/null 2>&1
+perl -e 'use JSON;' >/dev/null 2>&1
 if [ $? -ne 0 ]; then
-  echo "ERROR: libjson-perl not found!"
-  echo "Try installing this with:"
-  echo "sudo apt-get install libjson-perl"
+  printf "ERROR: libjson-perl not found!\n" 1>&2
+  printf "Try installing this with:\n" 1>&2
+  printf "sudo apt-get install libjson-perl\n" 1>&2
   exit 1
 fi
-$PERL -e 'use LWP::Simple;' >/dev/null 2>&1
+perl -e 'use LWP::Simple;' >/dev/null 2>&1
 if [ $? -ne 0 ]; then
-  echo "ERROR: libwww-perl not found!"
-  echo "Try installing this with:"
-  echo "sudo apt-get install libwww-perl"
+  printf "ERROR: libwww-perl not found!\n" 1>&2
+  printf "Try installing this with:\n" 1>&2
+  printf "sudo apt-get install libwww-perl\n" 1>&2
   exit 1
 fi
-$PERL -e 'use LWP::Protocol::https;' >/dev/null 2>&1
+perl -e 'use LWP::Protocol::https;' >/dev/null 2>&1
 if [ $? -ne 0 ]; then
-  echo "ERROR: liblwp-protocol-https-perl not found!"
-  echo "Try installing this with:"
-  echo "sudo apt-get install liblwp-protocol-https-perl"
+  printf "ERROR: liblwp-protocol-https-perl not found!\n" 1>&2
+  printf "Try installing this with:\n" 1>&2
+  printf "sudo apt-get install liblwp-protocol-https-perl\n" 1>&2
   exit 1
 fi
 if [ ! -e "$PYTHON" ]; then
-  echo "ERROR: Python not found!"
-  echo "Try installing this with:"
-  echo "sudo apt-get install python3"
+  printf "ERROR: Python not found!\n" 1>&2
+  printf "Try installing this with:\n" 1>&2
+  printf "sudo apt-get install python3\n" 1>&2
   exit 1
 fi
 if [ ! -e "$WGET" ]; then
-  echo "ERROR: GNU Wget not found!"
-  echo "Try installing this with:"
-  echo "sudo apt-get install wget"
+  printf "ERROR: GNU Wget not found!\n" 1>&2
+  printf "Try installing this with:\n" 1>&2
+  printf "sudo apt-get install wget\n" 1>&2
   exit 1
 fi
 if [ ! -e "$RDIFF_BACKUP" ]; then
-  echo "ERROR: rdiff-backup not found!"
-  echo "Try installing this with:"
-  echo "sudo apt-get install rdiff-backup"
+  printf "ERROR: rdiff-backup not found!\n" 1>&2
+  printf "Try installing this with:\n" 1>&2
+  printf "sudo apt-get install rdiff-backup\n" 1>&2
   exit 1
 fi
 if [ ! -e "$RSYNC" ]; then
-  echo "ERROR: rsync not found!"
-  echo "Try installing this with:"
-  echo "sudo apt-get install rsync"
+  printf "ERROR: rsync not found!\n" 1>&2
+  printf "Try installing this with:\n" 1>&2
+  printf "sudo apt-get install rsync\n" 1>&2
   exit 1
 fi
 if [ ! -e "$SOCAT" ]; then
-  echo "ERROR: socat not found!"
-  echo "Try installing this with:"
-  echo "sudo apt-get install socat"
+  printf "ERROR: socat not found!\n" 1>&2
+  printf "Try installing this with:\n" 1>&2
+  printf "sudo apt-get install socat\n" 1>&2
   exit 1
 fi
 if [ ! -e "$FLOCK" ]; then
@@ -2332,7 +2204,7 @@ while [ "$1" != "${1#-}" ]; do
         PROG="$2"
         shift
       else
-        echo "$PROG: '-p' needs a program name argument."
+        printf "%s: '-p' needs a program name argument.\n" "$PROG" 1>&2
         exit 1
       fi
       ;;
@@ -2341,7 +2213,7 @@ while [ "$1" != "${1#-}" ]; do
         MSCS_DEFAULTS_CL="$2"
         shift
       else
-        echo "$PROG: '-c' needs a config file argument."
+        printf "%s: '-c' needs a config file argument.\n" "$PROG" 1>&2
         exit 1
       fi
       ;;
@@ -2350,13 +2222,13 @@ while [ "$1" != "${1#-}" ]; do
         LOCATION_CL="$2"
         shift
       else
-        echo "$PROG: '-l' needs a location path argument."
+        printf "%s: '-l' needs a location path argument.\n" "$PROG" 1>&2
         exit 1
       fi
       ;;
     *)
-      echo "$PROG: unknown option '$1'."
-      echo "Execute '$PROG' without arguments for usage instructions."
+      printf "%s: unknown option '%s'.\n" "$PROG" "$1" 1>&2
+      printf "Execute '%s' without arguments for usage instructions.\n" "$PROG" 1>&2
       exit 1
       ;;
   esac
@@ -2383,7 +2255,7 @@ else
 fi
 # Generate the example `mscs.defaults` if it is missing or empty.
 if [ ! -s "$MSCS_DEFAULTS" ]; then
-  mscs_defaults >$MSCS_DEFAULTS
+  mscs_defaults > "$MSCS_DEFAULTS"
 fi
 # Default values in the script can be overridden by adding certain key/value
 # pairs to one of the mscs.defaults files mentioned above. Default values in
@@ -2481,7 +2353,7 @@ fi
 # Server Location
 # ---------------------------------------------------------------------------
 # The default location of server software and data.
-LOCATION=$(getDefaultsValue 'mscs-location' $HOME'/mscs')
+LOCATION=$(getDefaultsValue "mscs-location" "$HOME/mscs")
 # Override with command-line location option.
 [ -n "$LOCATION_CL" ] && LOCATION="$LOCATION_CL"
 
@@ -2490,29 +2362,28 @@ LOCATION=$(getDefaultsValue 'mscs-location' $HOME'/mscs')
 
 # Minecraft Versions information
 # ---------------------------------------------------------------------------
-MINECRAFT_VERSIONS_URL=$(getDefaultsValue 'mscs-versions-url' 'https://launchermeta.mojang.com/mc/game/version_manifest.json')
+MINECRAFT_VERSIONS_URL=$(getDefaultsValue "mscs-versions-url" "https://launchermeta.mojang.com/mc/game/version_manifest.json")
 
 # Minecraft Server Settings
 # ---------------------------------------------------------------------------
 # Settings used if not provided in the world's mscs.properties file.
-DEFAULT_WORLD=$(getDefaultsValue 'mscs-default-world' 'world')
-DEFAULT_PORT=$(getDefaultsValue 'mscs-default-port' '25565')
-DEFAULT_IP=$(getDefaultsValue 'mscs-default-ip' '')
-DEFAULT_VERSION_TYPE=$(getDefaultsValue 'mscs-default-version-type' 'release')
-DEFAULT_CLIENT_VERSION=$(getDefaultsValue 'mscs-default-client-version' '$CURRENT_VERSION')
-DEFAULT_CLIENT_JAR=$(getDefaultsValue 'mscs-default-client-jar' '$CLIENT_VERSION.jar')
-DEFAULT_CLIENT_URL=$(getDefaultsValue 'mscs-default-client-url' '')
-DEFAULT_CLIENT_LOCATION=$(getDefaultsValue 'mscs-default-client-location' $HOME'/.minecraft/versions/$CLIENT_VERSION')
-DEFAULT_SERVER_VERSION=$(getDefaultsValue 'mscs-default-server-version' '$CURRENT_VERSION')
-DEFAULT_JVM_ARGS=$(getDefaultsValue 'mscs-default-jvm-args' '')
-DEFAULT_SERVER_JAR=$(getDefaultsValue 'mscs-default-server-jar' 'minecraft_server.$SERVER_VERSION.jar')
-DEFAULT_SERVER_URL=$(getDefaultsValue 'mscs-default-server-url' '')
-DEFAULT_SERVER_ARGS=$(getDefaultsValue 'mscs-default-server-args' 'nogui')
-DEFAULT_INITIAL_MEMORY=$(getDefaultsValue 'mscs-default-initial-memory' '128M')
-DEFAULT_MAXIMUM_MEMORY=$(getDefaultsValue 'mscs-default-maximum-memory' '2048M')
-DEFAULT_SERVER_LOCATION=$(getDefaultsValue 'mscs-default-server-location' $LOCATION'/server')
-DEFAULT_SERVER_COMMAND=$(getDefaultsValue 'mscs-default-server-command' '$JAVA -Xms$INITIAL_MEMORY -Xmx$MAXIMUM_MEMORY $JVM_ARGS -jar $SERVER_LOCATION/$SERVER_JAR $SERVER_ARGS')
-DEFAULT_RESTART_AFTER_CRASH=$(getDefaultsValue 'mscs-default-restart-after-crash' 'false')
+DEFAULT_WORLD=$(getDefaultsValue "mscs-default-world" "world")
+DEFAULT_PORT=$(getDefaultsValue "mscs-default-port" "25565")
+DEFAULT_IP=$(getDefaultsValue "mscs-default-ip" "")
+DEFAULT_VERSION_TYPE=$(getDefaultsValue "mscs-default-version-type" "release")
+DEFAULT_CLIENT_VERSION=$(getDefaultsValue "mscs-default-client-version" "\$CURRENT_VERSION")
+DEFAULT_CLIENT_JAR=$(getDefaultsValue "mscs-default-client-jar" "\$CLIENT_VERSION.jar")
+DEFAULT_CLIENT_URL=$(getDefaultsValue "mscs-default-client-url" "")
+DEFAULT_CLIENT_LOCATION=$(getDefaultsValue "mscs-default-client-location" "$HOME/.minecraft/versions/\$CLIENT_VERSION")
+DEFAULT_SERVER_VERSION=$(getDefaultsValue "mscs-default-server-version" "\$CURRENT_VERSION")
+DEFAULT_JVM_ARGS=$(getDefaultsValue "mscs-default-jvm-args" "")
+DEFAULT_SERVER_JAR=$(getDefaultsValue "mscs-default-server-jar" "minecraft_server.\$SERVER_VERSION.jar")
+DEFAULT_SERVER_URL=$(getDefaultsValue "mscs-default-server-url" "")
+DEFAULT_SERVER_ARGS=$(getDefaultsValue "mscs-default-server-args" "nogui")
+DEFAULT_INITIAL_MEMORY=$(getDefaultsValue "mscs-default-initial-memory" "128M")
+DEFAULT_MAXIMUM_MEMORY=$(getDefaultsValue "mscs-default-maximum-memory" "2048M")
+DEFAULT_SERVER_LOCATION=$(getDefaultsValue "mscs-default-server-location" "$LOCATION/server")
+DEFAULT_SERVER_COMMAND=$(getDefaultsValue "mscs-default-server-command" "$JAVA -Xms\$INITIAL_MEMORY -Xmx\$MAXIMUM_MEMORY \$JVM_ARGS -jar \$SERVER_LOCATION/\$SERVER_JAR \$SERVER_ARGS")
 # Each world server can override the default values in a similar manner by
 # adding certain key/value pairs to the world's mscs.properties file.
 #
@@ -2567,36 +2438,36 @@ DEFAULT_RESTART_AFTER_CRASH=$(getDefaultsValue 'mscs-default-restart-after-crash
 # World (Server Instance) Configuration
 # ---------------------------------------------------------------------------
 # The location to store files for each world server.
-WORLDS_LOCATION=$(getDefaultsValue 'mscs-worlds-location' $LOCATION'/worlds')
+WORLDS_LOCATION=$(getDefaultsValue "mscs-worlds-location" "$LOCATION/worlds")
 # The location to store the version_manifest.json file.
-VERSIONS_JSON=$(getDefaultsValue 'mscs-versions-json' $LOCATION'/version_manifest.json')
+VERSIONS_JSON=$(getDefaultsValue "mscs-versions-json" "$LOCATION/version_manifest.json")
 # The duration (in minutes) to keep the version_manifest.json file before updating.
-VERSIONS_DURATION=$(getDefaultsValue 'mscs-versions-duration' '30')
+VERSIONS_DURATION=$(getDefaultsValue "mscs-versions-duration" "30")
 # The duration (in minutes) to keep lock files before removing.
-LOCKFILE_DURATION=$(getDefaultsValue 'mscs-lockfile-duration' '1440')
+LOCKFILE_DURATION=$(getDefaultsValue "mscs-lockfile-duration" "1440")
 # Enable the option to restart the server after a crash is detected (default disabled).
 RESTART_AFTER_CRASH=$(getDefaultsValue 'mscs-restart-after-crash' 'false')
 
 # Backup Configuration
 # ---------------------------------------------------------------------------
 # Location to store backups.
-BACKUP_LOCATION=$(getDefaultsValue 'mscs-backup-location' $LOCATION'/backups')
+BACKUP_LOCATION=$(getDefaultsValue "mscs-backup-location" "$LOCATION/backups")
 # Location of the backup log file.
-BACKUP_LOG=$(getDefaultsValue 'mscs-backup-log' $BACKUP_LOCATION'/backup.log')
+BACKUP_LOG=$(getDefaultsValue "mscs-backup-log" "$BACKUP_LOCATION/backup.log")
 # Comma separated list of files and directories excluded from backups.
-BACKUP_EXCLUDED_FILES=$(getDefaultsValue 'mscs-backup-excluded-files' '')
+BACKUP_EXCLUDED_FILES=$(getDefaultsValue "mscs-backup-excluded-files" "")
 # Length in days that backups survive.
-BACKUP_DURATION=$(getDefaultsValue 'mscs-backup-duration' '15')
+BACKUP_DURATION=$(getDefaultsValue "mscs-backup-duration" "15")
 
 # Server Log Configuration
 # ---------------------------------------------------------------------------
 # Length in days that logs survive.
-LOG_DURATION=$(getDefaultsValue 'mscs-log-duration' '15')
+LOG_DURATION=$(getDefaultsValue "mscs-log-duration" "15")
 
 # Listing options
 # ---------------------------------------------------------------------------
 # Server properties for detailed listing (list).
-DETAILED_LISTING_PROPERTIES=$(getDefaultsValue 'mscs-detailed-listing' 'motd server-ip server-port max-players level-type online-mode')
+DETAILED_LISTING_PROPERTIES=$(getDefaultsValue "mscs-detailed-listing" "motd server-ip server-port max-players level-type online-mode")
 
 # Mirror Image Options
 # ---------------------------------------------------------------------------
@@ -2611,18 +2482,18 @@ DETAILED_LISTING_PROPERTIES=$(getDefaultsValue 'mscs-detailed-listing' 'motd ser
 #
 # 0 - Do not use a mirror image, default.
 # 1 - Use a mirror image.
-ENABLE_MIRROR=$(getDefaultsValue 'mscs-enable-mirror' '0')
+ENABLE_MIRROR=$(getDefaultsValue "mscs-enable-mirror" "0")
 # The location to store the mirror image.
 #
 # NOTE: This is usually a ramdisk, e.g. /dev/shm on Debian/Ubuntu.
-MIRROR_PATH=$(getDefaultsValue 'mscs-mirror-path' '/dev/shm/mscs')
+MIRROR_PATH=$(getDefaultsValue "mscs-mirror-path" "/dev/shm/mscs")
 
 # Minecraft Overviewer Mapping Software Options
 # ---------------------------------------------------------------------------
-OVERVIEWER_BIN=$(getDefaultsValue 'mscs-overviewer-bin' $(which overviewer.py))
-OVERVIEWER_URL=$(getDefaultsValue 'mscs-overviewer-url' 'http://overviewer.org')
-MAPS_LOCATION=$(getDefaultsValue 'mscs-maps-location' $LOCATION'/maps')
-MAPS_URL=$(getDefaultsValue 'mscs-maps-url' 'http://minecraft.server.com/maps')
+OVERVIEWER_BIN=$(getDefaultsValue "mscs-overviewer-bin" "$(which overviewer.py)")
+OVERVIEWER_URL=$(getDefaultsValue "mscs-overviewer-url" "http://overviewer.org")
+MAPS_LOCATION=$(getDefaultsValue "mscs-maps-location" "$LOCATION/maps")
+MAPS_URL=$(getDefaultsValue "mscs-maps-url" "http://minecraft.server.com/maps")
 
 # Allow function importing via source command for tests.
 if printf "%s" "$0" | grep -qs "runtests\.sh"; then
@@ -2645,31 +2516,31 @@ case "$COMMAND" in
     # Figure out which worlds to start.
     WORLDS=$(getEnabledWorlds)
     if [ -z "$WORLDS" ]; then
-      echo "There are no worlds to start."
-      echo "You may want to enable a world:"
-      echo "  $PROG enable <world>"
-      echo "Or create a new world:"
-      echo "  $PROG create <world> <port>"
-      echo "Or create the default world at the default port:"
-      echo "  $PROG create"
+      printf "There are no worlds to start.\n" 1>&2
+      printf "You may want to enable a world:\n" 1>&2
+      printf "  %s enable <world>\n" "$PROG" 1>&2
+      printf "Or create a new world:\n" 1>&2
+      printf "  %s create <world> <port>\n" "$PROG" 1>&2
+      printf "Or create the default world at the default port:\n" 1>&2
+      printf "  %s create\n" "$PROG" 1>&2
       exit 1
     elif [ "$#" -ge 1 ]; then
       WORLDS=''
       for arg in "$@"; do
         if isWorldEnabled "$arg"; then
           if serverRunning "$arg"; then
-            printf "Unable to start the requested worlds: world '%s' already running.\n" "$arg"
+            printf "Unable to start the requested worlds: world '%s' already running.\n" "$arg" 1>&2
             exit 1
           else
             WORLDS="$WORLDS $arg"
           fi
         elif isWorldDisabled "$arg"; then
-            printf "Unable to start the requested worlds: world '%s' is disabled.\n" "$arg"
-            printf "Please enable the world first with '%s enable %s'.\n" "$PROG" "$arg"
+            printf "Unable to start the requested worlds: world '%s' is disabled.\n" "$arg" 1>&2
+            printf "Please enable the world first with '%s enable %s'.\n" "$PROG" "$arg" 1>&2
             exit 1
         else
-          printf "Unable to start the requested worlds: world '%s' not recognized.\n" "$arg"
-          printf "  Usage:  %s %s <world1> <world2> <...>\n" "$PROG" "$COMMAND"
+          printf "Unable to start the requested worlds: world '%s' not recognized.\n" "$arg" 1>&2
+          printf "  Usage:  %s %s <world1> <world2> <...>\n" "$PROG" "$COMMAND" 1>&2
           exit 1
         fi
       done
@@ -2677,9 +2548,9 @@ case "$COMMAND" in
     # Start each world requested, if not already running.
     printf "Starting Minecraft Server:"
     for WORLD in $WORLDS; do
-      if ! serverRunning $WORLD; then
+      if ! serverRunning "$WORLD"; then
         printf " %s" "$WORLD"
-        start $WORLD
+        start "$WORLD"
       fi
     done
     printf ".\n"
@@ -2690,18 +2561,18 @@ case "$COMMAND" in
       for arg in "$@"; do
         if isWorldEnabled "$arg"; then
           if ! serverRunning "$arg"; then
-            printf "Unable to stop the requested worlds: world '%s' already stopped.\n" "$arg"
+            printf "Unable to stop the requested worlds: world '%s' already stopped.\n" "$arg" 1>&2
             exit 1
           else
             WORLDS="$WORLDS $arg"
           fi
         elif isWorldDisabled "$arg"; then
-            printf "Unable to stop the requested worlds: world '%s' is disabled.\n" "$arg"
-            printf "Please enable the world first with '%s enable %s'.\n" "$PROG" "$arg"
+            printf "Unable to stop the requested worlds: world '%s' is disabled.\n" "$arg" 1>&2
+            printf "Please enable the world first with '%s enable %s'.\n" "$PROG" "$arg" 1>&2
             exit 1
         else
-          printf "Unable to stop the requested worlds: world '%s' not recognized.\n" "$arg"
-          printf "  Usage:  %s %s <world1> <world2> <...>\n" "$PROG" "$COMMAND"
+          printf "Unable to stop the requested worlds: world '%s' not recognized.\n" "$arg" 1>&2
+          printf "  Usage:  %s %s <world1> <world2> <...>\n" "$PROG" "$COMMAND" 1>&2
           exit 1
         fi
       done
@@ -2710,30 +2581,30 @@ case "$COMMAND" in
     fi
     # Stop each world requested, if running.
     if [ -z "$WORLDS" ]; then
-      printf "Unable to stop worlds: no running worlds found.\n"
+      printf "Unable to stop worlds: no running worlds found.\n" 1>&2
       exit 1
     fi
     printf "Stopping Minecraft Server:"
     for WORLD in $WORLDS; do
       # Try to stop the world cleanly.
-      if serverRunning $WORLD; then
+      if serverRunning "$WORLD"; then
         printf " %s" "$WORLD"
-        if [ $(queryNumUsers $WORLD) -gt 0 ]; then
-          sendCommand $WORLD "say The server admin has initiated a server shut down."
-          sendCommand $WORLD "say The server will shut down in 1 minute..."
+        if [ "$(queryNumUsers "$WORLD")" -gt 0 ]; then
+          sendCommand "$WORLD" "say The server admin has initiated a server shut down."
+          sendCommand "$WORLD" "say The server will shut down in 1 minute..."
           sleep 60
-          sendCommand $WORLD "say The server is now shutting down."
+          sendCommand "$WORLD" "say The server is now shutting down."
         fi
-        sendCommand $WORLD "save-all"
-        sendCommand $WORLD "save-off"
+        sendCommand "$WORLD" "save-all"
+        sendCommand "$WORLD" "save-off"
         if [ "$COMMAND" = "force-stop" ]; then
-          forceStop $WORLD
+          forceStop "$WORLD"
         else
-          stop $WORLD
+          stop "$WORLD"
         fi
       elif [ "$COMMAND" = "force-stop" ]; then
         printf " %s" "$WORLD"
-        forceStop $WORLD
+        forceStop "$WORLD"
       fi
     done
     printf ".\n"
@@ -2747,12 +2618,12 @@ case "$COMMAND" in
         if isWorldEnabled "$arg"; then
           WORLDS="$WORLDS $arg"
         elif isWorldDisabled "$arg"; then
-            printf "Unable to start the requested worlds: world '%s' is disabled.\n" "$arg"
-            printf "Please enable the world first with '%s enable %s'.\n" "$PROG" "$arg"
+            printf "Unable to start the requested worlds: world '%s' is disabled.\n" "$arg" 1>&2
+            printf "Please enable the world first with '%s enable %s'.\n" "$PROG" "$arg" 1>&2
             exit 1
         else
-          printf "Unable to restart the requested worlds: world '%s' not recognized.\n" "$arg"
-          printf "  Usage:  %s %s <world1> <world2> <...>\n" "$PROG" "$COMMAND"
+          printf "Unable to restart the requested worlds: world '%s' not recognized.\n" "$arg" 1>&2
+          printf "  Usage:  %s %s <world1> <world2> <...>\n" "$PROG" "$COMMAND" 1>&2
           exit 1
         fi
       done
@@ -2760,7 +2631,7 @@ case "$COMMAND" in
       WORLDS=$(getEnabledWorlds)
     fi
     if [ -z "$WORLDS" ]; then
-      printf "Unable to restart worlds: no enabled worlds found.\n"
+      printf "Unable to restart worlds: no enabled worlds found.\n" 1>&2
       exit 1
     fi
     # Restart each world requested, start those not already
@@ -2768,23 +2639,23 @@ case "$COMMAND" in
     printf "Restarting Minecraft Server:"
     for WORLD in $WORLDS; do
       printf " %s" "$WORLD"
-      if serverRunning $WORLD; then
-        if [ $(queryNumUsers $WORLD) -gt 0 ]; then
-          sendCommand $WORLD "say The server admin has initiated a server restart."
-          sendCommand $WORLD "say The server will restart in 1 minute..."
+      if serverRunning "$WORLD"; then
+        if [ "$(queryNumUsers "$WORLD")" -gt 0 ]; then
+          sendCommand "$WORLD" "say The server admin has initiated a server restart."
+          sendCommand "$WORLD" "say The server will restart in 1 minute..."
           sleep 60
-          sendCommand $WORLD "say The server is now restarting."
+          sendCommand "$WORLD" "say The server is now restarting."
         fi
-        sendCommand $WORLD "save-all"
-        sendCommand $WORLD "save-off"
-        if [ "$(echo \"$COMMAND\" | cut -d '-' -f1)" = "force" ]; then
-          forceStop $WORLD
+        sendCommand "$WORLD" "save-all"
+        sendCommand "$WORLD" "save-off"
+        if [ "$(echo "$COMMAND" | cut -d '-' -f1)" = "force" ]; then
+          forceStop "$WORLD"
         else
-          stop $WORLD
+          stop "$WORLD"
         fi
         sleep 5
       fi
-      start $WORLD
+      start "$WORLD"
     done
     printf ".\n"
     ;;
@@ -2809,15 +2680,15 @@ case "$COMMAND" in
   import | copy | cp)
     # Verify the directory argument.
     if [ ! -d "$1" ] || [ ! -r "$1/server.properties" ]; then
-      printf "Directory containing a Minecraft world was not provided.\n"
-      printf "  Usage: %s import <directory> <world> <port> [<ip>]\n" "$PROG"
+      printf "Directory containing a Minecraft world was not provided.\n" 1>&2
+      printf "  Usage: %s import <directory> <world> <port> [<ip>]\n" "$PROG" 1>&2
       exit 1
     fi
     # Verify the name and port arguments.
     if [ -z "$2" ] || [ -z "$3" ] || isWorldAvailable "$2"; then
-      printf "An unused name and port for the world must be supplied.\n"
-      printf "An IP address is optional and usually not needed.\n"
-      printf "  Usage: %s import <directory> <world> <port> [<ip>]\n" "$PROG"
+      printf "An unused name and port for the world must be supplied.\n" 1>&2
+      printf "An IP address is optional and usually not needed.\n" 1>&2
+      printf "  Usage: %s import <directory> <world> <port> [<ip>]\n" "$PROG" 1>&2
       exit 1
     fi
     # Import the world.
@@ -2828,21 +2699,21 @@ case "$COMMAND" in
   rename)
     # Verify the original world argument.
     if [ -z "$1" ] || ! isWorldAvailable "$1"; then
-      printf "A Minecraft world was not provided.\n"
-      printf "  Usage: %s rename <original world> <new world>\n" "$PROG"
+      printf "A Minecraft world was not provided.\n" 1>&2
+      printf "  Usage: %s rename <original world> <new world>\n" "$PROG" 1>&2
       exit 1
     fi
     # Verify the new world argument.
     if [ -z "$2" ] || isWorldAvailable "$2"; then
-      printf "Invalid name for the new world provided.\n"
-      printf "  Usage: %s rename <original world> <new world>\n" "$PROG"
+      printf "Invalid name for the new world provided.\n" 1>&2
+      printf "  Usage: %s rename <original world> <new world>\n" "$PROG" 1>&2
       exit 1
     fi
     # Make sure the world is stopped.
     if serverRunning "$1"; then
       # If the world server has users logged in, announce that the world is
       # being modified.
-      if [ $(queryNumUsers "$1") -gt 0 ]; then
+      if [ "$(queryNumUsers "$1")" -gt 0 ]; then
         sendCommand "$1" "say The server admin is modifying this world."
         sendCommand "$1" "say The server will be restarted in 1 minute..."
         sleep 60
@@ -2858,9 +2729,9 @@ case "$COMMAND" in
     # Rename the world.
     printf "Renaming Minecraft world: %s" "$1"
     mkdir -p "$WORLDS_LOCATION/$2"
-    mv $WORLDS_LOCATION/$1 $WORLDS_LOCATION/$2
-    if [ -d $WORLDS_LOCATION/$2/$1 ]; then
-      mv $WORLDS_LOCATION/$2/$1 $WORLDS_LOCATION/$2/$2
+    mv "$WORLDS_LOCATION/$1" "$WORLDS_LOCATION/$2"
+    if [ -d "$WORLDS_LOCATION/$2/$1" ]; then
+      mv "$WORLDS_LOCATION/$2/$1" "$WORLDS_LOCATION/$2/$2"
     fi
     createWorld "$2" "$PORT" "$IP"
     printf ".\n"
@@ -2868,20 +2739,20 @@ case "$COMMAND" in
   delete | remove)
     # Get list of enabled worlds.
     if ! isWorldAvailable "$1"; then
-      printf "World not found, unable to delete world '%s'.\n" "$1"
+      printf "World not found, unable to delete world '%s'.\n" "$1" 1>&2
       exit 1
     fi
     printf "Are you sure you wish to delete world '%s'? (y/n): " "$1"
     read answer
     if [ "$answer" = "${answer#[Yy]}" ]; then
-        printf "Aborted.\n"
+        printf "Aborted.\n" 1>&2
         exit 1
     else
       printf "Deleting Minecraft world: %s" "$1"
       if serverRunning "$1"; then
         # If the world server has users logged in, announce that the world is
         # being deleted.
-        if [ $(queryNumUsers "$1") -gt 0 ]; then
+        if [ "$(queryNumUsers "$1")" -gt 0 ]; then
           sendCommand "$1" "say The server admin is deleting this world."
           sendCommand "$1" "say The server will be deleted in 1 minute..."
           sleep 60
@@ -2903,11 +2774,11 @@ case "$COMMAND" in
         if isWorldEnabled "$arg"; then
           WORLDS="$WORLDS $arg"
         elif isWorldDisabled "$arg"; then
-          printf "Unable to disable already disabled world '%s'.\n" "$arg"
+          printf "Unable to disable already disabled world '%s'.\n" "$arg" 1>&2
           exit 1
         else
-          printf "World not found, unable to disable world '%s'.\n" "$arg"
-          printf "  Usage:  %s %s <world1> <world2> <...>\n" "$PROG" "$COMMAND"
+          printf "World not found, unable to disable world '%s'.\n" "$arg" 1>&2
+          printf "  Usage:  %s %s <world1> <world2> <...>\n" "$PROG" "$COMMAND" 1>&2
           exit 1
         fi
       done
@@ -2915,7 +2786,7 @@ case "$COMMAND" in
       WORLDS=$(getEnabledWorlds)
     fi
     if [ -z "$WORLDS" ]; then
-      printf "Unable to disable worlds: no enabled worlds found.\n"
+      printf "Unable to disable worlds: no enabled worlds found.\n" 1>&2
       exit 1
     fi
     printf "Disabling Minecraft world:"
@@ -2924,7 +2795,7 @@ case "$COMMAND" in
       if serverRunning "$WORLD"; then
         # If the world server has users logged in, announce that the world is
         # being disabled.
-        if [ $(queryNumUsers "$WORLD") -gt 0 ]; then
+        if [ "$(queryNumUsers "$WORLD")" -gt 0 ]; then
           sendCommand "$WORLD" "say The server admin is disabling this world."
           sendCommand "$WORLD" "say The server will be disabled in 1 minute..."
           sleep 60
@@ -2948,11 +2819,11 @@ case "$COMMAND" in
         if isWorldDisabled "$arg"; then
           WORLDS="$WORLDS $arg"
         elif isWorldEnabled "$arg"; then
-          printf "Unable to enable already enabled world '%s'.\n" "$arg"
+          printf "Unable to enable already enabled world '%s'.\n" "$arg" 1>&2
           exit 1
         else
-          printf "World not found, unable to enable world '%s'.\n" "$arg"
-          printf "  Usage:  %s %s <world1> <world2> <...>\n" "$PROG" "$COMMAND"
+          printf "World not found, unable to enable world '%s'.\n" "$arg" 1>&2
+          printf "  Usage:  %s %s <world1> <world2> <...>\n" "$PROG" "$COMMAND" 1>&2
           exit 1
         fi
       done
@@ -2960,7 +2831,7 @@ case "$COMMAND" in
       WORLDS=$(getDisabledWorlds)
     fi
     if [ -z "$WORLDS" ]; then
-      printf "Unable to enable worlds: no disabled worlds found.\n"
+      printf "Unable to enable worlds: no disabled worlds found.\n" 1>&2
       exit 1
     fi
     printf "Enabling Minecraft world:"
@@ -2986,14 +2857,14 @@ case "$COMMAND" in
         ;;
       running)
         for WORLD in $(getEnabledWorlds); do
-          if serverRunning $WORLD; then
+          if serverRunning "$WORLD"; then
             WORLDS="$WORLDS $WORLD"
           fi
         done
         ;;
       stopped)
         for WORLD in $(getEnabledWorlds); do
-          if ! serverRunning $WORLD; then
+          if ! serverRunning "$WORLD"; then
             WORLDS="$WORLDS $WORLD"
           fi
         done
@@ -3002,8 +2873,8 @@ case "$COMMAND" in
         WORLDS=$(getAvailableWorlds)
         ;;
       *)
-        echo "Unknown list option: $1."
-        echo "  Try '$PROG help' for help."
+        printf "Unknown list option: %s.\n" "$1" 1>&2
+        printf "  Try '%s help' for help.\n" "$PROG" 1>&2
         exit 1
         ;;
     esac
@@ -3045,8 +2916,8 @@ case "$COMMAND" in
         if isWorldAvailable "$arg"; then
           WORLDS="$WORLDS $arg"
         else
-          printf "World '%s' not recognized.\n" "$arg"
-          printf "  Usage:  %s %s <world1> <world2> <...>\n" "$PROG" "$COMMAND"
+          printf "World '%s' not recognized.\n" "$arg" 1>&2
+          printf "  Usage:  %s %s <world1> <world2> <...>\n" "$PROG" "$COMMAND" 1>&2
           exit 1
         fi
       done
@@ -3054,7 +2925,7 @@ case "$COMMAND" in
       WORLDS=$(getAvailableWorlds)
     fi
     if [ -z "$WORLDS" ]; then
-      printf "Unable to get world status: no available worlds found.\n"
+      printf "Unable to get world status: no available worlds found.\n" 1>&2
       exit 1
     fi
     case "$COMMAND" in
@@ -3065,7 +2936,7 @@ case "$COMMAND" in
           if [ "$JSON" ]; then
             JSON="$JSON, "
           fi
-          JSON="$JSON\"$WORLD\":$(worldStatusJSON $WORLD)"
+          JSON="$JSON\"$WORLD\":$(worldStatusJSON "$WORLD")"
         done
         printf "{%s}" "$JSON"
         ;;
@@ -3074,7 +2945,7 @@ case "$COMMAND" in
         printf "Minecraft Server Status:\n"
         for WORLD in $WORLDS; do
           printf "  %s: " "$WORLD"
-          worldStatus $WORLD
+          worldStatus "$WORLD"
         done
         ;;
     esac
@@ -3086,8 +2957,8 @@ case "$COMMAND" in
         if isWorldEnabled "$arg"; then
           WORLDS="$WORLDS $arg"
         else
-          printf "World '%s' not recognized.\n" "$arg"
-          printf "  Usage:  %s %s <world1> <world2> <...>\n" "$PROG" "$COMMAND"
+          printf "World '%s' not recognized.\n" "$arg" 1>&2
+          printf "  Usage:  %s %s <world1> <world2> <...>\n" "$PROG" "$COMMAND" 1>&2
           exit 1
         fi
       done
@@ -3095,20 +2966,20 @@ case "$COMMAND" in
       WORLDS=$(getEnabledWorlds)
     fi
     if [ -z "$WORLDS" ]; then
-      printf "Unable to sync worlds: no enabled worlds found.\n"
+      printf "Unable to sync worlds: no enabled worlds found.\n" 1>&2
       exit 1
     fi
     # Synchronize the images for each world.
     printf "Synchronizing Minecraft Server:"
     for WORLD in $WORLDS; do
-      if serverRunning $WORLD; then
+      if serverRunning "$WORLD"; then
         printf " %s" "$WORLD"
-        sendCommand $WORLD "save-all"
-        if true_value $ENABLE_MIRROR; then
-          sendCommand $WORLD "save-off"
+        sendCommand "$WORLD" "save-all"
+        if true_value "$ENABLE_MIRROR"; then
+          sendCommand "$WORLD" "save-off"
           sleep 20
-          syncMirrorImage $WORLD
-          sendCommand $WORLD "save-on"
+          syncMirrorImage "$WORLD"
+          sendCommand "$WORLD" "save-on"
         fi
       fi
     done
@@ -3118,22 +2989,22 @@ case "$COMMAND" in
     # Get list of enabled worlds.
     WORLDS=$(getEnabledWorlds)
     if [ -z "$WORLDS" ]; then
-      printf "Unable to broadcast: no enabled worlds found.\n"
+      printf "Unable to broadcast: no enabled worlds found.\n" 1>&2
       exit 1
     fi
     if [ -n "$1" ]; then
       # Broadcast the message to all of the enabled worlds.
       printf "Broadcasting command to world:"
       for WORLD in $WORLDS; do
-        if serverRunning $WORLD; then
+        if serverRunning "$WORLD"; then
           printf " %s" "$WORLD"
-          sendCommand $WORLD "$*"
+          sendCommand "$WORLD" "$*"
         fi
       done
       printf ".\n"
     else
-      printf "Usage:  %s %s <command>\n" "$PROG" "$COMMAND"
-      printf "   ie:  %s %s say Hello World!\n" "$PROG" "$COMMAND"
+      printf "Usage:  %s %s <command>\n" "$PROG" "$COMMAND" 1>&2
+      printf "   ie:  %s %s say Hello World!\n" "$PROG" "$COMMAND" 1>&2
       exit 1
     fi
     ;;
@@ -3143,11 +3014,11 @@ case "$COMMAND" in
       WORLD=$1
       shift 1
       printf "Sending command to world: %s - '%s'.\n" "$WORLD" "$*"
-      sendCommand $WORLD "$*"
+      sendCommand "$WORLD" "$*"
     else
-      printf "Minecraft world '%s' not enabled or not found!\n" "$1"
-      printf "Usage:  %s %s <world> <command>\n" "$PROG" "$COMMAND"
-      printf "   ie:  %s %s world say Hello World!\n" "$PROG" "$COMMAND"
+      printf "Minecraft world '%s' not enabled or not found!\n" "$1" 1>&2
+      printf "Usage:  %s %s <world> <command>\n" "$PROG" "$COMMAND" 1>&2
+      printf "   ie:  %s %s world say Hello World!\n" "$PROG" "$COMMAND" 1>&2
       exit 1
     fi
     ;;
@@ -3157,14 +3028,14 @@ case "$COMMAND" in
       printf "Connecting to server console: %s.\n" "$1"
       printf "  Hit <Ctrl-D> to detach.\n"
       sleep 3
-      serverConsole $1
+      serverConsole "$1"
     else
       if [ -n "$1" ]; then
-        printf "Minecraft world '%s' not enabled or not found!\n" "$1"
+        printf "Minecraft world '%s' not enabled or not found!\n" "$1" 1>&2
       else
-        printf "Minecraft world not provided!\n"
+        printf "Minecraft world not provided!\n" 1>&2
       fi
-      printf "  Usage:  %s %s <world>\n" "$PROG" "$COMMAND"
+      printf "  Usage:  %s %s <world>\n" "$PROG" "$COMMAND" 1>&2
       exit 1
     fi
     ;;
@@ -3172,14 +3043,14 @@ case "$COMMAND" in
     # Check for the world command line argument.
     if isWorldEnabled "$1"; then
       printf "Monitoring Minecraft Server: %s.\n" "$1"
-      watchLog $1
+      watchLog "$1"
     else
       if [ -n "$1" ]; then
-        printf "Minecraft world '%s' not enabled or not found!\n" "$1"
+        printf "Minecraft world '%s' not enabled or not found!\n" "$1" 1>&2
       else
-        printf "Minecraft world not provided!\n"
+        printf "Minecraft world not provided!\n" 1>&2
       fi
-      printf "  Usage:  %s %s <world>\n" "$PROG" "$COMMAND"
+      printf "  Usage:  %s %s <world>\n" "$PROG" "$COMMAND" 1>&2
       exit 1
     fi
     ;;
@@ -3190,8 +3061,8 @@ case "$COMMAND" in
         if isWorldEnabled "$arg"; then
           WORLDS="$WORLDS $arg"
         else
-          printf "World '%s' does not exist or not enabled.\n" "$arg"
-          printf "  Usage:  %s %s <world1> <world2> <...>\n" "$PROG" "$COMMAND"
+          printf "World '%s' does not exist or not enabled.\n" "$arg" 1>&2
+          printf "  Usage:  %s %s <world1> <world2> <...>\n" "$PROG" "$COMMAND" 1>&2
           exit 1
         fi
       done
@@ -3199,14 +3070,14 @@ case "$COMMAND" in
       WORLDS=$(getEnabledWorlds)
     fi
     if [ -z "$WORLDS" ]; then
-      printf "Unable to logrotate worlds: no enabled worlds found.\n"
+      printf "Unable to logrotate worlds: no enabled worlds found.\n" 1>&2
       exit 1
     fi
     # Rotate the log for each world requested.
     printf "Rotating Minecraft Server Log:"
     for WORLD in $WORLDS; do
       printf " %s" "$WORLD"
-      rotateLog $WORLD
+      rotateLog "$WORLD"
     done
     printf ".\n"
     ;;
@@ -3217,8 +3088,8 @@ case "$COMMAND" in
         if isWorldEnabled "$arg"; then
           WORLDS="$WORLDS $arg"
         else
-          printf "World '%s' does not exist or not enabled.\n" "$arg"
-          printf "  Usage:  %s %s <world1> <world2> <...>\n" "$PROG" "$COMMAND"
+          printf "World '%s' does not exist or not enabled.\n" "$arg" 1>&2
+          printf "  Usage:  %s %s <world1> <world2> <...>\n" "$PROG" "$COMMAND" 1>&2
           exit 1
         fi
       done
@@ -3226,7 +3097,7 @@ case "$COMMAND" in
       WORLDS=$(getEnabledWorlds)
     fi
     if [ -z "$WORLDS" ]; then
-      printf "Unable to backup worlds: no enabled worlds found.\n"
+      printf "Unable to backup worlds: no enabled worlds found.\n" 1>&2
       exit 1
     fi
     # Backup each world requested.
@@ -3234,20 +3105,20 @@ case "$COMMAND" in
     for WORLD in $WORLDS; do
       printf " %s" "$WORLD"
       # Create a lock file so that we don't create duplicate processes.
-      if createLockFile $WORLD "backup"; then
-        if serverRunning $WORLD; then
-          sendCommand $WORLD "say Backing up the world."
-          sendCommand $WORLD "save-all"
-          sendCommand $WORLD "save-off"
+      if createLockFile "$WORLD" "backup"; then
+        if serverRunning "$WORLD"; then
+          sendCommand "$WORLD" "say Backing up the world."
+          sendCommand "$WORLD" "save-all"
+          sendCommand "$WORLD" "save-off"
           sleep 20
-          worldBackup $WORLD
-          sendCommand $WORLD "save-on"
-          sendCommand $WORLD "say Backup complete."
+          worldBackup "$WORLD"
+          sendCommand "$WORLD" "save-on"
+          sendCommand "$WORLD" "say Backup complete."
         else
-          worldBackup $WORLD
+          worldBackup "$WORLD"
         fi
         # Remove the lock file.
-        removeLockFile $WORLD "backup"
+        removeLockFile "$WORLD" "backup"
       else
         printf "\nError lock file for world %s could not be created." "$WORLD"
         printf "  Is the world already running a backup?\n"
@@ -3259,44 +3130,44 @@ case "$COMMAND" in
     if isWorldEnabled "$1"; then
       worldBackupList "$1"
     elif [ -n "$1" ]; then
-      printf "World '%s' does not exist or not enabled.\n" "$1"
-      printf "  Usage:  %s %s <world>\n" "$PROG" "$COMMAND"
+      printf "World '%s' does not exist or not enabled.\n" "$1" 1>&2
+      printf "  Usage:  %s %s <world>\n" "$PROG" "$COMMAND" 1>&2
       exit 1
     else
-      printf "World not supplied.\n"
-      printf "  Usage:  %s %s <world>\n" "$PROG" "$COMMAND"
+      printf "World not supplied.\n" 1>&2
+      printf "  Usage:  %s %s <world>\n" "$PROG" "$COMMAND" 1>&2
       exit 1
     fi
     ;;
   restore-backup)
-    if [ -z $1 ]; then
-      printf "World not supplied.\n"
-      printf "  Usage:  %s %s <world> <datetime>\n" "$PROG" "$COMMAND"
+    if [ -z "$1" ]; then
+      printf "World not supplied.\n" 1>&2
+      printf "  Usage:  %s %s <world> <datetime>\n" "$PROG" "$COMMAND" 1>&2
       exit 1
     elif ! isWorldAvailable "$1"; then
-      printf "World '%s' not recognized.\n" "$1"
-      printf "  Usage:  %s %s <world> <datetime>\n" "$PROG" "$COMMAND"
+      printf "World '%s' not recognized.\n" "$1" 1>&2
+      printf "  Usage:  %s %s <world> <datetime>\n" "$PROG" "$COMMAND" 1>&2
       exit 1
     elif serverRunning "$1"; then
-      printf "World '%s' is running. Stop it first\n" "$1"
-      printf "  %s stop %s\n" "$PROG" "$1"
+      printf "World '%s' is running. Stop it first\n" "$1" 1>&2
+      printf "  %s stop %s\n" "$PROG" "$1" 1>&2
       exit 1
     elif worldBackup "$1"; then
       worldBackupRestore "$1" "$2"
     else
-      echo "Current world's state backup failed. Restore canceled."
+      printf "Current world's state backup failed. Restore canceled.\n" 1>&2
       exit 1
     fi
     ;;
   update | force-update)
     # Handle the force option.
     if [ "$COMMAND" = "force-update" ]; then
-      if [ -s $VERSIONS_JSON ]; then
+      if [ -s "$VERSIONS_JSON" ]; then
         # Make a backup copy of the version_manifest.json file.
         cp -fp "$VERSIONS_JSON" "$VERSIONS_JSON.bak"
         printf "Removing cached version manifest.\n"
       fi
-      rm -f $VERSIONS_JSON
+      rm -f "$VERSIONS_JSON"
     fi
     # Grab the latest version information.
     updateVersionsJSON
@@ -3306,8 +3177,8 @@ case "$COMMAND" in
         if isWorldEnabled "$arg"; then
           WORLDS="$WORLDS $arg"
         else
-          printf "World '%s' does not exist or not enabled.\n" "$arg"
-          printf "  Usage:  %s %s <world1> <world2> <...>\n" "$PROG" "$COMMAND"
+          printf "World '%s' does not exist or not enabled.\n" "$arg" 1>&2
+          printf "  Usage:  %s %s <world1> <world2> <...>\n" "$PROG" "$COMMAND" 1>&2
           exit 1
         fi
       done
@@ -3315,32 +3186,32 @@ case "$COMMAND" in
       WORLDS=$(getEnabledWorlds)
     fi
     if [ -z "$WORLDS" ]; then
-      printf "Unable to update worlds: no enabled worlds found.\n"
+      printf "Unable to update worlds: no enabled worlds found.\n" 1>&2
       exit 1
     fi
     # Stop all of the world servers and backup the worlds.
     RUNNING=
     printf "Stopping Minecraft Server:"
     for WORLD in $WORLDS; do
-      if serverRunning $WORLD; then
+      if serverRunning "$WORLD"; then
         RUNNING="$RUNNING $WORLD"
         printf " %s" "$WORLD"
-        if [ $(queryNumUsers $WORLD) -gt 0 ]; then
-          sendCommand $WORLD "say The server admin has initiated a software update."
-          sendCommand $WORLD "say The server will restart and update in 1 minute..."
+        if [ "$(queryNumUsers "$WORLD")" -gt 0 ]; then
+          sendCommand "$WORLD" "say The server admin has initiated a software update."
+          sendCommand "$WORLD" "say The server will restart and update in 1 minute..."
           sleep 60
-          sendCommand $WORLD "say The server is now restarting."
+          sendCommand "$WORLD" "say The server is now restarting."
         fi
-        sendCommand $WORLD "save-all"
-        sendCommand $WORLD "save-off"
-        stop $WORLD
+        sendCommand "$WORLD" "save-all"
+        sendCommand "$WORLD" "save-off"
+        stop "$WORLD"
       fi
     done
     printf ".\n"
     printf "Backing up Minecraft Server:"
     for WORLD in $WORLDS; do
       printf " %s" "$WORLD"
-      worldBackup $WORLD
+      worldBackup "$WORLD"
     done
     printf ".\n"
     # Handle the force option.
@@ -3348,7 +3219,7 @@ case "$COMMAND" in
       printf "Removing Minecraft Server software:"
       for WORLD in $WORLDS; do
         printf " %s" "$WORLD"
-        rm -f $(getServerLocation "$WORLD")/$(getServerJar "$WORLD")
+        rm -f "$(getServerLocation "$WORLD")/$(getServerJar "$WORLD")"
       done
       printf ".\n"
     fi
@@ -3362,7 +3233,7 @@ case "$COMMAND" in
     printf "Restarting Minecraft Server:"
     for WORLD in $RUNNING; do
       printf " %s" "$WORLD"
-      start $WORLD
+      start "$WORLD"
     done
     printf ".\n"
     ;;
@@ -3371,7 +3242,7 @@ case "$COMMAND" in
     updateVersionsJSON
     # Make sure that the Minecraft Overviewer software exists.
     if [ ! -e "$OVERVIEWER_BIN" ]; then
-      printf "Minecraft Overviewer software not found.\n"
+      printf "Minecraft Overviewer software not found.\n" 1>&2
       exit 1
     fi
     # Figure out which worlds to map.
@@ -3380,8 +3251,8 @@ case "$COMMAND" in
         if isWorldEnabled "$arg"; then
           WORLDS="$WORLDS $arg"
         else
-          printf "World '%s' does not exist or not enabled.\n" "$arg"
-          printf "  Usage:  %s %s <world1> <world2> <...>\n" "$PROG" "$COMMAND"
+          printf "World '%s' does not exist or not enabled.\n" "$arg" 1>&2
+          printf "  Usage:  %s %s <world1> <world2> <...>\n" "$PROG" "$COMMAND" 1>&2
           exit 1
         fi
       done
@@ -3389,7 +3260,7 @@ case "$COMMAND" in
       WORLDS=$(getEnabledWorlds)
     fi
     if [ -z "$WORLDS" ]; then
-      printf "Unable to map worlds: no enabled worlds found.\n"
+      printf "Unable to map worlds: no enabled worlds found.\n" 1>&2
       exit 1
     fi
     # Run Minecraft Overviewer on each world requested.
@@ -3400,7 +3271,7 @@ case "$COMMAND" in
       if createLockFile "$WORLD" "overviewer"; then
         overviewer "$WORLD"
         # Remove the lock file.
-        removeLockFile $WORLD "overviewer"
+        removeLockFile "$WORLD" "overviewer"
       else
         printf "\nError lock file for world %s could not be created." "$WORLD"
         printf "  Is the world already running Overviewer?\n"
@@ -3415,8 +3286,8 @@ case "$COMMAND" in
         if isWorldEnabled "$arg"; then
           WORLDS="$WORLDS $arg"
         else
-          printf "World '%s' does not exist or not enabled.\n" "$arg"
-          printf "  Usage:  %s %s <world1> <world2> <...>\n" "$PROG" "$COMMAND"
+          printf "World '%s' does not exist or not enabled.\n" "$arg" 1>&2
+          printf "  Usage:  %s %s <world1> <world2> <...>\n" "$PROG" "$COMMAND" 1>&2
           exit 1
         fi
       done
@@ -3424,7 +3295,7 @@ case "$COMMAND" in
       WORLDS=$(getEnabledWorlds)
     fi
     if [ -z "$WORLDS" ]; then
-      printf "Unable to query worlds: no enabled worlds found.\n"
+      printf "Unable to query worlds: no enabled worlds found.\n" 1>&2
       exit 1
     fi
     case "$COMMAND" in
@@ -3448,9 +3319,9 @@ case "$COMMAND" in
     usage
     ;;
   *)
-    printf "Error in command line usage.\n"
-    printf "\n"
-    usage
+    printf "Error in command line usage.\n" 1>&2
+    printf "\n" 1>&2
+    usage 1>&2
     exit 1
     ;;
 esac
