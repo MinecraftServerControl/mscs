@@ -1293,11 +1293,13 @@ serverMonitor() {
       # Verify that the server restarted successfully. 
       if [ $? -eq 0 ]; then
         printf "[%s] [INFO]: Server monitoring resumed for %s. Server PID: %s. Monitor PID: %s.\n" "$(timestamp)" "$1" "$(getJavaPID "$1")" "$MONITOR_PID"
-        printf "    %s automatically restarted from a crash (or in-game stop command)\n" "$1" > "$LAST_START_STATUS_LOG"
-        printf "    on %s. See\n" "$(timestamp)" >> "$LAST_START_STATUS_LOG"
-        printf "    %s/logs/mscs.monitor.log and\n" "$WORLD_DIR" >> "$LAST_START_STATUS_LOG"
-        printf "    %s/crash_reports/ and\n" "$WORLD_DIR" >> "$LAST_START_STATUS_LOG"
-        printf "    %s/logs/ for more information.\n" "$WORLD_DIR" >> "$LAST_START_STATUS_LOG"
+        {
+          printf "    %s automatically restarted from a crash (or in-game stop command)\n" "$1"
+          printf "    on %s. See\n" "$(timestamp)"
+          printf "    %s/logs/mscs.monitor.log and\n" "$WORLD_DIR"
+          printf "    %s/crash_reports/ and\n" "$WORLD_DIR"
+          printf "    %s/logs/ for more information.\n" "$WORLD_DIR"
+        } > "$LAST_START_STATUS_LOG"
       else
         printf "[%s] [ERROR]: Failed to restart %s.\n" "$(timestamp)" "$1"
         stopServerMonitor "$1"
