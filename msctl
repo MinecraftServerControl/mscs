@@ -1257,15 +1257,15 @@ stopServerMonitor() {
   $FLOCK -n 9
   ACQUIRED_LOCK=$?
   if [ "$ACQUIRED_LOCK" -eq 1 ]; then # Server monitor is running.
-    printf "[$(timestamp)] [INFO]: Stop command received for server monitor. Attempting to kill server monitor...\n" >> "$MONITOR_LOG"
+    printf "[%s] [INFO]: Stop command received for server monitor. Attempting to kill server monitor...\n" "$(timestamp)" >> "$MONITOR_LOG"
     # Kill the server monitor.
     kill -9 "$MONITOR_PID"
     # Verify it was actually killed.
     if [ $? -eq 1 ]; then
-      printf "[$(timestamp)] [ERROR]: Unable to kill monitor process.\n" >> "$MONITOR_LOG"
+      printf "[%s] [ERROR]: Unable to kill monitor process.\n" "$(timestamp)" >> "$MONITOR_LOG"
       exit 1
     else 
-      printf "[$(timestamp)] [INFO]: Server monitor process killed successfully.\n" >> "$MONITOR_LOG"
+      printf "[%s] [INFO]: Server monitor process killed successfully.\n" "$(timestamp)" >> "$MONITOR_LOG"
       # Remove the monitor PID file. 
       rm -f "$WORLD_DIR/monitor.pid"
     fi
@@ -2080,12 +2080,12 @@ worldStatus() {
     printf "    Process ID: %d.\n" "$(getJavaPID "$1")"
     # Display crash monitor PID if it's running (i.e. monitor.pid file exists and not empty).
     if [ -f "$MONITOR_PID" ] && [ -s "$MONITOR_PID" ]; then
-      printf "    Crash Monitor PID: $(cat $MONITOR_PID)\n"
+      printf "    Crash Monitor PID: %s\n" "$(cat $MONITOR_PID)"
     fi
     # If the last-status log exists and not empty, then last restart was from a crash.
     # Display notice once.
     if [ -f "$LAST_START_STATUS_LOG" ] && [ -s "$LAST_START_STATUS_LOG" ]; then
-      printf "$(cat $LAST_START_STATUS_LOG)\n"
+      printf "%s\n" "$(cat $LAST_START_STATUS_LOG)"
       # Remove it so user doesn't see it next time they run the status command.
       rm -f $LAST_START_STATUS_LOG
     fi
