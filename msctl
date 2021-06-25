@@ -1871,11 +1871,8 @@ querySendPacket() {
       $packed = join "", map { pack ("C", hex($_)) } ($response =~ /(..)/g);
       printf "%s\n", join "\t", unpack ($format, $packed);
     ' -- -response="$RESPONSE" -format="$4"
-
   # If the response is empty and the query.in and query.out files have NOT been created,
   # the world is still starting up and the status query will return as such.
-  # See lines 1985-1987.
-
   # If the response is empty and the query.in and query.out files HAVE been created,
   # something went wrong. We try restarting the query handler again.
   elif [ -z "$RESPONSE" ] && [ -e "$WORLD_DIR/query.in" ] && [ -e "$WORLD_DIR/query.out" ]; then
