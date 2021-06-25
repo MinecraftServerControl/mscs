@@ -1343,7 +1343,11 @@ startServerMonitor() {
       #   Start subshell, ignore HUP signal, redirect stdin to /dev/null,
       #   redirect stdout and stderr to log file, run in background.
       # Also store the PID of this process for later use.
-      (trap "" HUP ; exec sh -c "echo \$PPID" > "$MONITOR_PID"; serverMonitor "$1") </dev/null 2>&1 1>>"$MONITOR_LOG" &
+      (
+        trap "" HUP
+        exec sh -c "echo \$PPID" > "$MONITOR_PID"
+        serverMonitor "$1"
+      ) </dev/null 2>&1 1>>"$MONITOR_LOG" &
     fi
     ) 9>"$MONITOR_LOCK_FILE"
   fi
