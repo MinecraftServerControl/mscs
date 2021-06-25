@@ -32,6 +32,6 @@ jobs:
       - name: Run ShellCheck
         uses: ludeeus/action-shellcheck@master
         with:
-          additional_files: 'mscs msctl'
+          additional_files: 'msctl'
         env:
           SHELLCHECK_OPTS: -x
