@@ -767,8 +767,7 @@ updateVersionsJSON() {
   # Download the version_manifest.json file if it does not exist.
   if [ ! -s "$VERSIONS_JSON" ]; then
     printf "Downloading current Minecraft version manifest.\n"
-    $WGET --no-use-server-timestamps -qO "$VERSIONS_JSON" "$MINECRAFT_VERSIONS_URL"
-    if [ $? -ne 0 ]; then
+    $WGET --no-use-server-timestamps -qO "$VERSIONS_JSON" "$MINECRAFT_VERSIONS_URL" || {
       if [ -s "$VERSIONS_JSON.bak" ]; then
         printf "Error downloading the version manifest, using a backup.\n" 1>&2
         cp -p "$VERSIONS_JSON.bak" "$VERSIONS_JSON"
@@ -776,7 +775,7 @@ updateVersionsJSON() {
         printf "Error downloading the version manifest, exiting.\n" 1>&2
         exit 1
       fi
-    fi
+    }
   fi
 }
 
@@ -1116,28 +1115,25 @@ createLockFile() {
   if [ -s "$LOCKFILE" ]; then
     PID=$(cat "$LOCKFILE")
     # LOCKFILE exists, check to see if its process is running.
-    ps -p "$PID" >/dev/null 2>&1
-    if [ $? -eq 0 ]; then
+    if ps -p "$PID" >/dev/null 2>&1; then
       # LOCKFILE exists and the process is running.
       # Return a false value (failure).
       return 1
     else
       # Process not found assume it is not running.
-      echo $$ > "$LOCKFILE"
-      if [ $? -ne 0 ]; then
+      echo $$ > "$LOCKFILE" || {
         # Error creating LOCKFILE.
         # Return a false value (failure).
         return 1
-      fi
+      }
     fi
   else
     # LOCKFILE does not exists.
-    echo $$ > "$LOCKFILE"
-    if [ $? -ne 0 ]; then
+    echo $$ > "$LOCKFILE" || {
       # Error creating LOCKFILE.
       # Return a false value (failure).
       return 1
-    fi
+    }
   fi
   # Success creating LOCKFILE.
   # Return a true value (success).
@@ -1210,11 +1206,10 @@ watchLog() {
 # ---------------------------------------------------------------------------
 syncMirrorImage() {
   # Sync the world server.
-  $RSYNC -a --delete "$WORLDS_LOCATION/$1/$1/" "$WORLDS_LOCATION/$1/$1-original"
-  if [ $? -ne 0 ]; then
+  $RSYNC -a --delete "$WORLDS_LOCATION/$1/$1/" "$WORLDS_LOCATION/$1/$1-original" || {
     printf "Error synchronizing mirror images for world %s.\n" "$1" 1>&2
     exit 1
-  fi
+  }
 }
 
 # ---------------------------------------------------------------------------
@@ -1289,9 +1284,8 @@ serverMonitor() {
     # If server isn't running and server PID file exists, server crashed.
     if ! serverRunning "$1" && [ -f "$WORLDS_LOCATION/$1.pid" ]; then
       printf "[%s] [WARN]: Server crash detected. Attempting to restart %s...\n" "$(timestamp)" "$1"
-      start "$1"
-      # Verify that the server restarted successfully. 
-      if [ $? -eq 0 ]; then
+      # Start and verify that the server restarted successfully. 
+      if start "$1"; then
         printf "[%s] [INFO]: Server monitoring resumed for %s. Server PID: %s. Monitor PID: %s.\n" "$(timestamp)" "$1" "$(getJavaPID "$1")" "$MONITOR_PID"
         {
           printf "    %s automatically restarted from a crash (or in-game stop command)\n" "$1"
@@ -1403,11 +1397,10 @@ start() {
       # Remove the mirror directory just in case.
       rm -Rf "${MIRROR_PATH:?}/${1:?}"
       # Copy the world files over to the mirror.
-      cp -a "$WORLD_DIR/$1" "$MIRROR_PATH/$1"
-      if [ $? -ne 0 ]; then
+      cp -a "$WORLD_DIR/$1" "$MIRROR_PATH/$1" || {
         printf "Error copying world data, could not copy to %s/%s.\n" "$MIRROR_PATH" "$1" 1>&2
         exit 1
-      fi
+      }
       # Remove the world file backup directory just in case.
       rm -Rf "${WORLD_DIR:?}/${1:?}-original"
       # Rename the original world file directory.
@@ -1425,15 +1418,15 @@ start() {
   # Get the server command for this world.
   SERVER_COMMAND=$(getServerCommand "$1")
   [ -n "$SERVER_COMMAND" ] || exit 1
-  # Start the server.
-  nohup sh -c "tail -f --pid=\$$ $WORLD_DIR/console.in | {
-    $SERVER_COMMAND mscs-world=$1 > $WORLD_DIR/console.out 2>&1; kill \$$;
-  }" >/dev/null 2>&1 &
-  # Verify the server is running.
-  if [ $? -ne 0 ]; then
+  # Start the server and verify that it is running.
+  {
+    nohup sh -c "tail -f --pid=\$$ $WORLD_DIR/console.in | {
+      $SERVER_COMMAND mscs-world=$1 > $WORLD_DIR/console.out 2>&1; kill \$$;
+    }" >/dev/null 2>&1 &
+  } || {
     printf "Error starting the server.\n" 1>&2
     exit 1
-  fi
+  }
   # Turn on terminal echo to work around issue with some server software.
   tty -s && tset
   # Retrieve the process ID for the server.
@@ -1629,13 +1622,11 @@ updateClientSoftware() {
   mkdir -p "$CLIENT_LOCATION"
   # Download the client jar if it is missing.
   if [ ! -s "$CLIENT_LOCATION/$CLIENT_JAR" ]; then
-    # Download the Minecraft client software.
-    $WGET -qO "$CLIENT_LOCATION/$CLIENT_JAR" "$CLIENT_URL"
-    # Report any errors.
-    if [ $? -ne 0 ]; then
+    # Download the Minecraft client software and report any errors.
+    $WGET -qO "$CLIENT_LOCATION/$CLIENT_JAR" "$CLIENT_URL" || {
       printf "Error downloading the Minecraft client software.\n" 1>&2
       exit 1
-    fi
+    }
     SHA1=$(getMinecraftVersionDownloadSHA1 "$CLIENT_VERSION" "client")
     if [ -z "$SHA1" ]; then
       printf "Error retrieving the sha1 for the Minecraft client software.\n" 1>&2
@@ -1667,13 +1658,11 @@ updateServerSoftware() {
   mkdir -p "$SERVER_LOCATION"
   # Download the server jar if it is missing.
   if [ ! -s "$SERVER_LOCATION/$SERVER_JAR" ]; then
-    # Download the Minecraft server software.
-    $WGET -qO "$SERVER_LOCATION/$SERVER_JAR" "$SERVER_URL"
-    # Report any errors.
-    if [ $? -ne 0 ]; then
+    # Download the Minecraft server software and report any errors.
+    $WGET -qO "$SERVER_LOCATION/$SERVER_JAR" "$SERVER_URL" || {
       printf "Error updating the Minecraft server software.\n" 1>&2
       exit 1
-    fi
+    }
     SHA1=$(getMinecraftVersionDownloadSHA1 "$SERVER_VERSION" "server")
     if [ -z "$SHA1" ]; then
       printf "Error retrieving the sha1 for the Minecraft server software.\n" 1>&2
@@ -2140,27 +2129,24 @@ if [ ! -e "$(which perl)" ]; then
   printf "sudo apt-get install perl\n" 1>&2
   exit 1
 fi
-perl -e 'use JSON;' >/dev/null 2>&1
-if [ $? -ne 0 ]; then
+perl -e 'use JSON;' >/dev/null 2>&1 || {
   printf "ERROR: libjson-perl not found!\n" 1>&2
   printf "Try installing this with:\n" 1>&2
   printf "sudo apt-get install libjson-perl\n" 1>&2
   exit 1
-fi
-perl -e 'use LWP::Simple;' >/dev/null 2>&1
-if [ $? -ne 0 ]; then
+}
+perl -e 'use LWP::Simple;' >/dev/null 2>&1 || {
   printf "ERROR: libwww-perl not found!\n" 1>&2
   printf "Try installing this with:\n" 1>&2
   printf "sudo apt-get install libwww-perl\n" 1>&2
   exit 1
-fi
-perl -e 'use LWP::Protocol::https;' >/dev/null 2>&1
-if [ $? -ne 0 ]; then
+}
+perl -e 'use LWP::Protocol::https;' >/dev/null 2>&1 || {
   printf "ERROR: liblwp-protocol-https-perl not found!\n" 1>&2
   printf "Try installing this with:\n" 1>&2
   printf "sudo apt-get install liblwp-protocol-https-perl\n" 1>&2
   exit 1
-fi
+}
 if [ ! -e "$PYTHON" ]; then
   printf "ERROR: Python not found!\n" 1>&2
   printf "Try installing this with:\n" 1>&2
