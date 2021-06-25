@@ -1248,7 +1248,6 @@ timestamp() {
 # @param 1 The world server to stop.
 # ---------------------------------------------------------------------------
 stopServerMonitor() {
-  local WORLD_DIR MONITOR_LOG MONITOR_PID MONITOR_LOCK_FILE ACQUIRED_LOCK
   WORLD_DIR="$WORLDS_LOCATION/$1"
   MONITOR_LOG="$WORLD_DIR/logs/mscs.monitor.log"
   MONITOR_PID=$(cat "$WORLD_DIR/monitor.pid")
