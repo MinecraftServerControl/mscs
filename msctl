@@ -560,9 +560,9 @@ getDisabledWorlds() {
 #
 # @return The list of all available worlds.
 # ---------------------------------------------------------------------------
-getAvailableWorlds() {
+getAvailableWorlds() (
   printf "%s %s" "$(getEnabledWorlds)" "$(getDisabledWorlds)"
-}
+)
 
 # ---------------------------------------------------------------------------
 # Check to see if the world is enabled.
@@ -570,7 +570,7 @@ getAvailableWorlds() {
 # @param 1 The world of interest.
 # @return A 0 if the world is enabled, a 1 otherwise.
 # ---------------------------------------------------------------------------
-isWorldEnabled() {
+isWorldEnabled() (
   WORLDS=$(getEnabledWorlds)
   if [ -n "$1" ] && listContains "$1" "$WORLDS"; then
     # Return a true value (success).
@@ -579,7 +579,7 @@ isWorldEnabled() {
     # Return a false value (failure).
     return 1
   fi
-}
+)
 
 # ---------------------------------------------------------------------------
 # Check to see if the world is disabled.
@@ -587,7 +587,7 @@ isWorldEnabled() {
 # @param 1 The world of interest.
 # @return A 0 if the world is disabled, a 1 otherwise.
 # ---------------------------------------------------------------------------
-isWorldDisabled() {
+isWorldDisabled() (
   WORLDS=$(getDisabledWorlds)
   if [ -n "$1" ] && listContains "$1" "$WORLDS"; then
     # Return a true value (success).
@@ -596,7 +596,7 @@ isWorldDisabled() {
     # Return a false value (failure).
     return 1
   fi
-}
+)
 
 # ---------------------------------------------------------------------------
 # Check to see if the world is available (exists).
@@ -604,7 +604,7 @@ isWorldDisabled() {
 # @param 1 The world of interest.
 # @return A 0 if the world is available, a 1 otherwise.
 # ---------------------------------------------------------------------------
-isWorldAvailable() {
+isWorldAvailable() (
   WORLDS=$(getAvailableWorlds)
   if [ -n "$1" ] && listContains "$1" "$WORLDS"; then
     # Return a true value (success).
@@ -613,7 +613,7 @@ isWorldAvailable() {
     # Return a false value (failure).
     return 1
   fi
-}
+)
 
 # ---------------------------------------------------------------------------
 # Get the value of a key from the provided file.
@@ -622,7 +622,7 @@ isWorldAvailable() {
 # @param 2 The key to get.
 # @param 3 The default value.
 # ---------------------------------------------------------------------------
-getValue() {
+getValue() (
   # Make sure the file exists.
   if [ -e "$1" ]; then
     # Find the key/value combo.
@@ -650,7 +650,7 @@ getValue() {
   else
     printf "%s" "$3"
   fi
-}
+)
 
 # ---------------------------------------------------------------------------
 # Modify the value of a key/value combo in the provided file.
@@ -659,7 +659,7 @@ getValue() {
 # @param 2 The key to modify.
 # @param 3 The value to assign to the key.
 # ---------------------------------------------------------------------------
-setValue() {
+setValue() (
   # Make sure that the file exists.
   touch "$1"
   # Replace the key/value combo if it already exists, otherwise just
@@ -678,7 +678,7 @@ setValue() {
   else
     printf "%s=%s\n" "$2" "$3" >>"$1"
   fi
-}
+)
 
 # ---------------------------------------------------------------------------
 # Get the value of a key in the mscs.defaults file.
@@ -686,19 +686,19 @@ setValue() {
 # @param 1 The key to get.
 # @param 2 The default value.
 # ---------------------------------------------------------------------------
-getDefaultsValue() {
+getDefaultsValue() (
   getValue "$MSCS_DEFAULTS" "$1" "$2"
-}
+)
 
 # ---------------------------------------------------------------------------
 # Get the value of the EULA boolean.
 #
 # @param 1 The world server of interest.
 # ---------------------------------------------------------------------------
-getEULAValue() {
+getEULAValue() (
   EULA_FILE=$WORLDS_LOCATION/$1/eula.txt
   getValue "$EULA_FILE" "eula" "false" | perl -ne 'print lc'
-}
+)
 
 # ---------------------------------------------------------------------------
 # Get the value of a key in a mscs.properties file.
@@ -707,10 +707,10 @@ getEULAValue() {
 # @param 2 The key to get.
 # @param 3 The default value.
 # ---------------------------------------------------------------------------
-getMSCSValue() {
+getMSCSValue() (
   PROPERTY_FILE=$WORLDS_LOCATION/$1/mscs.properties
   getValue "$PROPERTY_FILE" "$2" "$3"
-}
+)
 
 # ---------------------------------------------------------------------------
 # Modify the value of a key/value combo in a mscs.properties file.
@@ -719,10 +719,10 @@ getMSCSValue() {
 # @param 2 The key to modify.
 # @param 3 The value to assign to the key.
 # ---------------------------------------------------------------------------
-setMSCSValue() {
+setMSCSValue() (
   PROPERTY_FILE=$WORLDS_LOCATION/$1/mscs.properties
   setValue "$PROPERTY_FILE" "$2" "$3"
-}
+)
 
 # ---------------------------------------------------------------------------
 # Get the value of a key in a server.properties file.
@@ -731,10 +731,10 @@ setMSCSValue() {
 # @param 2 The key to get.
 # @param 3 The default value.
 # ---------------------------------------------------------------------------
-getServerPropertiesValue() {
+getServerPropertiesValue() (
   PROPERTY_FILE="$WORLDS_LOCATION/$1/server.properties"
   getValue "$PROPERTY_FILE" "$2" "$3"
-}
+)
 
 # ---------------------------------------------------------------------------
 # Modify the value of a key/value combo in a server.properties file.
@@ -743,15 +743,15 @@ getServerPropertiesValue() {
 # @param 2 The key to modify.
 # @param 3 The value to assign to the key.
 # ---------------------------------------------------------------------------
-setServerPropertiesValue() {
+setServerPropertiesValue() (
   PROPERTY_FILE=$WORLDS_LOCATION/$1/server.properties
   setValue "$PROPERTY_FILE" "$2" "$3"
-}
+)
 
 # ---------------------------------------------------------------------------
 # Update the version_manifest.json file.
 # ---------------------------------------------------------------------------
-updateVersionsJSON() {
+updateVersionsJSON() (
   if [ -s "$VERSIONS_JSON" ]; then
     # Make a backup copy of the version_manifest.json file.
     cp -p "$VERSIONS_JSON" "$VERSIONS_JSON.bak"
@@ -777,7 +777,7 @@ updateVersionsJSON() {
       fi
     }
   fi
-}
+)
 
 # ---------------------------------------------------------------------------
 # Get the current Minecraft version number.
@@ -785,7 +785,7 @@ updateVersionsJSON() {
 # @param 1 The world server.
 # @return The current Minecraft version number.
 # ---------------------------------------------------------------------------
-getCurrentMinecraftVersion() {
+getCurrentMinecraftVersion() (
   # Determine the version type for the current world.
   TYPE=$(getMSCSValue "$1" "mscs-version-type" "$DEFAULT_VERSION_TYPE")
   # Extract the current version information.
@@ -802,7 +802,7 @@ getCurrentMinecraftVersion() {
     exit 1
   fi
   printf "%s" "$VERSION"
-}
+)
 
 # ---------------------------------------------------------------------------
 # Get the sha1sum for a Minecraft client or server version.
@@ -811,7 +811,7 @@ getCurrentMinecraftVersion() {
 # @param 2 The type of sha1sum needed (client, server).
 # @return The sha1sum for the Minecraft client or server.
 # ---------------------------------------------------------------------------
-getMinecraftVersionDownloadSHA1() {
+getMinecraftVersionDownloadSHA1() (
   perl -0777 -sne '
     use JSON;
     use LWP::Simple;
@@ -828,7 +828,7 @@ getMinecraftVersionDownloadSHA1() {
     $json = decode_json (get ($v->{url}));
     print $json->{downloads}{$type}{sha1};
   ' -- -version="$1" -type="$2" < "$VERSIONS_JSON"
-}
+)
 
 # ---------------------------------------------------------------------------
 # Get the download URL for a Minecraft client or server version.
@@ -837,7 +837,7 @@ getMinecraftVersionDownloadSHA1() {
 # @param 2 The type of download URL needed (client, server).
 # @return The download URL for the Minecraft client or server.
 # ---------------------------------------------------------------------------
-getMinecraftVersionDownloadURL() {
+getMinecraftVersionDownloadURL() (
   perl -0777 -sne '
     use JSON;
     use LWP::Simple;
@@ -854,7 +854,7 @@ getMinecraftVersionDownloadURL() {
     $json = decode_json (get ($v->{url}));
     print $json->{downloads}{$type}{url};
   ' -- -version="$1" -type="$2" < "$VERSIONS_JSON"
-}
+)
 
 # ---------------------------------------------------------------------------
 # Get the release time of the Minecraft version number.
@@ -862,7 +862,7 @@ getMinecraftVersionDownloadURL() {
 # @param 1 The Minecraft version.
 # @return The release time of the Minecraft version number.
 # ---------------------------------------------------------------------------
-getMinecraftVersionReleaseTime() {
+getMinecraftVersionReleaseTime() (
   perl -0777 -sne '
     use JSON;
     $json = decode_json ($_);
@@ -872,7 +872,7 @@ getMinecraftVersionReleaseTime() {
       print $ver->{releaseTime} if ($id eq "$version");
     }
   ' -- -version="$1" < "$VERSIONS_JSON"
-}
+)
 
 # ---------------------------------------------------------------------------
 # Retrieve the version of the client for the world.
@@ -880,7 +880,7 @@ getMinecraftVersionReleaseTime() {
 # @param 1 The world server.
 # @return CLIENT_VERSION
 # ---------------------------------------------------------------------------
-getClientVersion() {
+getClientVersion() (
   CURRENT_VERSION=$(getCurrentMinecraftVersion "$1")
   [ -n "$CURRENT_VERSION" ] || exit 1
   # Get the client version, use the default version if not provided.
@@ -890,7 +890,7 @@ getClientVersion() {
     $_ =~ s/[\s#%*+?^\${}()|[\]\\]/-/g;
     print;
   ' -- -current_version="$CURRENT_VERSION"
-}
+)
 
 # ---------------------------------------------------------------------------
 # Retrieve the .jar file name for the client for the world.
@@ -898,7 +898,7 @@ getClientVersion() {
 # @param 1 The world server.
 # @return CLIENT_JAR
 # ---------------------------------------------------------------------------
-getClientJar() {
+getClientJar() (
   CURRENT_VERSION=$(getCurrentMinecraftVersion "$1")
   [ -n "$CURRENT_VERSION" ] || exit 1
   CLIENT_VERSION=$(getClientVersion "$1")
@@ -910,7 +910,7 @@ getClientJar() {
     $_ =~ s/\$CLIENT_VERSION/$client_version/g;
     print;
   ' -- -current_version="$CURRENT_VERSION" -client_version="$CLIENT_VERSION"
-}
+)
 
 # ---------------------------------------------------------------------------
 # Retrieve the location of the client files for the world.
@@ -918,7 +918,7 @@ getClientJar() {
 # @param 1 The world server.
 # @return CLIENT_LOCATION
 # ---------------------------------------------------------------------------
-getClientLocation() {
+getClientLocation() (
   CURRENT_VERSION=$(getCurrentMinecraftVersion "$1")
   [ -n "$CURRENT_VERSION" ] || exit 1
   CLIENT_VERSION=$(getClientVersion "$1")
@@ -930,7 +930,7 @@ getClientLocation() {
     $_ =~ s/\$CLIENT_VERSION/$client_version/g;
     print;
   ' -- -current_version="$CURRENT_VERSION" -client_version="$CLIENT_VERSION"
-}
+)
 
 # ---------------------------------------------------------------------------
 # Retrieve the URL to download the client for the world.
@@ -938,7 +938,7 @@ getClientLocation() {
 # @param 1 The world server.
 # @return CLIENT_URL
 # ---------------------------------------------------------------------------
-getClientURL() {
+getClientURL() (
   CURRENT_VERSION=$(getCurrentMinecraftVersion "$1")
   [ -n "$CURRENT_VERSION" ] || exit 1
   CLIENT_VERSION=$(getClientVersion "$1")
@@ -956,7 +956,7 @@ getClientURL() {
     URL=$(getMinecraftVersionDownloadURL "$CLIENT_VERSION" "client")
   fi
   printf "%s" "$URL"
-}
+)
 
 # ---------------------------------------------------------------------------
 # Retrieve the version of the server running the world.
@@ -964,7 +964,7 @@ getClientURL() {
 # @param 1 The world server.
 # @return SERVER_VERSION
 # ---------------------------------------------------------------------------
-getServerVersion() {
+getServerVersion() (
   CURRENT_VERSION=$(getCurrentMinecraftVersion "$1")
   [ -n "$CURRENT_VERSION" ] || exit 1
   # Get the server version, use the default version if not provided.
@@ -974,7 +974,7 @@ getServerVersion() {
     $_ =~ s/[\s#%*+?^\${}()|[\]\\]/-/g;
     print;
   ' -- -current_version="$CURRENT_VERSION"
-}
+)
 
 # ---------------------------------------------------------------------------
 # Retrieve the .jar file name for the server running the world.
@@ -982,7 +982,7 @@ getServerVersion() {
 # @param 1 The world server.
 # @return SERVER_JAR
 # ---------------------------------------------------------------------------
-getServerJar() {
+getServerJar() (
   CURRENT_VERSION=$(getCurrentMinecraftVersion "$1")
   [ -n "$CURRENT_VERSION" ] || exit 1
   SERVER_VERSION=$(getServerVersion "$1")
@@ -994,7 +994,7 @@ getServerJar() {
     $_ =~ s/\$SERVER_VERSION/$server_version/g;
     print;
   ' -- -current_version="$CURRENT_VERSION" -server_version="$SERVER_VERSION"
-}
+)
 
 # ---------------------------------------------------------------------------
 # Retrieve the location of the server files for the server running the world.
@@ -1002,7 +1002,7 @@ getServerJar() {
 # @param 1 The world server.
 # @return SERVER_LOCATION
 # ---------------------------------------------------------------------------
-getServerLocation() {
+getServerLocation() (
   CURRENT_VERSION=$(getCurrentMinecraftVersion "$1")
   [ -n "$CURRENT_VERSION" ] || exit 1
   SERVER_VERSION=$(getServerVersion "$1")
@@ -1014,7 +1014,7 @@ getServerLocation() {
     $_ =~ s/\$SERVER_VERSION/$server_version/g;
     print;
   ' -- -current_version="$CURRENT_VERSION" -server_version="$SERVER_VERSION"
-}
+)
 
 # ---------------------------------------------------------------------------
 # Retrieve the URL to download the server running the world.
@@ -1022,7 +1022,7 @@ getServerLocation() {
 # @param 1 The world server.
 # @return SERVER_URL
 # ---------------------------------------------------------------------------
-getServerURL() {
+getServerURL() (
   CURRENT_VERSION=$(getCurrentMinecraftVersion "$1")
   [ -n "$CURRENT_VERSION" ] || exit 1
   SERVER_VERSION=$(getServerVersion "$1")
@@ -1040,7 +1040,7 @@ getServerURL() {
     URL=$(getMinecraftVersionDownloadURL "$SERVER_VERSION" "server")
   fi
   printf "%s" "$URL"
-}
+)
 
 # ---------------------------------------------------------------------------
 # Retrieve the command to start the server running the world.
@@ -1048,7 +1048,7 @@ getServerURL() {
 # @param 1 The world server.
 # @return SERVER_COMMAND
 # ---------------------------------------------------------------------------
-getServerCommand() {
+getServerCommand() (
   CURRENT_VERSION=$(getCurrentMinecraftVersion "$1")
   [ -n "$CURRENT_VERSION" ] || exit 1
   SERVER_VERSION=$(getServerVersion "$1")
@@ -1096,7 +1096,7 @@ getServerCommand() {
   -server_args="$SERVER_ARGS" \
   -initial_memory="$INITIAL_MEMORY" \
   -maximum_memory="$MAXIMUM_MEMORY"
-}
+)
 
 # ---------------------------------------------------------------------------
 # Create a lock file for a world. This will help avoid having multiple long
@@ -1107,7 +1107,7 @@ getServerCommand() {
 # @param 2 The type of lock file.
 # @return TRUE if lock file created, FALSE otherwise.
 # ---------------------------------------------------------------------------
-createLockFile() {
+createLockFile() (
   LOCKFILE=$WORLDS_LOCATION/$1/lock-$2.pid
   # Delete the old LOCKFILE.
   find "$LOCKFILE" -mmin +"$LOCKFILE_DURATION" -delete >/dev/null 2>&1
@@ -1138,7 +1138,7 @@ createLockFile() {
   # Success creating LOCKFILE.
   # Return a true value (success).
   return 0
-}
+)
 
 # ---------------------------------------------------------------------------
 # Remove a lock file for a world.
@@ -1146,16 +1146,16 @@ createLockFile() {
 # @param 1 The world server.
 # @param 2 The type of lock file.
 # ---------------------------------------------------------------------------
-removeLockFile() {
+removeLockFile() (
   rm -f "$WORLDS_LOCATION/$1/lock-$2.pid"
-}
+)
 
 # ---------------------------------------------------------------------------
 # Remove old world log files and rotate log files from old servers (v < 1.7).
 #
 # @param 1 The world server generating the log to rotate.
 # ---------------------------------------------------------------------------
-rotateLog() {
+rotateLog() (
   WORLD_DIR="$WORLDS_LOCATION/$1"
   # Make sure the log directory exists.
   mkdir -p "$WORLD_DIR/logs"
@@ -1180,14 +1180,14 @@ rotateLog() {
       mv -f "$LOG" "$WORLD_DIR/logs/$DATE-$NUM.log.gz"
     done
   fi
-}
+)
 
 # ---------------------------------------------------------------------------
 # Watch the world latest.log file.
 #
 # @param 1 The world server generating the log to watch.
 # ---------------------------------------------------------------------------
-watchLog() {
+watchLog() (
   WORLD_DIR="$WORLDS_LOCATION/$1"
   # Make sure that the latest.log file exists.
   if [ -e "$WORLD_DIR/logs/latest.log" ]; then
@@ -1197,27 +1197,27 @@ watchLog() {
     # Watch the log file of worlds running older Minecraft servers.
     tail -n0 -f --pid="$(getJavaPID "$1")" "$WORLD_DIR/server.log"
   fi
-}
+)
 
 # ---------------------------------------------------------------------------
 # Synchronizes the data stored in the mirror images.
 #
 # @param 1 The world server to sync.
 # ---------------------------------------------------------------------------
-syncMirrorImage() {
+syncMirrorImage() (
   # Sync the world server.
   $RSYNC -a --delete "$WORLDS_LOCATION/$1/$1/" "$WORLDS_LOCATION/$1/$1-original" || {
     printf "Error synchronizing mirror images for world %s.\n" "$1" 1>&2
     exit 1
   }
-}
+)
 
 # ---------------------------------------------------------------------------
 # Display the server console.
 #
 # @param 1 The world server to connect to.
 # ---------------------------------------------------------------------------
-serverConsole() {
+serverConsole() (
   # Make sure that the world's directory exists.
   WORLD_DIR="$WORLDS_LOCATION/$1"
   # Follow the console output buffer file.
@@ -1226,23 +1226,23 @@ serverConsole() {
   while read -r LINE; do
     echo "$LINE" >> "$WORLD_DIR/console.in"
   done
-}
+)
 
 # ---------------------------------------------------------------------------
 # Retrieve the timestamp.
 #
 # @return The current date and time.
 # ---------------------------------------------------------------------------
-timestamp() {
+timestamp() (
   date +"%Y-%m-%d_%H-%M-%S"
-}
+)
 
 # ---------------------------------------------------------------------------
 # Stop the server monitor.
 #
 # @param 1 The world server to stop.
 # ---------------------------------------------------------------------------
-stopServerMonitor() {
+stopServerMonitor() (
   WORLD_DIR="$WORLDS_LOCATION/$1"
   MONITOR_LOG="$WORLD_DIR/logs/mscs.monitor.log"
   MONITOR_PID=$(cat "$WORLD_DIR/monitor.pid")
@@ -1266,13 +1266,14 @@ stopServerMonitor() {
     fi
   fi
   ) 9>"$MONITOR_LOCK_FILE"
-}
+)
+
 # ---------------------------------------------------------------------------
 # Run the server monitor.
 #
 # @param 1 The world server to monitor.
 # ---------------------------------------------------------------------------
-serverMonitor() {
+serverMonitor() (
   WORLD_DIR="$WORLDS_LOCATION/$1"
   MONITOR_LOG="$WORLD_DIR/logs/mscs.monitor.log"
   LAST_START_STATUS_LOG="$WORLD_DIR/logs/last-start-status.log"
@@ -1304,20 +1305,19 @@ serverMonitor() {
       stopServerMonitor "$1"
     fi 
   done
-}
+)
 
 # ---------------------------------------------------------------------------
 # Start the server monitor.
 #
 # @param 1 The world server to monitor.
 # ---------------------------------------------------------------------------
-startServerMonitor() {
+startServerMonitor() (
   WORLD_DIR="$WORLDS_LOCATION/$1"
   MONITOR_LOG="$WORLD_DIR/logs/mscs.monitor.log"
   MONITOR_PID="$WORLD_DIR/monitor.pid"
   MONITOR_LOCK_FILE="$WORLD_DIR/monitor.lock"
   RESTART_AFTER_CRASH=$(getMSCSValue "$1" "mscs-restart-after-crash" "$DEFAULT_RESTART_AFTER_CRASH")
-
   # Verify option is enabled.
   if true_value "$RESTART_AFTER_CRASH"; then
     # Verify that there is no monitor instance currently running.
@@ -1345,7 +1345,7 @@ startServerMonitor() {
     fi
     ) 9>"$MONITOR_LOCK_FILE"
   fi
-}
+)
 
 # ---------------------------------------------------------------------------
 # Start the world server.  Generate the appropriate environment for the
@@ -1353,7 +1353,7 @@ startServerMonitor() {
 #
 # @param 1 The world server to start.
 # ---------------------------------------------------------------------------
-start() {
+start() (
   WORLD_DIR="$WORLDS_LOCATION/$1"
   # Make sure that the server software exists.
   updateServerSoftware "$1"
@@ -1447,14 +1447,14 @@ start() {
   echo "$PID" > "$WORLDS_LOCATION/$1.pid"
   # Start the server crash monitor, if enabled.
   startServerMonitor "$1"
-}
+)
 
 # ---------------------------------------------------------------------------
 # Stop the world server.
 #
 # @param 1 The world server to stop.
 # ---------------------------------------------------------------------------
-stop() {
+stop() (
   # Stop the server monitor if it is running.
   stopServerMonitor "$1"
   # Tell the server to stop.
@@ -1476,14 +1476,14 @@ stop() {
   fi
   # Remove the PID file for the world server.
   rm -f "$WORLDS_LOCATION/$1.pid"
-}
+)
 
 # ---------------------------------------------------------------------------
 # Forcibly stop the world server.
 #
 # @param 1 The world server to forcibly stop.
 # ---------------------------------------------------------------------------
-forceStop() {
+forceStop() (
   # Stop the server monitor if it is running.
   stopServerMonitor "$1"
   # Try to stop the server cleanly first.
@@ -1499,7 +1499,7 @@ forceStop() {
   kill -9 "$(getJavaPID "$1")" >/dev/null 2>&1
   # Properly clean up.
   stop "$1"
-}
+)
 
 # ---------------------------------------------------------------------------
 # Backup the world server.
@@ -1507,7 +1507,7 @@ forceStop() {
 # @param 1 The world server to backup.
 # @return A 0 if backup successful, a 1 otherwise
 # ---------------------------------------------------------------------------
-worldBackup() {
+worldBackup() (
   # Make sure that the backup location exists.
   if ! mkdir -p "$BACKUP_LOCATION"; then
     printf "Error creating backup dir %s\n" "$BACKUP_LOCATION" 1>&2
@@ -1559,14 +1559,14 @@ worldBackup() {
   fi
   # Return a true value (success).
   return 0
-}
+)
 
 # ---------------------------------------------------------------------------
 # List the backups for the world server.
 #
 # @param 1 The world server of interest.
 # ---------------------------------------------------------------------------
-worldBackupList() {
+worldBackupList() (
   if [ -d "$BACKUP_LOCATION/$1" ]; then
     # Grab the list of backups for the world server.
     $RDIFF_BACKUP --parsable-output -l "$BACKUP_LOCATION/$1" |
@@ -1574,7 +1574,7 @@ worldBackupList() {
         date --date=\@"$SEC" --rfc-3339=seconds | tr ' ' T
       done
   fi
-}
+)
 
 # ---------------------------------------------------------------------------
 # Restore a backup for the world server.
@@ -1583,7 +1583,7 @@ worldBackupList() {
 # @param 2 The datetime of the backup to restore.
 # @return A 0 on success, a 1 otherwise.
 # ---------------------------------------------------------------------------
-worldBackupRestore() {
+worldBackupRestore() (
   TARGET="$WORLDS_LOCATION/$1"
   TARGET_TMP="${TARGET}_bktmp"
   rm -Rf "${TARGET_TMP:?}"
@@ -1602,14 +1602,14 @@ worldBackupRestore() {
     # Return a false value (failure).
     return 1
   fi
-}
+)
 
 # ---------------------------------------------------------------------------
 # Update the Minecraft client software.
 #
 # @param 1 The world to update.
 # ---------------------------------------------------------------------------
-updateClientSoftware() {
+updateClientSoftware() (
   CLIENT_JAR=$(getClientJar "$1")
   [ -n "$CLIENT_JAR" ] || exit 1
   CLIENT_LOCATION=$(getClientLocation "$1")
@@ -1638,14 +1638,14 @@ updateClientSoftware() {
       exit 1
     fi
   fi
-}
+)
 
 # ---------------------------------------------------------------------------
 # Update the Minecraft server software.
 #
 # @param 1 The world server to update.
 # ---------------------------------------------------------------------------
-updateServerSoftware() {
+updateServerSoftware() (
   SERVER_JAR=$(getServerJar "$1")
   [ -n "$SERVER_JAR" ] || exit 1
   SERVER_LOCATION=$(getServerLocation "$1")
@@ -1673,7 +1673,7 @@ updateServerSoftware() {
       printf "Error verifying the sha1 for the Minecraft server software.\n" 1>&2
     fi
   fi
-}
+)
 
 # ---------------------------------------------------------------------------
 # Run Minecraft Overviewer mapping software on the world.  Generates an
@@ -1681,7 +1681,7 @@ updateServerSoftware() {
 #
 # @param 1 The world server to map with Overviewer.
 # ---------------------------------------------------------------------------
-overviewer() {
+overviewer() (
   SETTINGS_FILE="$WORLDS_LOCATION/$1/overviewer-settings.py"
   LOG_FILE="$WORLDS_LOCATION/$1/logs/overviewer.log"
   VERSION_TEST="$(compareMinecraftVersions "$(getServerVersion "$1")" 1.7.2)"
@@ -1790,14 +1790,14 @@ overviewer() {
       sendCommand "$1" "say $MAPS_URL/$1"
     fi
   fi
-}
+)
 
 # ---------------------------------------------------------------------------
 # Start a Query handler for a world server.
 #
 # @param 1 The world server to start a Query handler for.
 # ---------------------------------------------------------------------------
-queryStart() {
+queryStart() (
   # Grab the location of the world's directory.
   WORLD_DIR="$WORLDS_LOCATION/$1"
   # Determine the IP address and port used by the query server.
@@ -1820,7 +1820,7 @@ queryStart() {
     tail -f --pid='$SERVER_PID' '$WORLD_DIR/query.in' |
     $SOCAT - UDP:$SERVER_IP:$QUERY_PORT > '$WORLD_DIR/query.out'
   " >/dev/null 2>&1 &
-}
+)
 
 # ---------------------------------------------------------------------------
 # Pack a hex string into a buffer file that is piped to the Minecraft query
@@ -1832,7 +1832,7 @@ queryStart() {
 # @param 4 The response format.
 # @return The response from the Query server in the requested format.
 # ---------------------------------------------------------------------------
-querySendPacket() {
+querySendPacket() (
   # The packet identifier.
   ID="00000001"
   # The world's directory.
@@ -1878,7 +1878,7 @@ querySendPacket() {
   elif [ -z "$RESPONSE" ] && [ -e "$WORLD_DIR/query.in" ] && [ -e "$WORLD_DIR/query.out" ]; then
     pgrep -f "socat.*$1.*tail" >/dev/null || queryStart "$1"
   fi
-}
+)
 
 # ---------------------------------------------------------------------------
 # Send a challenge packet to the Minecraft query server.
@@ -1889,12 +1889,12 @@ querySendPacket() {
 #           id         - The packet identifier.
 #           token      - The token.
 # ---------------------------------------------------------------------------
-querySendChallengePacket() {
+querySendChallengePacket() (
   # Use an empty packet.
   PACKET="00000000"
   # Send the challenge packet to the Minecraft query server.
   querySendPacket "$1" "09" "$PACKET" "Cl>Z*"
-}
+)
 
 # ---------------------------------------------------------------------------
 # Send a status query to the Minecraft query server.
@@ -1911,7 +1911,7 @@ querySendChallengePacket() {
 #           hostport   - The host's port
 #           hostip     - The host's IP address.
 # ---------------------------------------------------------------------------
-queryStatus() {
+queryStatus() (
   if true_value "$(getServerPropertiesValue "$1" "enable-query")"; then
     # Send a challenge packet to the Minecraft query server.
     TOKEN=$(querySendChallengePacket "$1" | cut -f 3)
@@ -1922,7 +1922,7 @@ queryStatus() {
       querySendPacket "$1" "00" "$PACKET" "Cl>Z*Z*Z*Z*Z*s<Z*"
     fi
   fi
-}
+)
 
 # ---------------------------------------------------------------------------
 # Send a detailed status query to the Minecraft query server.
@@ -1960,7 +1960,7 @@ queryStatus() {
 #           *          - The value 0.
 #           players    - The players currently logged onto the world.
 # ---------------------------------------------------------------------------
-queryDetailedStatus() {
+queryDetailedStatus() (
   if true_value "$(getServerPropertiesValue "$1" "enable-query")"; then
     # Send a challenge packet to the Minecraft query server.
     CHALLENGE=$(querySendChallengePacket "$1")
@@ -1974,7 +1974,7 @@ queryDetailedStatus() {
         "Cl>Z*CCZ*Z*Z*Z*Z*Z*Z*Z*Z*Z*Z*Z*Z*Z*Z*Z*Z*Z*Z*Z*CCZ*C(Z*)*"
     fi
   fi
-}
+)
 
 # ---------------------------------------------------------------------------
 # Send a detailed status query to the Minecraft query server and return the
@@ -1983,7 +1983,7 @@ queryDetailedStatus() {
 # @param 1 The world server of interest.
 # @return Query values in JSON format.
 # ---------------------------------------------------------------------------
-queryDetailedStatusJSON() {
+queryDetailedStatusJSON() (
   STATUS=$(queryDetailedStatus "$1")
   if [ -n "$STATUS" ]; then
     MOTD=$(printf "%s" "$STATUS" | cut -f 7)
@@ -2009,7 +2009,7 @@ queryDetailedStatusJSON() {
     JSON="{}"
   fi
   printf "%s" "$JSON"
-}
+)
 
 # ---------------------------------------------------------------------------
 # Query the number of active users from the query server.
@@ -2017,19 +2017,19 @@ queryDetailedStatusJSON() {
 # @param 1 The world server of interest.
 # @return Number of active users.
 # ---------------------------------------------------------------------------
-queryNumUsers() {
+queryNumUsers() (
   NUM_USERS=$(queryStatus "$1" | cut -f6)
   # Return 0 users if query server not available.
   [ -z "$NUM_USERS" ] && NUM_USERS=0
   printf "%s" "$NUM_USERS"
-}
+)
 
 # ---------------------------------------------------------------------------
 # Display the status of a Minecraft world server.
 #
 # @param 1 The world server of interest.
 # ---------------------------------------------------------------------------
-worldStatus() {
+worldStatus() (
   WORLD_DIR="$WORLDS_LOCATION/$1"
   MONITOR_PID="$WORLD_DIR/monitor.pid"
   LAST_START_STATUS_LOG="$WORLD_DIR/logs/last-start-status.log"
@@ -2084,7 +2084,7 @@ worldStatus() {
   else
     printf "not running.\n"
   fi
-}
+)
 
 # ---------------------------------------------------------------------------
 # Display the status of a Minecraft world server in JSON format.
@@ -2092,7 +2092,7 @@ worldStatus() {
 # @param 1 The world server of interest.
 # @return The status of the world in JSON format.
 # ---------------------------------------------------------------------------
-worldStatusJSON() {
+worldStatusJSON() (
   if serverRunning "$1"; then
     RUNNING="true"
     QUERY="$(queryDetailedStatusJSON "$1")"
@@ -2105,7 +2105,7 @@ worldStatusJSON() {
     MEMORY="null"
   fi
   printf "{\"running\":%s,\"query\":%s,\"pid\":%s,\"memory\":%s}" "$RUNNING" "$QUERY" "$PID" "$MEMORY"
-}
+)
 
 # ---------------------------------------------------------------------------
 # Begin.
