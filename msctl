@@ -1876,7 +1876,7 @@ querySendPacket() {
   # If the response is empty and the query.in and query.out files HAVE been created,
   # something went wrong. We try restarting the query handler again.
   elif [ -z "$RESPONSE" ] && [ -e "$WORLD_DIR/query.in" ] && [ -e "$WORLD_DIR/query.out" ]; then
-    ps a | grep socat | grep "$1" | grep tail >/dev/null || queryStart "$1"
+    pgrep -f "socat.*$1.*tail" >/dev/null || queryStart "$1"
   fi
 }
 
