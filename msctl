@@ -1280,7 +1280,6 @@ stopServerMonitor() {
 serverMonitor() {
   WORLD_DIR="$WORLDS_LOCATION/$1"
   MONITOR_LOG="$WORLD_DIR/logs/mscs.monitor.log"
-  SERVER_LOG="$WORLD_DIR/logs/latest.log"
   LAST_START_STATUS_LOG="$WORLD_DIR/logs/last-start-status.log"
   MONITOR_PID=$(cat "$WORLD_DIR/monitor.pid")
   touch "$LAST_START_STATUS_LOG"
