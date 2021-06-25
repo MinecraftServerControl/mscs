@@ -1283,15 +1283,15 @@ serverMonitor() {
   SERVER_LOG="$WORLD_DIR/logs/latest.log"
   LAST_START_STATUS_LOG="$WORLD_DIR/logs/last-start-status.log"
   MONITOR_PID=$(cat "$WORLD_DIR/monitor.pid")
-  touch $LAST_START_STATUS_LOG
+  touch "$LAST_START_STATUS_LOG"
 
   printf "[$(timestamp)] [INFO]: Server monitoring started for $1. Server PID: $(getJavaPID $1). Monitor PID: $MONITOR_PID.\n"
   # Run monitor until the server is stopped and the PID file is removed (i.e. clean shutdown).
-  until  ! serverRunning $1 && [ ! -f "$WORLDS_LOCATION/$1.pid" ]; do
+  until ! serverRunning "$1" && [ ! -f "$WORLDS_LOCATION/$1.pid" ]; do
     # If server isn't running and server PID file exists, server crashed.
-    if  ! serverRunning $1 && [ -f "$WORLDS_LOCATION/$1.pid" ]; then
+    if ! serverRunning "$1" && [ -f "$WORLDS_LOCATION/$1.pid" ]; then
       printf "[$(timestamp)] [WARN]: Server crash detected. Attempting to restart $1...\n"
-      start $1
+      start "$1"
       # Verify that the server restarted successfully. 
       if [ $? -eq 0 ]; then
         printf "[$(timestamp)] [INFO]: Server monitoring resumed for $1. Server PID: $(getJavaPID $1). Monitor PID: $MONITOR_PID.\n"
@@ -1302,12 +1302,12 @@ serverMonitor() {
         printf "    $WORLD_DIR/logs/ for more information.\n" >> "$LAST_START_STATUS_LOG"
       else
         printf "[$(timestamp)] [ERROR]: Failed to restart $1.\n" 
-        stopServerMonitor $1
+        stopServerMonitor "$1"
       fi
     # If server is running and server PID file doesn't exist, error occurred.
-    elif serverRunning $1 && [ ! -f "$WORLDS_LOCATION/$1.pid" ]; then
+    elif serverRunning "$1" && [ ! -f "$WORLDS_LOCATION/$1.pid" ]; then
       printf "[$(timestamp)] [ERROR]: PID file doesn't exist.\n"
-      stopServerMonitor $1
+      stopServerMonitor "$1"
     fi 
   done
 }
@@ -1445,9 +1445,9 @@ start() {
     sleep 1
   fi
   # Create a PID file for the world server.
-  echo "$PID" >"$WORLDS_LOCATION/$1.pid"
+  echo "$PID" > "$WORLDS_LOCATION/$1.pid"
   # Start the server crash monitor, if enabled.
-  startServerMonitor $1
+  startServerMonitor "$1"
 }
 
 # ---------------------------------------------------------------------------
@@ -1457,7 +1457,7 @@ start() {
 # ---------------------------------------------------------------------------
 stop() {
   # Stop the server monitor if it is running.
-  stopServerMonitor $1
+  stopServerMonitor "$1"
   # Tell the server to stop.
   sendCommand "$1" "stop"
   sendCommand "$1" "end"
@@ -1486,7 +1486,7 @@ stop() {
 # ---------------------------------------------------------------------------
 forceStop() {
   # Stop the server monitor if it is running.
-  stopServerMonitor $1
+  stopServerMonitor "$1"
   # Try to stop the server cleanly first.
   sendCommand "$1" "stop"
   sendCommand "$1" "end"
@@ -2078,14 +2078,14 @@ worldStatus() {
     printf "    Process ID: %d.\n" "$(getJavaPID "$1")"
     # Display crash monitor PID if it's running (i.e. monitor.pid file exists and not empty).
     if [ -f "$MONITOR_PID" ] && [ -s "$MONITOR_PID" ]; then
-      printf "    Crash Monitor PID: %s\n" "$(cat $MONITOR_PID)"
+      printf "    Crash Monitor PID: %s\n" "$(cat "$MONITOR_PID")"
     fi
     # If the last-status log exists and not empty, then last restart was from a crash.
     # Display notice once.
     if [ -f "$LAST_START_STATUS_LOG" ] && [ -s "$LAST_START_STATUS_LOG" ]; then
-      printf "%s\n" "$(cat $LAST_START_STATUS_LOG)"
+      printf "%s\n" "$(cat "$LAST_START_STATUS_LOG")"
       # Remove it so user doesn't see it next time they run the status command.
-      rm -f $LAST_START_STATUS_LOG
+      rm -f "$LAST_START_STATUS_LOG"
     fi
   elif ! true_value "$(getMSCSValue "$1" "mscs-enabled")"; then
     printf "disabled.\n"
