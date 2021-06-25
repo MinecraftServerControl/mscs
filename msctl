@@ -1223,7 +1223,7 @@ serverConsole() {
   # Follow the console output buffer file.
   tail -f --pid=$$ "$WORLD_DIR/console.out" &
   # Copy user input to the console input buffer file.
-  while read LINE; do
+  while read -r LINE; do
     echo "$LINE" >> "$WORLD_DIR/console.in"
   done
 }
@@ -1570,7 +1570,7 @@ worldBackupList() {
   if [ -d "$BACKUP_LOCATION/$1" ]; then
     # Grab the list of backups for the world server.
     $RDIFF_BACKUP --parsable-output -l "$BACKUP_LOCATION/$1" |
-      while read SEC TYPE; do
+      while read -r SEC TYPE; do
         date --date=\@"$SEC" --rfc-3339=seconds | tr ' ' T
       done
   fi
@@ -2732,7 +2732,7 @@ case "$COMMAND" in
       exit 1
     fi
     printf "Are you sure you wish to delete world '%s'? (y/n): " "$1"
-    read answer
+    read -r answer
     if [ "$answer" = "${answer#[Yy]}" ]; then
         printf "Aborted.\n" 1>&2
         exit 1
