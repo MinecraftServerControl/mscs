@@ -1284,29 +1284,28 @@ serverMonitor() {
   LAST_START_STATUS_LOG="$WORLD_DIR/logs/last-start-status.log"
   MONITOR_PID=$(cat "$WORLD_DIR/monitor.pid")
   touch "$LAST_START_STATUS_LOG"
-
-  printf "[$(timestamp)] [INFO]: Server monitoring started for $1. Server PID: $(getJavaPID $1). Monitor PID: $MONITOR_PID.\n"
+  printf "[%s] [INFO]: Server monitoring started for %s. Server PID: %s. Monitor PID: %s.\n" "$(timestamp)" "$1" "$(getJavaPID "$1")" "$MONITOR_PID"
   # Run monitor until the server is stopped and the PID file is removed (i.e. clean shutdown).
   until ! serverRunning "$1" && [ ! -f "$WORLDS_LOCATION/$1.pid" ]; do
     # If server isn't running and server PID file exists, server crashed.
     if ! serverRunning "$1" && [ -f "$WORLDS_LOCATION/$1.pid" ]; then
-      printf "[$(timestamp)] [WARN]: Server crash detected. Attempting to restart $1...\n"
+      printf "[%s] [WARN]: Server crash detected. Attempting to restart %s...\n" "$(timestamp)" "$1"
       start "$1"
       # Verify that the server restarted successfully. 
       if [ $? -eq 0 ]; then
-        printf "[$(timestamp)] [INFO]: Server monitoring resumed for $1. Server PID: $(getJavaPID $1). Monitor PID: $MONITOR_PID.\n"
-        printf "    $1 automatically restarted from a crash (or in-game stop command)\n" > "$LAST_START_STATUS_LOG"
-        printf "    on $(timestamp). See\n" >> "$LAST_START_STATUS_LOG"
-        printf "    $WORLD_DIR/logs/mscs.monitor.log and\n" >> "$LAST_START_STATUS_LOG"
-        printf "    $WORLD_DIR/crash_reports/ and\n" >> "$LAST_START_STATUS_LOG"
-        printf "    $WORLD_DIR/logs/ for more information.\n" >> "$LAST_START_STATUS_LOG"
+        printf "[%s] [INFO]: Server monitoring resumed for %s. Server PID: %s. Monitor PID: %s.\n" "$(timestamp)" "$1" "$(getJavaPID "$1")" "$MONITOR_PID"
+        printf "    %s automatically restarted from a crash (or in-game stop command)\n" "$1" > "$LAST_START_STATUS_LOG"
+        printf "    on %s. See\n" "$(timestamp)" >> "$LAST_START_STATUS_LOG"
+        printf "    %s/logs/mscs.monitor.log and\n" "$WORLD_DIR" >> "$LAST_START_STATUS_LOG"
+        printf "    %s/crash_reports/ and\n" "$WORLD_DIR" >> "$LAST_START_STATUS_LOG"
+        printf "    %s/logs/ for more information.\n" "$WORLD_DIR" >> "$LAST_START_STATUS_LOG"
       else
-        printf "[$(timestamp)] [ERROR]: Failed to restart $1.\n" 
+        printf "[%s] [ERROR]: Failed to restart %s.\n" "$(timestamp)" "$1"
         stopServerMonitor "$1"
       fi
     # If server is running and server PID file doesn't exist, error occurred.
     elif serverRunning "$1" && [ ! -f "$WORLDS_LOCATION/$1.pid" ]; then
-      printf "[$(timestamp)] [ERROR]: PID file doesn't exist.\n"
+      printf "[%s] [ERROR]: PID file doesn't exist.\n" "$(timestamp)"
       stopServerMonitor "$1"
     fi 
   done
