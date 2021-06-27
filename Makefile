@@ -5,6 +5,7 @@ MSCTL := /usr/local/bin/msctl
 MSCS := /usr/local/bin/mscs
 MSCS_INIT_D := /etc/init.d/mscs
 MSCS_SERVICE := /etc/systemd/system/mscs.service
+MSCS_SERVICE_TEMPLATE := /etc/systemd/system/mscs@.service
 MSCS_COMPLETION := /etc/bash_completion.d/mscs
 
 UPDATE_D := $(wildcard update.d/*)
@@ -28,6 +29,7 @@ update:
 	install -m 0644 mscs.completion $(MSCS_COMPLETION)
 	if which systemctl; then \
 		install -m 0644 mscs.service $(MSCS_SERVICE); \
+		install -m 0644 mscs@.service $(MSCS_SERVICE_TEMPLATE); \
 	fi
 	@for script in $(UPDATE_D); do \
 		sh $$script; \
@@ -36,7 +38,7 @@ update:
 clean:
 	if which systemctl; then \
 		systemctl -f disable mscs.service; \
-		rm -f $(MSCS_SERVICE); \
+		rm -f $(MSCS_SERVICE) $(MSCS_SERVICE_TEMPLATE); \
 	else \
 		update-rc.d mscs remove; \
 		rm -f $(MSCS_INIT_D); \
