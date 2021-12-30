@@ -1832,33 +1832,43 @@ overviewer() {
   if [ ! -e $SETTINGS_FILE ]; then
     # Use the backup location so we minimize the time the server isn't saving data.
     printf "import os\n\n" >$SETTINGS_FILE
-    printf "worlds['$1'] = '$BACKUP_LOCATION/$1/$1-original' if os.path.exists('$BACKUP_LOCATION/$1/$1-original') else '$BACKUP_LOCATION/$1/$1'\n\n" >>$SETTINGS_FILE
+
+    printf "__world_name = os.environ['MSCS_WORLD_NAME']\n" >>$SETTINGS_FILE
+    printf "__world_path = '/'.join([\n" >>$SETTINGS_FILE
+    printf "    os.environ['MSCS_BACKUP_LOCATION'], __world_name, __world_name])\n" >>$SETTINGS_FILE
+    printf "__world_path_original = __world_path + '-original'\n\n" >>$SETTINGS_FILE
+
+    printf "worlds[__world_name] = (\n" >>$SETTINGS_FILE
+    printf "    __world_path_original\n" >>$SETTINGS_FILE
+    printf "    if os.path.exists(__world_path_original)\n" >>$SETTINGS_FILE
+    printf "    else __world_path)\n\n" >>$SETTINGS_FILE
+
     printf "renders['overworld-render'] = {\n" >>$SETTINGS_FILE
-    printf "  'world': '$1',\n" >>$SETTINGS_FILE
+    printf "  'world': __world_name,\n" >>$SETTINGS_FILE
     printf "  'title': 'Overworld',\n" >>$SETTINGS_FILE
     printf "  'dimension': 'overworld',\n" >>$SETTINGS_FILE
     printf "  'rendermode': 'normal'\n" >>$SETTINGS_FILE
     printf "}\n\n" >>$SETTINGS_FILE
     printf "renders['overworld-caves-render'] = {\n" >>$SETTINGS_FILE
-    printf "  'world': '$1',\n" >>$SETTINGS_FILE
+    printf "  'world': __world_name,\n" >>$SETTINGS_FILE
     printf "  'title': 'Caves',\n" >>$SETTINGS_FILE
     printf "  'dimension': 'overworld',\n" >>$SETTINGS_FILE
     printf "  'rendermode': 'cave'\n" >>$SETTINGS_FILE
     printf "}\n\n" >>$SETTINGS_FILE
     printf "renders['nether-render'] = {\n" >>$SETTINGS_FILE
-    printf "  'world': '$1',\n" >>$SETTINGS_FILE
+    printf "  'world': __world_name,\n" >>$SETTINGS_FILE
     printf "  'title': 'Nether',\n" >>$SETTINGS_FILE
     printf "  'dimension': 'nether',\n" >>$SETTINGS_FILE
     printf "  'rendermode': 'nether'\n" >>$SETTINGS_FILE
     printf "}\n\n" >>$SETTINGS_FILE
     printf "renders['end-render'] = {\n" >>$SETTINGS_FILE
-    printf "  'world': '$1',\n" >>$SETTINGS_FILE
+    printf "  'world': __world_name,\n" >>$SETTINGS_FILE
     printf "  'title': 'End',\n" >>$SETTINGS_FILE
     printf "  'dimension': 'end',\n" >>$SETTINGS_FILE
     printf "  'rendermode': 'normal'\n" >>$SETTINGS_FILE
     printf "}\n\n" >>$SETTINGS_FILE
     printf "processes = 2\n" >>$SETTINGS_FILE
-    printf "outputdir = '$MAPS_LOCATION/$1'\n" >>$SETTINGS_FILE
+    printf "outputdir = '/'.join([os.environ['MSCS_MAPS_LOCATION'], __world_name])\n" >>$SETTINGS_FILE
   fi
   # Announce the mapping of the world to players if the world is running.
   if serverRunning $1; then
@@ -1886,6 +1896,10 @@ overviewer() {
       sendCommand $1 "say The world is about to be mapped with Overviewer."
     fi
   fi
+  # ensure these variables are visible inside python/overview-settings.py
+  export MSCS_BACKUP_LOCATION="$BACKUP_LOCATION"
+  export MSCS_MAPS_LOCATION="$MAPS_LOCATION"
+  export MSCS_WORLD_NAME="$1"
   # Generate the map and POI.
   $OVERVIEWER_BIN --config=$SETTINGS_FILE >>$LOG_FILE 2>&1
   $OVERVIEWER_BIN --config=$SETTINGS_FILE --genpoi >>$LOG_FILE 2>&1
