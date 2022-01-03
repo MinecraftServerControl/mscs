@@ -3,7 +3,7 @@
 
 # print the error to stderr prefixed with caller info
 terr () {
-    echo "$caller: $@" >&2
+    echo "$caller: " "$@" >&2
 }
 
 # get variable values and functions for testing
