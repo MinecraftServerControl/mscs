@@ -22,6 +22,6 @@ mkdir -p $(dirname $propfile) || exit 1
 
 # run the tests; no news is good news!
 for t in tests/*; do
-    caller=`basename "$t"`
+    caller=$(basename "$t")
     . "$t"
 done
