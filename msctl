@@ -1541,6 +1541,11 @@ start() {
   echo $PID >"$WORLDS_LOCATION/$1.pid"
   # Start the server crash monitor, if enabled.
   startServerMonitor $1
+  echo "waiting for server to start..."
+  until [ -n "$(queryDetailedStatus $1)" ]
+  do
+    :
+  done
 }
 
 # ---------------------------------------------------------------------------
