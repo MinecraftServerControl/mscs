@@ -1337,9 +1337,13 @@ stopServerMonitor() {
   local WORLD_DIR MONITOR_LOG MONITOR_PID MONITOR_LOCK_FILE ACQUIRED_LOCK
   WORLD_DIR="$WORLDS_LOCATION/$1"
   MONITOR_LOG="$WORLD_DIR/logs/mscs.monitor.log"
-  MONITOR_PID=$(cat "$WORLD_DIR/monitor.pid")
   MONITOR_LOCK_FILE="$WORLD_DIR/monitor.lock"
   # Check if server monitor instance currently running.
+  MONITOR_PID_PATH="$WORLD_DIR/monitor.pid"
+  if [ ! -f "$MONITOR_PID_PATH" ]; then
+    return
+  fi
+  MONITOR_PID=$(cat "$MONITOR_PID_PATH")
   (
   $FLOCK -n 9
   ACQUIRED_LOCK=$?
