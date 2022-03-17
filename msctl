@@ -2697,6 +2697,7 @@ case "$COMMAND" in
     ;;
   stop | force-stop)
     # Figure out which worlds to stop.
+    WORLDS=""
     if [ "$#" -ge 1 ]; then
       for arg in "$@"; do
         if isWorldEnabled "$arg"; then
@@ -2753,6 +2754,7 @@ case "$COMMAND" in
     # Grab the latest version information.
     updateVersionsJSON
     # Figure out which worlds to restart.
+    WORLDS=""
     if [ "$#" -ge 1 ]; then
       for arg in "$@"; do
         if isWorldEnabled "$arg"; then
@@ -2910,6 +2912,7 @@ case "$COMMAND" in
     ;;
   disable)
     # Get list of enabled worlds.
+    WORLDS=""
     if [ "$#" -ge 1 ]; then
       for arg in "$@"; do
         if isWorldEnabled "$arg"; then
@@ -2955,6 +2958,7 @@ case "$COMMAND" in
     # Grab the latest version information.
     updateVersionsJSON
     # Get list of disabled worlds.
+    WORLDS=""
     if [ "$#" -ge 1 ]; then
       for arg in "$@"; do
         if isWorldDisabled "$arg"; then
@@ -3052,6 +3056,7 @@ case "$COMMAND" in
     ;;
   status | show | status-json | show-json)
     # Figure out which worlds to show the status for.
+    WORLDS=""
     if [ "$#" -ge 1 ]; then
       for arg in "$@"; do
         if isWorldAvailable "$arg"; then
@@ -3093,6 +3098,7 @@ case "$COMMAND" in
     ;;
   sync | synchronize)
     # Figure out which worlds to synchronize.
+    WORLDS=""
     if [ "$#" -ge 1 ]; then
       for arg in "$@"; do
         if isWorldEnabled "$arg"; then
@@ -3197,6 +3203,7 @@ case "$COMMAND" in
     ;;
   logrotate)
     # Figure out which worlds to rotate the log.
+    WORLDS=""
     if [ "$#" -ge 1 ]; then
       for arg in "$@"; do
         if isWorldEnabled "$arg"; then
@@ -3224,6 +3231,7 @@ case "$COMMAND" in
     ;;
   backup)
     # Figure out which worlds to backup.
+    WORLDS=""
     if [ "$#" -ge 1 ]; then
       for arg in "$@"; do
         if isWorldEnabled "$arg"; then
@@ -3313,6 +3321,7 @@ case "$COMMAND" in
     # Grab the latest version information.
     updateVersionsJSON
     # Figure out which worlds to update.
+    WORLDS=""
     if [ "$#" -ge 1 ]; then
       for arg in "$@"; do
         if isWorldEnabled "$arg"; then
@@ -3387,6 +3396,7 @@ case "$COMMAND" in
       exit 1
     fi
     # Figure out which worlds to map.
+    WORLDS=""
     if [ "$#" -ge 1 ]; then
       for arg in "$@"; do
         if isWorldEnabled "$arg"; then
@@ -3422,6 +3432,7 @@ case "$COMMAND" in
     ;;
   query | query-raw | query-json)
     # Figure out which worlds to show the status for.
+    WORLDS=""
     if [ "$#" -ge 1 ]; then
       for arg in "$@"; do
         if isWorldEnabled "$arg"; then
