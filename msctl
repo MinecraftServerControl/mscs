@@ -774,7 +774,7 @@ updateVersionsJSON() {
     # Make a backup copy of the version_manifest.json file.
     cp -p "$VERSIONS_JSON" "$VERSIONS_JSON.bak"
     # Delete the version_manifest.json file if it is old.
-    find "$VERSIONS_JSON" -mmin +"$VERSIONS_DURATION" -delete
+    find "$VERSIONS_JSON" -mmin +"$VERSIONS_DURATION" -delete >/dev/null 2>&1
     if [ -s $VERSIONS_JSON ]; then
       printf "The cached copy of the version manifest is up to date.\n"
       printf "Use the force-update option to ensure a new copy is downloaded.\n"
@@ -1427,7 +1427,7 @@ startServerMonitor() {
       # Delete old log file greater than $LOG_DURATION, if it exists.
       if [ -f "$MONITOR_LOG" ]; then
         if [ "$LOG_DURATION" -gt 0 ]; then
-          find "$MONITOR_LOG" -type f -mtime +"$LOG_DURATION" -delete
+          find "$MONITOR_LOG" -type f -mtime +"$LOG_DURATION" -delete >/dev/null 2>&1
         fi
       fi
       # Run the server monitor.
