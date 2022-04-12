@@ -2872,9 +2872,11 @@ case "$COMMAND" in
     # Rename the world.
     printf "Renaming Minecraft world: $1"
     mkdir -p "$WORLDS_LOCATION/$2"
-    mv $WORLDS_LOCATION/$1 $WORLDS_LOCATION/$2
+    mv $WORLDS_LOCATION/$1/* $WORLDS_LOCATION/$2
+    rm -r $WORLDS_LOCATION/$1
     if [ -d $WORLDS_LOCATION/$2/$1 ]; then
-      mv $WORLDS_LOCATION/$2/$1 $WORLDS_LOCATION/$2/$2
+      mv $WORLDS_LOCATION/$2/$1/* $WORLDS_LOCATION/$2/$2
+      rm -r $WORLDS_LOCATION/$2/$1
     fi
     createWorld "$2" "$PORT" "$IP"
     printf ".\n"
