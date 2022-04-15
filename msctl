@@ -2875,6 +2875,7 @@ case "$COMMAND" in
     mv $WORLDS_LOCATION/$1/* $WORLDS_LOCATION/$2
     rm -r $WORLDS_LOCATION/$1
     if [ -d $WORLDS_LOCATION/$2/$1 ]; then
+      mkdir -p $WORLDS_LOCATION/$2/$2
       mv $WORLDS_LOCATION/$2/$1/* $WORLDS_LOCATION/$2/$2
       rm -r $WORLDS_LOCATION/$2/$1
     fi
