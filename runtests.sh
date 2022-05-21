@@ -3,7 +3,7 @@
 
 # print the error to stderr prefixed with caller info
 terr () {
-    echo "$caller:" $@ >&2
+    echo "$caller: " "$@" >&2
 }
 
 # get variable values and functions for testing
@@ -22,6 +22,6 @@ mkdir -p $(dirname $propfile) || exit 1
 
 # run the tests; no news is good news!
 for t in tests/*; do
-    caller=`basename "$t"`
+    caller=$(basename "$t")
     . "$t"
 done
