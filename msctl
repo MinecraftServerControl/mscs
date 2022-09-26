@@ -158,6 +158,9 @@ Actions:
     Run a detailed Query on the Minecraft world server(s). Run a detailed
     query on all world servers by default.
 
+  check-for-mscs-updates
+    Checks if their is a newer version of MSCS available.
+
 Options:
 
   -c <config_file>
@@ -314,6 +317,10 @@ mscs_defaults() {
 
 ; URL for accessing Overviewer generated maps.
 # mscs-maps-url=http://minecraft.server.com/maps
+
+; Length in days to check for updates to MSCS. A value less than 1 disables update checks.
+# mscs-update-check-duration=7
+
 EOF
 }
 
@@ -1441,6 +1448,34 @@ startServerMonitor() {
 }
 
 # ---------------------------------------------------------------------------
+# Check for available MSCS updates and notify if an update is available.
+#
+# @return A 0 If checking for updates succeeded, a 1 otherwise.
+# ---------------------------------------------------------------------------
+checkForMSCSUpdates() {
+  # Navigate to the mscs install directory.
+  cd $HOME/mscs_install_dir
+  if [ $? -ne 0 ]; then
+    printf "Error: unable to change directory to mscs install directory.\n"
+    printf "Please verify that a symlink called 'mscs_install_dir' pointing to your mscs install directory exists in ${HOME}\n"
+    return 1
+  fi
+  printf "Checking for updates to MSCS...\n"
+  # Check if there are latest changes from the main remote branch.
+  UPDATE_CHECK=$(git fetch --dry-run)
+  if [ $? -ne 0 ]; then
+    printf "Error: unable to perform 'git fetch' operation to check for updates. Please verify you are connected to the internet.\n"
+    return 1
+  fi
+  # Notify user if update is available.
+  if [ -z "${UPDATE_CHECK}" ]; then
+    printf "Your version of MSCS is up to date.\n"
+  else
+    printf "There is a new version of MSCS available. Please visit https://minecraftservercontrol.github.io/docs/mscs/updating for instructions on how to update."
+  fi
+}
+
+# ---------------------------------------------------------------------------
 # Start the world server.  Generate the appropriate environment for the
 # server if it doesn't already exist.
 #
@@ -2437,6 +2472,7 @@ fi
 #   mscs-overviewer-url          - URL for Overviewer.
 #   mscs-maps-location           - Location of Overviewer generated map files.
 #   mscs-maps-url                - URL for accessing Overviewer generated maps.
+#   mscs-update-check-duration   - Length in days to check for updates to MSCS.
 #
 # The following variables may be used in some of the key values:
 #   $JAVA                - The Java virtual machine.
@@ -2488,6 +2524,7 @@ fi
 #   mscs-overviewer-url=http://overviewer.org
 #   mscs-maps-location=/opt/mscs/maps
 #   mscs-maps-url=http://minecraft.server.com/maps
+#   mscs-update-check-duration=7
 
 # Server Location
 # ---------------------------------------------------------------------------
@@ -2495,6 +2532,11 @@ fi
 LOCATION=$(getDefaultsValue 'mscs-location' $HOME'/mscs')
 # Override with command-line location option.
 [ -n "$LOCATION_CL" ] && LOCATION="$LOCATION_CL"
+
+# MSCS Update Check Duration Settings
+# ---------------------------------------------------------------------------
+# Length in days to check for updates to MSCS.
+MSCS_UPDATE_CHECK_DURATION=$(getDefaultsValue 'mscs-update-check-duration' '7')
 
 # Global Server Configuration
 # ---------------------------------------------------------------------------
@@ -3468,6 +3510,9 @@ case "$COMMAND" in
         ;;
     esac
     ;;
+  check-for-mscs-updates )
+    checkForMSCSUpdates
+    ;;
   usage | help)
     printf "Minecraft Server Control Script\n"
     printf "\n"
@@ -3480,4 +3525,19 @@ case "$COMMAND" in
     exit 1
     ;;
 esac
+# Check for MSCS updates if it is enabled.
+if [ "$MSCS_UPDATE_CHECK_DURATION" -gt 0 ]; then
+  mscsLastUpdateCheckFile="$HOME/.mscs-last-update-check"
+  if [ ! -f "$mscsLastUpdateCheckFile" ]; then
+      mscsLastUpdateValue="$(date +%s)"
+      checkForMSCSUpdates
+  else
+      mscsLastUpdateValue=$(cat "$mscsLastUpdateCheckFile")
+      if [ "$(date +%s)" -gt "$(( $mscsLastUpdateValue + (86400 * $MSCS_UPDATE_CHECK_DURATION) ))" ]; then
+        mscsLastUpdateValue="$(date +%s)"
+        checkForMSCSUpdates
+      fi
+  fi
+  echo "${mscsLastUpdateValue}" > "$mscsLastUpdateCheckFile"
+fi
 exit 0

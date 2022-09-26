@@ -18,8 +18,8 @@ install: adduser update
 	else \
 		ln -s $(MSCS) $(MSCS_INIT_D); \
 		update-rc.d mscs defaults; \
-	fi
-	
+	fi 
+
 adduser:
 	useradd --system --user-group --create-home -K UMASK=0022 --home $(MSCS_HOME) $(MSCS_USER)
 
@@ -34,6 +34,7 @@ update:
 	@for script in $(UPDATE_D); do \
 		sh $$script; \
 	done; true;
+	ln -sf $(shell pwd) $(MSCS_HOME)/mscs_install_dir
 
 clean:
 	if which systemctl; then \
