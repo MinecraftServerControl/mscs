@@ -21,7 +21,12 @@ install: adduser update
 	fi
 	
 adduser:
-	useradd --system --user-group --create-home -K UMASK=0022 --home $(MSCS_HOME) $(MSCS_USER)
+        # safety check to see if user exists before trying to create it 
+	if id $(MSCS_USER); then \
+                echo "Minecraft user $(MSCS_USER) exists so not creating it"; \
+        else \
+                useradd --system --user-group --create-home -K UMASK=0022 --home $(MSCS_HOME) $(MSCS_USER); \
+        fi
 
 update:
 	install -m 0755 msctl $(MSCTL)
