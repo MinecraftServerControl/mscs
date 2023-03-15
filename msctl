@@ -1648,6 +1648,16 @@ worldBackup() {
     # Return a false value (failure).
     return 1
   fi
+  # Return a true value (success).
+  return 0
+}
+
+# ---------------------------------------------------------------------------
+# Cleanup old backups for the world server.
+#
+# @param 1 The world server of interest.
+# ---------------------------------------------------------------------------
+worldBackupCleanup() {
   # Cleanup old backups.
   if [ $BACKUP_DURATION -gt 0 ]; then
     if ! $RDIFF_BACKUP --remove-older-than ${BACKUP_DURATION}D --force "$BACKUP_LOCATION/$1" >>"$BACKUP_LOG"; then
@@ -3271,6 +3281,8 @@ case "$COMMAND" in
         fi
         # Remove the lock file.
         removeLockFile $WORLD "backup"
+        # Cleanup old backup files.
+        worldBackupCleanup $WORLD
       else
         printf "\nError lock file for world $WORLD could not be created."
         printf "  Is the world already running a backup?\n"
