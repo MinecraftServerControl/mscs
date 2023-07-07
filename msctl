@@ -135,6 +135,10 @@ Actions:
   backup <world1> <world2> <...>
     Backup the Minecraft world(s).  Backup all worlds by default.
 
+  clean-backups <world>
+    Remove expired backups for the world.  Removes old backups based on
+    mscs-backup-duration.
+
   list-backups <world>
     List the datetime of the backups for the world.
 
@@ -3289,6 +3293,19 @@ case "$COMMAND" in
       fi
     done
     printf ".\n"
+    ;;
+  clean-backups)
+    if isWorldEnabled "$1"; then
+      worldBackupCleanup "$1"
+    elif [ -n "$1" ]; then
+      printf "World '$1' does not exist or not enabled.\n"
+      printf "  Usage:  $PROG $COMMAND <world>\n"
+      exit 1
+    else
+      printf "World not supplied.\n"
+      printf "  Usage:  $PROG $COMMAND <world>\n"
+      exit 1
+    fi
     ;;
   list-backups)
     if isWorldEnabled "$1"; then
