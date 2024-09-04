@@ -1549,8 +1549,17 @@ start() {
   echo $PID >"$WORLDS_LOCATION/$1.pid"
   # Start the server crash monitor, if enabled.
   startServerMonitor $1
-}
 
+  # Hook script execution
+  HOOK_SCRIPT="$WORLD_DIR/hooks/post-start.sh"
+  if [ -x "$HOOK_SCRIPT" ]; then
+    printf "Executing post-start hook script for world %s...\n" "$1"
+    "$HOOK_SCRIPT"
+    if [ $? -ne 0 ]; then
+      printf "Warning: post-start hook script for world %s exited with a non-zero status.\n" "$1"
+    fi
+  fi
+}
 # ---------------------------------------------------------------------------
 # Stop the world server.
 #
@@ -1578,6 +1587,16 @@ stop() {
   fi
   # Remove the PID file for the world server.
   rm -f "$WORLDS_LOCATION/$1.pid"
+
+  # Hook script execution
+  HOOK_SCRIPT="$WORLDS_LOCATION/$1/hooks/post-stop.sh"
+  if [ -x "$HOOK_SCRIPT" ]; then
+    printf "Executing post-stop hook script for world %s...\n" "$1"
+    "$HOOK_SCRIPT"
+    if [ $? -ne 0 ]; then
+      printf "Warning: post-stop hook script for world %s exited with a non-zero status.\n" "$1"
+    fi
+  fi
 }
 
 # ---------------------------------------------------------------------------
