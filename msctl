@@ -1453,6 +1453,17 @@ startServerMonitor() {
 start() {
   local EULA PID SERVER_COMMAND WORLD_DIR
   WORLD_DIR="$WORLDS_LOCATION/$1"
+
+  # Pre-start Hook script execution
+  PRE_START_HOOK="$WORLD_DIR/hooks/pre-start.sh"
+  if [ -x "$PRE_START_HOOK" ]; then
+    printf "Executing pre-start hook script for world %s...\n" "$1"
+    "$PRE_START_HOOK"
+    if [ $? -ne 0 ]; then
+      printf "Warning: pre-start hook script for world %s exited with a non-zero status.\n" "$1"
+    fi
+  fi
+
   # Make sure that the server software exists.
   updateServerSoftware "$1"
   # Make sure that the world's directory exists.
@@ -1566,6 +1577,16 @@ start() {
 # @param 1 The world server to stop.
 # ---------------------------------------------------------------------------
 stop() {
+  # Pre-stop Hook script execution
+  PRE_STOP_HOOK="$WORLDS_LOCATION/$1/hooks/pre-stop.sh"
+  if [ -x "$PRE_STOP_HOOK" ]; then
+    printf "Executing pre-stop hook script for world %s...\n" "$1"
+    "$PRE_STOP_HOOK"
+    if [ $? -ne 0 ]; then
+      printf "Warning: pre-stop hook script for world %s exited with a non-zero status.\n" "$1"
+    fi
+  fi
+
   # Stop the server monitor if it is running.
   stopServerMonitor $1
   # Tell the server to stop.
