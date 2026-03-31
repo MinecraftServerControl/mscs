@@ -6,7 +6,16 @@ MSCS := /usr/local/bin/mscs
 MSCS_INIT_D := /etc/init.d/mscs
 MSCS_SERVICE := /etc/systemd/system/mscs.service
 MSCS_SERVICE_TEMPLATE := /etc/systemd/system/mscs@.service
-MSCS_COMPLETION := /etc/bash_completion.d/mscs
+
+# Bash completion: detect proper location
+BASH_COMPLETION_DIR := $(shell \
+	if [ -d /usr/share/bash-completion/completions ]; then \
+		echo /usr/share/bash-completion/completions; \
+	else \
+		echo /etc/bash_completion.d; \
+	fi)
+
+MSCS_COMPLETION := $(BASH_COMPLETION_DIR)/mscs
 
 UPDATE_D := $(wildcard update.d/*)
 
@@ -21,12 +30,12 @@ install: adduser update
 	fi
 	
 adduser:
-        # safety check to see if user exists before trying to create it 
+	# safety check to see if user exists before trying to create it 
 	if id $(MSCS_USER); then \
-                echo "Minecraft user $(MSCS_USER) exists so not creating it"; \
-        else \
-                useradd --system --user-group --create-home -K UMASK=0022 --home $(MSCS_HOME) $(MSCS_USER); \
-        fi
+		echo "Minecraft user $(MSCS_USER) exists so not creating it"; \
+	else \
+		useradd --system --user-group --create-home -K UMASK=0022 --home $(MSCS_HOME) $(MSCS_USER); \
+	fi
 
 update:
 	install -m 0755 msctl $(MSCTL)
