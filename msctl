@@ -487,7 +487,7 @@ createWorld() {
 # ---------------------------------------------------------------------------
 deleteWorld() {
   # Delete the world directory.
-  rm -Rf "$WORLDS_LOCATION/$1"
+  rm -Rf "${WORLDS_LOCATION:?}/$1"
 }
 
 # ---------------------------------------------------------------------------
@@ -1510,7 +1510,7 @@ start() {
     # SO DONT RESET THE MIRROR, just keep using it.
     if [ ! -L "$WORLD_DIR/$1" ]; then
       # Remove the mirror directory just in case.
-      rm -Rf "$MIRROR_PATH/$1"
+      rm -Rf "${MIRROR_PATH:?}/$1"
       # Copy the world files over to the mirror.
       cp -a "$WORLD_DIR/$1" "$MIRROR_PATH/$1"
       if [ $? -ne 0 ]; then
@@ -1608,7 +1608,7 @@ stop() {
     # Remove the symlink to the world-file mirror image.
     rm -f "$WORLDS_LOCATION/$1/$1"
     # Remove the world-file mirror image folder.
-    rm -Rf "$MIRROR_PATH/$1"
+    rm -Rf "${MIRROR_PATH:?}/$1"
     # Move the world files back to their original path name.
     mv "$WORLDS_LOCATION/$1/$1-original" "$WORLDS_LOCATION/$1/$1"
   fi
@@ -2932,12 +2932,12 @@ case "$COMMAND" in
     # Rename the world.
     printf "Renaming Minecraft world: $1"
     mkdir -p "$WORLDS_LOCATION/$2"
-    mv $WORLDS_LOCATION/$1/* $WORLDS_LOCATION/$2
-    rm -r $WORLDS_LOCATION/$1
-    if [ -d $WORLDS_LOCATION/$2/$1 ]; then
-      mkdir -p $WORLDS_LOCATION/$2/$2
-      mv $WORLDS_LOCATION/$2/$1/* $WORLDS_LOCATION/$2/$2
-      rm -r $WORLDS_LOCATION/$2/$1
+    mv "$WORLDS_LOCATION/$1/"* "$WORLDS_LOCATION/$2"
+    rm -r "${WORLDS_LOCATION:?}/$1"
+    if [ -d "$WORLDS_LOCATION/$2/$1" ]; then
+      mkdir -p "$WORLDS_LOCATION/$2/$2"
+      mv "$WORLDS_LOCATION/$2/$1/"* "$WORLDS_LOCATION/$2/$2"
+      rm -r "${WORLDS_LOCATION:?}/$2/$1"
     fi
     createWorld "$2" "$PORT" "$IP"
     printf ".\n"
