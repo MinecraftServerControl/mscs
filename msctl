@@ -539,11 +539,14 @@ getEnabledWorlds() {
   local WORLD WORLDS
   mkdir -p "$WORLDS_LOCATION"
   WORLDS=""
-  for WORLD in $(ls $WORLDS_LOCATION); do
-    if [ -d $WORLDS_LOCATION/$WORLD ]; then
-      if true_value "$(getMSCSValue $WORLD 'mscs-enabled' 'true')"; then
-        WORLDS="$WORLDS $WORLD"
-      fi
+  for WORLD in "$WORLDS_LOCATION"/*; do
+    # Strip the path from the world name.
+    WORLD=${WORLD##*/}
+    # Ignore non directory entries.
+    [ ! -d "$WORLDS_LOCATION/$WORLD" ] && continue
+    # Check if the world is enabled.
+    if true_value "$(getMSCSValue "$WORLD" "mscs-enabled" "true")"; then
+      WORLDS="$WORLDS $WORLD"
     fi
   done
   printf "$WORLDS"
@@ -557,11 +560,14 @@ getEnabledWorlds() {
 getDisabledWorlds() {
   local WORLD WORLDS
   WORLDS=""
-  for WORLD in $(ls $WORLDS_LOCATION); do
-    if [ -d $WORLDS_LOCATION/$WORLD ]; then
-      if ! true_value "$(getMSCSValue $WORLD 'mscs-enabled' 'true')"; then
-        WORLDS="$WORLDS $WORLD"
-      fi
+  for WORLD in "$WORLDS_LOCATION"/*; do
+    # Strip the path from the world name.
+    WORLD=${WORLD##*/}
+    # Ignore non directory entries.
+    [ ! -d "$WORLDS_LOCATION/$WORLD" ] && continue
+    # Check if the world is disabled.
+    if ! true_value "$(getMSCSValue "$WORLD" "mscs-enabled" "true")"; then
+      WORLDS="$WORLDS $WORLD"
     fi
   done
   printf "$WORLDS"
