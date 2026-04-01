@@ -1245,7 +1245,7 @@ rotateLog() {
   # Archive and rotate the log files for old Minecraft servers (Versions 1.7
   # and greater do this automatically).
   if [ -e "$WORLD_DIR/server.log" ] &&
-    [ "$(wc -l $WORLD_DIR/server.log)" -ge 1 ]; then
+    [ "$(wc -l < "$WORLD_DIR/server.log")" -ge 1 ]; then
     # Make a copy of the log file in the world's logs directory.
     DATE=$(date +%F)
     cp "$WORLD_DIR/server.log" "$WORLD_DIR/logs/$DATE-0.log"
@@ -1253,9 +1253,9 @@ rotateLog() {
     # Empty the contents of the worlds log file.
     cp /dev/null "$WORLD_DIR/server.log"
     # Rotate the files in the world's logs directory.
-    for LOG in $(ls -r $WORLD_DIR/logs/$DATE-*.log.gz); do
-      NUM=$(echo $LOG | $PERL -sne 'print ($1 + 1) if ($_ =~ /\Q$date\E-(\d+)/)' -- -date="$DATE")
-      mv -f $LOG "$WORLD_DIR/logs/$DATE-$NUM.log.gz"
+    for LOG in $(find "$WORLD_DIR/logs" -name "$DATE-*.log.gz" | sort -r); do
+      NUM=$(echo "$LOG" | $PERL -sne 'print ($1 + 1) if ($_ =~ /\Q$date\E-(\d+)/)' -- -date="$DATE")
+      mv -f "$LOG" "$WORLD_DIR/logs/$DATE-$NUM.log.gz"
     done
   fi
 }
