@@ -1202,39 +1202,19 @@ getServerCommand() {
 # @return TRUE if lock file created, FALSE otherwise.
 # ---------------------------------------------------------------------------
 createLockFile() {
-  local PID LOCKFILE
-  LOCKFILE=$WORLDS_LOCATION/$1/lock-$2.pid
+  local LOCKFILE
+  LOCKFILE="$WORLDS_LOCATION/$1/lock-$2.pid"
   # Delete the old LOCKFILE.
-  find $LOCKFILE -mmin +"$LOCKFILE_DURATION" -delete >/dev/null 2>&1
+  find "$LOCKFILE" -mmin +"$LOCKFILE_DURATION" -delete >/dev/null 2>&1
   # Check to see if the LOCKFILE exists.
-  if [ -s $LOCKFILE ]; then
-    PID=$(cat $LOCKFILE)
-    # LOCKFILE exists, check to see if its process is running.
-    ps -p $PID >/dev/null 2>&1
-    if [ $? -eq 0 ]; then
-      # LOCKFILE exists and the process is running.
-      # Return a false value (failure).
-      return 1
-    else
-      # Process not found assume it is not running.
-      echo $$ >$LOCKFILE
-      if [ $? -ne 0 ]; then
-        # Error creating LOCKFILE.
-        # Return a false value (failure).
-        return 1
-      fi
-    fi
-  else
-    # LOCKFILE does not exists.
-    echo $$ >$LOCKFILE
-    if [ $? -ne 0 ]; then
-      # Error creating LOCKFILE.
-      # Return a false value (failure).
-      return 1
-    fi
+  if [ -s "$LOCKFILE" ]; then
+    # If the LOCKFILE exists and the process is running, return a false
+    # value (failure).
+    ps -p "$(cat "$LOCKFILE")" >/dev/null 2>&1 && return 1
   fi
-  # Success creating LOCKFILE.
-  # Return a true value (success).
+  # Write the LOCKFILE. Return a false value (failure) if unable to write.
+  echo $$ > "$LOCKFILE" || return 1
+  # Success creating LOCKFILE. Return a true value (success).
   return 0
 }
 
