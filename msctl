@@ -1505,7 +1505,7 @@ start() {
     fi
   fi
   # Change to the world's directory.
-  cd $WORLD_DIR
+  cd $WORLD_DIR || exit 1
   # Delete any old console.in or console.out buffer files.
   rm -f "$WORLD_DIR/console.in" "$WORLD_DIR/console.out"
   # Initialize the console.in buffer file.
