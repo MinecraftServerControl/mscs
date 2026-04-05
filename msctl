@@ -857,7 +857,13 @@ getCurrentPaperVersion() {
   VERSION=$(cat $PAPER_PROJECT_JSON | $PERL -0777 -sne '
     use JSON;
     $json = decode_json ($_);
-    $version = $json->{versions}[0];
+    my @families = sort {
+      my @av = split /\./, $a; my @bv = split /\./, $b;
+      for my $i (0..($#av > $#bv ? $#av : $#bv)) {
+        my $c = ($bv[$i]//0) <=> ($av[$i]//0); return $c if $c;
+      } 0;
+    } keys %{$json->{versions}};
+    ($version) = grep { !/-(pre|rc)\d*$/i } @{$json->{versions}{$families[0]}};
     $version =~ s/[\s#%*+?^\${}()|[\]\\]/-/g;
     print $version;
   ')
@@ -955,7 +961,7 @@ getPaperServerChecksum() {
     use JSON;
     my $builds = decode_json ($_);
     my ($b) = grep { $_->{channel} eq "$channel" } @{$builds};
-    print $b->{downloads}{"server:default"}{sha256};
+    print $b->{downloads}{"server:default"}{checksums}{sha256};
   ' -- -channel="$CHANNEL"
 }
 
@@ -2929,8 +2935,6 @@ case "$COMMAND" in
   start)
     # Grab the latest version information.
     updateVersionsJSON
-    # Grab the latest PaperMC project information.
-    updatePaperProjectJSON
     # Figure out which worlds to start.
     WORLDS=$(getEnabledWorlds)
     if [ -z "$WORLDS" ]; then
@@ -2963,6 +2967,10 @@ case "$COMMAND" in
         fi
       done
     fi
+    # Grab the latest modded server build information.
+    for WORLD in $WORLDS; do
+      updateModdedServerBuilds "$WORLD"
+    done
     # Start each world requested, if not already running.
     printf "Starting Minecraft Server:"
     for WORLD in $WORLDS; do
@@ -3031,8 +3039,6 @@ case "$COMMAND" in
   restart | reload | force-restart | force-reload)
     # Grab the latest version information.
     updateVersionsJSON
-    # Grab the latest PaperMC project information.
-    updatePaperProjectJSON
     # Figure out which worlds to restart.
     WORLDS=""
     if [ "$#" -ge 1 ]; then
@@ -3056,6 +3062,10 @@ case "$COMMAND" in
       printf "Unable to restart worlds: no enabled worlds found.\n"
       exit 1
     fi
+    # Grab the latest modded server build information.
+    for WORLD in $WORLDS; do
+      updateModdedServerBuilds "$WORLD"
+    done
     # Restart each world requested, start those not already
     # running.
     printf "Restarting Minecraft Server:"
@@ -3240,8 +3250,6 @@ case "$COMMAND" in
   enable)
     # Grab the latest version information.
     updateVersionsJSON
-    # Grab the latest PaperMC project information.
-    updatePaperProjectJSON
     # Get list of disabled worlds.
     WORLDS=""
     if [ "$#" -ge 1 ]; then
@@ -3264,6 +3272,10 @@ case "$COMMAND" in
       printf "Unable to enable worlds: no disabled worlds found.\n"
       exit 1
     fi
+    # Grab the latest modded server build information.
+    for WORLD in $WORLDS; do
+      updateModdedServerBuilds "$WORLD"
+    done
     printf "Enabling Minecraft world:"
     # Enable the world(s).
     for WORLD in $WORLDS; do
