@@ -95,6 +95,27 @@ EOF
   fi
 )
 
+# getCurrentPaperVersion skips a version family that has no STABLE builds
+cat > "$PAPER_PROJECT_JSON" << 'EOF'
+{
+  "versions": {
+    "26.1": ["26.1.1"],
+    "1.21": ["1.21.11", "1.21.10"]
+  }
+}
+EOF
+cat > "$_paper_test_location/paper_builds_26.1.1.json" << 'EOF'
+[{"channel": "ALPHA", "downloads": {"server:default": {"url": "https://test.example.com/paper-26.1.1-1.jar", "checksums": {"sha256": "alphachecksum"}}}}]
+EOF
+cat > "$_paper_test_location/paper_builds_1.21.11.json" << 'EOF'
+[{"channel": "STABLE", "downloads": {"server:default": {"url": "https://test.example.com/paper-1.21.11-128.jar", "checksums": {"sha256": "stablechecksum"}}}}]
+EOF
+got=$(getCurrentPaperVersion)
+want="1.21.11"
+if [ "$got" != "$want" ]; then
+  terr "getCurrentPaperVersion alpha-family: got '$got' want '$want'"
+fi
+
 # clean up
 > "$propfile"
 rm -rf "$_paper_test_location"

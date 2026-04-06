@@ -852,9 +852,10 @@ updatePaperProjectJSON() {
 # @return The current PaperMC version number.
 # ---------------------------------------------------------------------------
 getCurrentPaperVersion() {
-  local VERSION
-  # Extract the current version information.
-  VERSION=$(cat $PAPER_PROJECT_JSON | $PERL -0777 -sne '
+  local BUILDS_JSON BUILDS_URL CHANNEL HAS_CHANNEL VERSION VERSIONS
+  CHANNEL=$(getMSCSValue "$1" "mscs-paper-channel" "$DEFAULT_PAPER_CHANNEL")
+  # Get all candidate versions from newest family first, skipping pre/rc.
+  VERSIONS=$(cat $PAPER_PROJECT_JSON | $PERL -0777 -ne '
     use JSON;
     $json = decode_json ($_);
     my @families = sort {
@@ -863,16 +864,43 @@ getCurrentPaperVersion() {
         my $c = ($bv[$i]//0) <=> ($av[$i]//0); return $c if $c;
       } 0;
     } keys %{$json->{versions}};
-    ($version) = grep { !/-(pre|rc)\d*$/i } @{$json->{versions}{$families[0]}};
-    $version =~ s/[\s#%*+?^\${}()|[\]\\]/-/g;
-    print $version;
+    for my $family (@families) {
+      my ($v) = grep { !/-(pre|rc)\d*$/i } @{$json->{versions}{$family}};
+      next unless defined $v;
+      $v =~ s/[\s#%*+?^\${}()|[\]\\]/-/g;
+      print "$v\n";
+    }
   ')
-  # Print an error and exit if the version string is empty.
-  if [ -z "$VERSION" ]; then
-    printf "Error detecting the current PaperMC version.\n"
-    exit 1
-  fi
-  printf "$VERSION"
+  # Find the newest version that has a build in the desired channel.
+  for VERSION in $VERSIONS; do
+    BUILDS_JSON="$LOCATION/paper_builds_$VERSION.json"
+    BUILDS_URL="$PAPER_VERSIONS_URL/versions/$VERSION/builds"
+    # Download builds JSON for this version if not cached.
+    if [ ! -s "$BUILDS_JSON" ]; then
+      $WGET --no-use-server-timestamps \
+        --header="User-Agent: mscs/1.0 (https://github.com/MinecraftServerControl/mscs)" \
+        -qO "$BUILDS_JSON" "$BUILDS_URL" 2>/dev/null || rm -f "$BUILDS_JSON"
+    fi
+    if [ -s "$BUILDS_JSON" ]; then
+      # Verify this version has a build in the desired channel.
+      HAS_CHANNEL=$(cat "$BUILDS_JSON" | $PERL -0777 -sne '
+        use JSON;
+        my $builds = decode_json($_);
+        my ($b) = grep { $_->{channel} eq $channel } @{$builds};
+        print "yes" if defined $b;
+      ' -- -channel="$CHANNEL")
+      if [ "$HAS_CHANNEL" = "yes" ]; then
+        printf "%s" "$VERSION"
+        return
+      fi
+    else
+      # Builds JSON unavailable (download failed); assume this version is valid.
+      printf "%s" "$VERSION"
+      return
+    fi
+  done
+  printf "Error detecting the current PaperMC version.\n"
+  exit 1
 }
 
 # ---------------------------------------------------------------------------
@@ -2041,6 +2069,18 @@ updateServerSoftware() {
   fi
   # Make sure the server software directory exists.
   mkdir -p "$SERVER_LOCATION"
+  # For PaperMC, re-download if the installed JAR does not match the latest build.
+  if [ "$(getMSCSValue "$1" "mscs-server-type" "vanilla")" = "papermc" ] &&
+     [ -s "$SERVER_LOCATION/$SERVER_JAR" ]; then
+    SHA256=$(getPaperServerChecksum "$1")
+    if [ -n "$SHA256" ]; then
+      SHA256_FILE=$(sha256sum "$SERVER_LOCATION/$SERVER_JAR" | cut -d ' ' -f1)
+      if [ "$SHA256" != "$SHA256_FILE" ]; then
+        printf "Newer PaperMC build available, removing outdated server JAR.\n"
+        rm -f "$SERVER_LOCATION/$SERVER_JAR"
+      fi
+    fi
+  fi
   # Download the server jar if it is missing.
   if [ ! -s "$SERVER_LOCATION/$SERVER_JAR" ]; then
     # Download the Minecraft server software.
