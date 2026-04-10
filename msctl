@@ -2104,7 +2104,7 @@ updateServerSoftware() {
         fi
         ;;
       *)
-        SHA1=$(getMinecraftVersionDownloadSHA1 $SERVER_VERSION 'server')
+        SHA1=$(getMinecraftVersionDownloadSHA1 "$SERVER_VERSION" 'server')
         if [ -z "$SHA1" ]; then
           printf "Error retrieving the sha1 for the Minecraft server software.\n"
           exit 1
@@ -3668,7 +3668,7 @@ case "$COMMAND" in
         cp -fp "$VERSIONS_JSON" "$VERSIONS_JSON.bak"
         printf "Removing cached version manifest.\n"
       fi
-      rm -f $VERSIONS_JSON
+      rm -f "$VERSIONS_JSON"
       # Remove cached PaperMC project information.
       if [ -s "$PAPER_PROJECT_JSON" ]; then
         cp -fp "$PAPER_PROJECT_JSON" "$PAPER_PROJECT_JSON.bak"
