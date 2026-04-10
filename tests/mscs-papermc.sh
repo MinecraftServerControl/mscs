@@ -17,6 +17,11 @@ cat > "$PAPER_PROJECT_JSON" << 'EOF'
 }
 EOF
 
+# Fixture: builds JSON for the versions getCurrentPaperVersion will check
+cat > "$_paper_test_location/paper_builds_1.21.4.json" << 'EOF'
+[{"channel": "STABLE", "downloads": {"server:default": {"url": "https://test.example.com/paper-1.21.4-100.jar", "checksums": {"sha256": "stablechecksum456"}}}}]
+EOF
+
 # getCurrentPaperVersion returns the latest non-pre-release from the latest family
 got=$(getCurrentPaperVersion)
 want="1.21.4"
