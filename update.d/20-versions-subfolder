@@ -9,3 +9,7 @@ if [ -s "$OLD" ] && [ ! -s "$NEW" ]; then
   mkdir -p "$NEW_DIR"
   mv "$OLD" "$NEW"
 fi
+if [ -s "$OLD.bak" ] && [ ! -s "$NEW.bak" ]; then
+  mkdir -p "$NEW_DIR"
+  mv "$OLD.bak" "$NEW.bak"
+fi
