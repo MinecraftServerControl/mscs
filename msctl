@@ -815,12 +815,12 @@ updateVersionsJSON() {
 # Update the paper_project.json file.
 # ---------------------------------------------------------------------------
 updatePaperProjectJSON() {
-  if [ -s $PAPER_PROJECT_JSON ]; then
+  if [ -s "$PAPER_PROJECT_JSON" ]; then
     # Make a backup copy of the paper_project.json file.
     cp -p "$PAPER_PROJECT_JSON" "$PAPER_PROJECT_JSON.bak"
     # Delete the paper_project.json file if it is old.
     find "$PAPER_PROJECT_JSON" -mmin +"$VERSIONS_DURATION" -delete >/dev/null 2>&1
-    if [ -s $PAPER_PROJECT_JSON ]; then
+    if [ -s "$PAPER_PROJECT_JSON" ]; then
       printf "The cached copy of the PaperMC project information is up to date.\n"
       printf "Use the force-update option to ensure a new copy is downloaded.\n"
     else
@@ -828,13 +828,13 @@ updatePaperProjectJSON() {
     fi
   fi
   # Download the paper_project.json file if it does not exist.
-  if [ ! -s $PAPER_PROJECT_JSON ]; then
+  if [ ! -s "$PAPER_PROJECT_JSON" ]; then
     printf "Downloading current PaperMC project information.\n"
     $WGET --no-use-server-timestamps \
       --header="User-Agent: mscs/1.0 (https://github.com/MinecraftServerControl/mscs)" \
       -qO "$PAPER_PROJECT_JSON" "$PAPER_VERSIONS_URL"
     if [ $? -ne 0 ]; then
-      if [ -s $PAPER_PROJECT_JSON.bak ]; then
+      if [ -s "$PAPER_PROJECT_JSON.bak" ]; then
         printf "Error downloading the PaperMC project information, using a backup.\n"
         cp -p "$PAPER_PROJECT_JSON.bak" "$PAPER_PROJECT_JSON"
       else
@@ -855,7 +855,7 @@ getCurrentPaperVersion() {
   local BUILDS_JSON BUILDS_URL CHANNEL HAS_CHANNEL VERSION VERSIONS
   CHANNEL=$(getMSCSValue "$1" "mscs-paper-channel" "$DEFAULT_PAPER_CHANNEL")
   # Get all candidate versions from newest family first, skipping pre/rc.
-  VERSIONS=$(cat $PAPER_PROJECT_JSON | $PERL -0777 -ne '
+  VERSIONS=$(cat "$PAPER_PROJECT_JSON" | $PERL -0777 -ne '
     use JSON;
     $json = decode_json ($_);
     my @families = sort {
@@ -912,17 +912,17 @@ updatePaperBuildsJSON() {
   local PAPER_BUILDS_JSON PAPER_BUILDS_URL SERVER_VERSION
   SERVER_VERSION=$(getServerVersion "$1")
   if [ $? -ne 0 ]; then
-    printf "$SERVER_VERSION\n"
+    printf "%s\n" "$SERVER_VERSION"
     exit 1
   fi
   PAPER_BUILDS_JSON="$LOCATION/paper_builds_$SERVER_VERSION.json"
   PAPER_BUILDS_URL="$PAPER_VERSIONS_URL/versions/$SERVER_VERSION/builds"
-  if [ -s $PAPER_BUILDS_JSON ]; then
+  if [ -s "$PAPER_BUILDS_JSON" ]; then
     # Make a backup copy of the paper_builds_VERSION.json file.
     cp -p "$PAPER_BUILDS_JSON" "$PAPER_BUILDS_JSON.bak"
     # Delete the paper_builds_VERSION.json file if it is old.
     find "$PAPER_BUILDS_JSON" -mmin +"$VERSIONS_DURATION" -delete >/dev/null 2>&1
-    if [ -s $PAPER_BUILDS_JSON ]; then
+    if [ -s "$PAPER_BUILDS_JSON" ]; then
       printf "The cached copy of the PaperMC build list is up to date.\n"
       printf "Use the force-update option to ensure a new copy is downloaded.\n"
     else
@@ -930,13 +930,13 @@ updatePaperBuildsJSON() {
     fi
   fi
   # Download the paper_builds_VERSION.json file if it does not exist.
-  if [ ! -s $PAPER_BUILDS_JSON ]; then
+  if [ ! -s "$PAPER_BUILDS_JSON" ]; then
     printf "Downloading current PaperMC build list.\n"
     $WGET --no-use-server-timestamps \
       --header="User-Agent: mscs/1.0 (https://github.com/MinecraftServerControl/mscs)" \
       -qO "$PAPER_BUILDS_JSON" "$PAPER_BUILDS_URL"
     if [ $? -ne 0 ]; then
-      if [ -s $PAPER_BUILDS_JSON.bak ]; then
+      if [ -s "$PAPER_BUILDS_JSON.bak" ]; then
         printf "Error downloading the PaperMC build list, using a backup.\n"
         cp -p "$PAPER_BUILDS_JSON.bak" "$PAPER_BUILDS_JSON"
       else
@@ -957,12 +957,12 @@ getPaperServerURL() {
   local CHANNEL PAPER_BUILDS_JSON SERVER_VERSION
   SERVER_VERSION=$(getServerVersion "$1")
   if [ $? -ne 0 ]; then
-    printf "$SERVER_VERSION\n"
+    printf "%s\n" "$SERVER_VERSION"
     exit 1
   fi
   CHANNEL=$(getMSCSValue "$1" "mscs-paper-channel" "$DEFAULT_PAPER_CHANNEL")
   PAPER_BUILDS_JSON="$LOCATION/paper_builds_$SERVER_VERSION.json"
-  cat $PAPER_BUILDS_JSON | $PERL -0777 -sne '
+  cat "$PAPER_BUILDS_JSON" | $PERL -0777 -sne '
     use JSON;
     my $builds = decode_json ($_);
     my ($b) = grep { $_->{channel} eq "$channel" } @{$builds};
@@ -980,12 +980,12 @@ getPaperServerChecksum() {
   local CHANNEL PAPER_BUILDS_JSON SERVER_VERSION
   SERVER_VERSION=$(getServerVersion "$1")
   if [ $? -ne 0 ]; then
-    printf "$SERVER_VERSION\n"
+    printf "%s\n" "$SERVER_VERSION"
     exit 1
   fi
   CHANNEL=$(getMSCSValue "$1" "mscs-paper-channel" "$DEFAULT_PAPER_CHANNEL")
   PAPER_BUILDS_JSON="$LOCATION/paper_builds_$SERVER_VERSION.json"
-  cat $PAPER_BUILDS_JSON | $PERL -0777 -sne '
+  cat "$PAPER_BUILDS_JSON" | $PERL -0777 -sne '
     use JSON;
     my $builds = decode_json ($_);
     my ($b) = grep { $_->{channel} eq "$channel" } @{$builds};
@@ -2094,23 +2094,23 @@ updateServerSoftware() {
     case "$SERVER_TYPE" in
       papermc)
         SHA256=$(getPaperServerChecksum "$1")
-        if [ -z $SHA256 ]; then
+        if [ -z "$SHA256" ]; then
           printf "Error retrieving the sha256 for the Paper server software.\n"
           exit 1
         fi
-        SHA256_FILE=$(sha256sum $SERVER_LOCATION/$SERVER_JAR | cut -d ' ' -f1)
-        if [ $SHA256 != "$SHA256_FILE" ]; then
+        SHA256_FILE=$(sha256sum "$SERVER_LOCATION/$SERVER_JAR" | cut -d ' ' -f1)
+        if [ "$SHA256" != "$SHA256_FILE" ]; then
           printf "Error verifying the sha256 for the Paper server software.\n"
         fi
         ;;
       *)
         SHA1=$(getMinecraftVersionDownloadSHA1 $SERVER_VERSION 'server')
-        if [ -z $SHA1 ]; then
+        if [ -z "$SHA1" ]; then
           printf "Error retrieving the sha1 for the Minecraft server software.\n"
           exit 1
         fi
-        SHA1_FILE=$(sha1sum $SERVER_LOCATION/$SERVER_JAR | cut -d ' ' -f1)
-        if [ $SHA1 != "$SHA1_FILE" ]; then
+        SHA1_FILE=$(sha1sum "$SERVER_LOCATION/$SERVER_JAR" | cut -d ' ' -f1)
+        if [ "$SHA1" != "$SHA1_FILE" ]; then
           printf "Error verifying the sha1 for the Minecraft server software.\n"
         fi
         ;;
@@ -3670,11 +3670,11 @@ case "$COMMAND" in
       fi
       rm -f $VERSIONS_JSON
       # Remove cached PaperMC project information.
-      if [ -s $PAPER_PROJECT_JSON ]; then
+      if [ -s "$PAPER_PROJECT_JSON" ]; then
         cp -fp "$PAPER_PROJECT_JSON" "$PAPER_PROJECT_JSON.bak"
         printf "Removing cached PaperMC project information.\n"
       fi
-      rm -f $PAPER_PROJECT_JSON
+      rm -f "$PAPER_PROJECT_JSON"
       rm -f "$LOCATION"/paper_builds_*.json
     fi
     # Grab the latest version information.
