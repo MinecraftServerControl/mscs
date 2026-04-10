@@ -4,8 +4,10 @@ _paper_test_location=/tmp/mscs-papertest
 mkdir -p "$_paper_test_location"
 _orig_paper_project_json="${PAPER_PROJECT_JSON}"
 _orig_location="${LOCATION}"
+_orig_versions_location="${VERSIONS_LOCATION}"
 PAPER_PROJECT_JSON="$_paper_test_location/paper_project.json"
 LOCATION="$_paper_test_location"
+VERSIONS_LOCATION="$_paper_test_location"
 
 # Fixture: project JSON with mixed releases and pre-releases across two families
 cat > "$PAPER_PROJECT_JSON" << 'EOF'
@@ -126,3 +128,4 @@ fi
 rm -rf "$_paper_test_location"
 PAPER_PROJECT_JSON="$_orig_paper_project_json"
 LOCATION="$_orig_location"
+VERSIONS_LOCATION="$_orig_versions_location"

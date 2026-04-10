@@ -783,6 +783,7 @@ setServerPropertiesValue() {
 # Update the version_manifest.json file.
 # ---------------------------------------------------------------------------
 updateVersionsJSON() {
+  mkdir -p "$VERSIONS_LOCATION"
   if [ -s $VERSIONS_JSON ]; then
     # Make a backup copy of the version_manifest.json file.
     cp -p "$VERSIONS_JSON" "$VERSIONS_JSON.bak"
@@ -815,6 +816,7 @@ updateVersionsJSON() {
 # Update the paper_project.json file.
 # ---------------------------------------------------------------------------
 updatePaperProjectJSON() {
+  mkdir -p "$VERSIONS_LOCATION"
   if [ -s "$PAPER_PROJECT_JSON" ]; then
     # Make a backup copy of the paper_project.json file.
     cp -p "$PAPER_PROJECT_JSON" "$PAPER_PROJECT_JSON.bak"
@@ -853,6 +855,7 @@ updatePaperProjectJSON() {
 # ---------------------------------------------------------------------------
 getCurrentPaperVersion() {
   local BUILDS_JSON BUILDS_URL CHANNEL HAS_CHANNEL VERSION VERSIONS
+  mkdir -p "$VERSIONS_LOCATION"
   CHANNEL=$(getMSCSValue "$1" "mscs-paper-channel" "$DEFAULT_PAPER_CHANNEL")
   # Get all candidate versions from newest family first, skipping pre/rc.
   VERSIONS=$(cat "$PAPER_PROJECT_JSON" | $PERL -0777 -ne '
@@ -873,7 +876,7 @@ getCurrentPaperVersion() {
   ')
   # Find the newest version that has a build in the desired channel.
   for VERSION in $VERSIONS; do
-    BUILDS_JSON="$LOCATION/paper_builds_$VERSION.json"
+    BUILDS_JSON="$VERSIONS_LOCATION/paper_builds_$VERSION.json"
     BUILDS_URL="$PAPER_VERSIONS_URL/versions/$VERSION/builds"
     # Download builds JSON for this version if not cached.
     if [ ! -s "$BUILDS_JSON" ]; then
@@ -910,12 +913,13 @@ getCurrentPaperVersion() {
 # ---------------------------------------------------------------------------
 updatePaperBuildsJSON() {
   local PAPER_BUILDS_JSON PAPER_BUILDS_URL SERVER_VERSION
+  mkdir -p "$VERSIONS_LOCATION"
   SERVER_VERSION=$(getServerVersion "$1")
   if [ $? -ne 0 ]; then
     printf "%s\n" "$SERVER_VERSION"
     exit 1
   fi
-  PAPER_BUILDS_JSON="$LOCATION/paper_builds_$SERVER_VERSION.json"
+  PAPER_BUILDS_JSON="$VERSIONS_LOCATION/paper_builds_$SERVER_VERSION.json"
   PAPER_BUILDS_URL="$PAPER_VERSIONS_URL/versions/$SERVER_VERSION/builds"
   if [ -s "$PAPER_BUILDS_JSON" ]; then
     # Make a backup copy of the paper_builds_VERSION.json file.
@@ -961,7 +965,7 @@ getPaperServerURL() {
     exit 1
   fi
   CHANNEL=$(getMSCSValue "$1" "mscs-paper-channel" "$DEFAULT_PAPER_CHANNEL")
-  PAPER_BUILDS_JSON="$LOCATION/paper_builds_$SERVER_VERSION.json"
+  PAPER_BUILDS_JSON="$VERSIONS_LOCATION/paper_builds_$SERVER_VERSION.json"
   cat "$PAPER_BUILDS_JSON" | $PERL -0777 -sne '
     use JSON;
     my $builds = decode_json ($_);
@@ -984,7 +988,7 @@ getPaperServerChecksum() {
     exit 1
   fi
   CHANNEL=$(getMSCSValue "$1" "mscs-paper-channel" "$DEFAULT_PAPER_CHANNEL")
-  PAPER_BUILDS_JSON="$LOCATION/paper_builds_$SERVER_VERSION.json"
+  PAPER_BUILDS_JSON="$VERSIONS_LOCATION/paper_builds_$SERVER_VERSION.json"
   cat "$PAPER_BUILDS_JSON" | $PERL -0777 -sne '
     use JSON;
     my $builds = decode_json ($_);
@@ -2807,6 +2811,8 @@ fi
 LOCATION=$(getDefaultsValue 'mscs-location' $HOME'/mscs')
 # Override with command-line location option.
 [ -n "$LOCATION_CL" ] && LOCATION="$LOCATION_CL"
+# The location to store version JSON files.
+VERSIONS_LOCATION=$(getDefaultsValue 'mscs-versions-location' $LOCATION'/versions')
 
 # Global Server Configuration
 # ---------------------------------------------------------------------------
@@ -2818,7 +2824,7 @@ MINECRAFT_VERSIONS_URL=$(getDefaultsValue 'mscs-versions-url' 'https://launcherm
 # PaperMC Versions information
 # ---------------------------------------------------------------------------
 PAPER_VERSIONS_URL=$(getDefaultsValue 'mscs-paper-versions-url' 'https://fill.papermc.io/v3/projects/paper')
-PAPER_PROJECT_JSON=$(getDefaultsValue 'mscs-paper-project-json' $LOCATION'/paper_project.json')
+PAPER_PROJECT_JSON=$(getDefaultsValue 'mscs-paper-project-json' $VERSIONS_LOCATION'/paper_project.json')
 DEFAULT_PAPER_CHANNEL=$(getDefaultsValue 'mscs-default-paper-channel' 'STABLE')
 
 # Minecraft Server Settings
@@ -2902,7 +2908,7 @@ DEFAULT_RESTART_AFTER_CRASH=$(getDefaultsValue 'mscs-default-restart-after-crash
 # The location to store files for each world server.
 WORLDS_LOCATION=$(getDefaultsValue 'mscs-worlds-location' $LOCATION'/worlds')
 # The location to store the version_manifest.json file.
-VERSIONS_JSON=$(getDefaultsValue 'mscs-versions-json' $LOCATION'/version_manifest.json')
+VERSIONS_JSON=$(getDefaultsValue 'mscs-versions-json' $VERSIONS_LOCATION'/version_manifest.json')
 # The duration (in minutes) to keep the version_manifest.json file before updating.
 VERSIONS_DURATION=$(getDefaultsValue 'mscs-versions-duration' '30')
 # The duration (in minutes) to keep lock files before removing.
@@ -3675,7 +3681,7 @@ case "$COMMAND" in
         printf "Removing cached PaperMC project information.\n"
       fi
       rm -f "$PAPER_PROJECT_JSON"
-      rm -f "$LOCATION"/paper_builds_*.json
+      rm -f "$VERSIONS_LOCATION"/paper_builds_*.json
     fi
     # Grab the latest version information.
     updateVersionsJSON
