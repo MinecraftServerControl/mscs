@@ -1,0 +1,11 @@
+#!/bin/sh
+LOCATION=$(grep -m1 '^mscs-location=' /opt/mscs/mscs.defaults 2>/dev/null | cut -d= -f2)
+LOCATION=${LOCATION:-/opt/mscs}
+OLD="$LOCATION/version_manifest.json"
+NEW_DIR="$LOCATION/versions"
+NEW="$NEW_DIR/version_manifest.json"
+if [ -s "$OLD" ] && [ ! -s "$NEW" ]; then
+  printf "Migrating version_manifest.json to versions subfolder.\n"
+  mkdir -p "$NEW_DIR"
+  mv "$OLD" "$NEW"
+fi
