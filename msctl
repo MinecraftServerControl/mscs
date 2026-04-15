@@ -194,14 +194,26 @@ mscs_defaults() {
 ; Location of world files.
 # mscs-worlds-location=/opt/mscs/worlds
 
+; Location of version JSON cache files.
+# mscs-versions-location=/opt/mscs/versions
+
 ; URL to download the version_manifest.json file.
 # mscs-versions-url=https://launchermeta.mojang.com/mc/game/version_manifest.json
 
 ; Location of the version_manifest.json file.
-# mscs-versions-json=/opt/mscs/version_manifest.json
+# mscs-versions-json=/opt/mscs/versions/version_manifest.json
 
 ; Length in minutes to keep the version_manifest.json file before updating.
 # mscs-versions-duration=30
+
+; URL to download the PaperMC project information file.
+# mscs-paper-versions-url=https://fill.papermc.io/v3/projects/paper
+
+; Location of the PaperMC project information file.
+# mscs-paper-project-json=/opt/mscs/versions/paper_project.json
+
+; Default PaperMC build channel (STABLE, BETA, or ALPHA).
+# mscs-default-paper-channel=STABLE
 
 ; Length in minutes to keep lock files before removing.
 # mscs-lockfile-duration=1440
@@ -774,6 +786,7 @@ setServerPropertiesValue() {
 # Update the version_manifest.json file.
 # ---------------------------------------------------------------------------
 updateVersionsJSON() {
+  mkdir -p "$VERSIONS_LOCATION"
   if [ -s $VERSIONS_JSON ]; then
     # Make a backup copy of the version_manifest.json file.
     cp -p "$VERSIONS_JSON" "$VERSIONS_JSON.bak"
@@ -800,6 +813,218 @@ updateVersionsJSON() {
       fi
     fi
   fi
+}
+
+# ---------------------------------------------------------------------------
+# Update the paper_project.json file.
+# ---------------------------------------------------------------------------
+updatePaperProjectJSON() {
+  mkdir -p "$VERSIONS_LOCATION"
+  if [ -s "$PAPER_PROJECT_JSON" ]; then
+    # Make a backup copy of the paper_project.json file.
+    cp -p "$PAPER_PROJECT_JSON" "$PAPER_PROJECT_JSON.bak"
+    # Delete the paper_project.json file if it is old.
+    find "$PAPER_PROJECT_JSON" -mmin +"$VERSIONS_DURATION" -delete >/dev/null 2>&1
+    if [ -s "$PAPER_PROJECT_JSON" ]; then
+      printf "The cached copy of the PaperMC project information is up to date.\n"
+      printf "Use the force-update option to ensure a new copy is downloaded.\n"
+    else
+      printf "The PaperMC project information cache was out of date, it has been removed.\n"
+    fi
+  fi
+  # Download the paper_project.json file if it does not exist.
+  if [ ! -s "$PAPER_PROJECT_JSON" ]; then
+    printf "Downloading current PaperMC project information.\n"
+    $WGET --no-use-server-timestamps \
+      --header="User-Agent: mscs/1.0 (https://github.com/MinecraftServerControl/mscs)" \
+      -qO "$PAPER_PROJECT_JSON" "$PAPER_VERSIONS_URL"
+    if [ $? -ne 0 ]; then
+      if [ -s "$PAPER_PROJECT_JSON.bak" ]; then
+        printf "Error downloading the PaperMC project information, using a backup.\n"
+        cp -p "$PAPER_PROJECT_JSON.bak" "$PAPER_PROJECT_JSON"
+      else
+        printf "Error downloading the PaperMC project information, exiting.\n"
+        exit 1
+      fi
+    fi
+  fi
+}
+
+# ---------------------------------------------------------------------------
+# Get the current PaperMC version number.
+#
+# @param 1 The world server.
+# @return The current PaperMC version number.
+# ---------------------------------------------------------------------------
+getCurrentPaperVersion() {
+  local BUILDS_JSON BUILDS_URL CHANNEL HAS_CHANNEL VERSION VERSIONS
+  mkdir -p "$VERSIONS_LOCATION"
+  CHANNEL=$(getMSCSValue "$1" "mscs-paper-channel" "$DEFAULT_PAPER_CHANNEL")
+  # Get all candidate versions from newest family first, skipping pre/rc.
+  VERSIONS=$(cat "$PAPER_PROJECT_JSON" | $PERL -0777 -ne '
+    use JSON;
+    $json = decode_json ($_);
+    my @families = sort {
+      my @av = split /\./, $a; my @bv = split /\./, $b;
+      for my $i (0..($#av > $#bv ? $#av : $#bv)) {
+        my $c = ($bv[$i]//0) <=> ($av[$i]//0); return $c if $c;
+      } 0;
+    } keys %{$json->{versions}};
+    for my $family (@families) {
+      my ($v) = grep { !/-(pre|rc)\d*$/i } @{$json->{versions}{$family}};
+      next unless defined $v;
+      $v =~ s/[\s#%*+?^\${}()|[\]\\]/-/g;
+      print "$v\n";
+    }
+  ')
+  # Find the newest version that has a build in the desired channel.
+  for VERSION in $VERSIONS; do
+    BUILDS_JSON="$VERSIONS_LOCATION/paper_builds_$VERSION.json"
+    BUILDS_URL="$PAPER_VERSIONS_URL/versions/$VERSION/builds"
+    # Download builds JSON for this version if not cached.
+    if [ ! -s "$BUILDS_JSON" ]; then
+      $WGET --no-use-server-timestamps \
+        --header="User-Agent: mscs/1.0 (https://github.com/MinecraftServerControl/mscs)" \
+        -qO "$BUILDS_JSON" "$BUILDS_URL" 2>/dev/null || rm -f "$BUILDS_JSON"
+    fi
+    if [ -s "$BUILDS_JSON" ]; then
+      # Verify this version has a build in the desired channel.
+      HAS_CHANNEL=$(cat "$BUILDS_JSON" | $PERL -0777 -sne '
+        use JSON;
+        my $builds = decode_json($_);
+        my ($b) = grep { $_->{channel} eq $channel } @{$builds};
+        print "yes" if defined $b;
+      ' -- -channel="$CHANNEL")
+      if [ "$HAS_CHANNEL" = "yes" ]; then
+        printf "%s" "$VERSION"
+        return
+      fi
+    else
+      # Builds JSON unavailable (download failed); assume this version is valid.
+      printf "%s" "$VERSION"
+      return
+    fi
+  done
+  printf "Error detecting the current PaperMC version.\n"
+  exit 1
+}
+
+# ---------------------------------------------------------------------------
+# Update the paper_builds_VERSION.json file for the world.
+#
+# @param 1 The world server.
+# ---------------------------------------------------------------------------
+updatePaperBuildsJSON() {
+  local PAPER_BUILDS_JSON PAPER_BUILDS_URL SERVER_VERSION
+  mkdir -p "$VERSIONS_LOCATION"
+  SERVER_VERSION=$(getServerVersion "$1")
+  if [ $? -ne 0 ]; then
+    printf "%s\n" "$SERVER_VERSION"
+    exit 1
+  fi
+  PAPER_BUILDS_JSON="$VERSIONS_LOCATION/paper_builds_$SERVER_VERSION.json"
+  PAPER_BUILDS_URL="$PAPER_VERSIONS_URL/versions/$SERVER_VERSION/builds"
+  if [ -s "$PAPER_BUILDS_JSON" ]; then
+    # Make a backup copy of the paper_builds_VERSION.json file.
+    cp -p "$PAPER_BUILDS_JSON" "$PAPER_BUILDS_JSON.bak"
+    # Delete the paper_builds_VERSION.json file if it is old.
+    find "$PAPER_BUILDS_JSON" -mmin +"$VERSIONS_DURATION" -delete >/dev/null 2>&1
+    if [ -s "$PAPER_BUILDS_JSON" ]; then
+      printf "The cached copy of the PaperMC build list is up to date.\n"
+      printf "Use the force-update option to ensure a new copy is downloaded.\n"
+    else
+      printf "The PaperMC build list cache was out of date, it has been removed.\n"
+    fi
+  fi
+  # Download the paper_builds_VERSION.json file if it does not exist.
+  if [ ! -s "$PAPER_BUILDS_JSON" ]; then
+    printf "Downloading current PaperMC build list.\n"
+    $WGET --no-use-server-timestamps \
+      --header="User-Agent: mscs/1.0 (https://github.com/MinecraftServerControl/mscs)" \
+      -qO "$PAPER_BUILDS_JSON" "$PAPER_BUILDS_URL"
+    if [ $? -ne 0 ]; then
+      if [ -s "$PAPER_BUILDS_JSON.bak" ]; then
+        printf "Error downloading the PaperMC build list, using a backup.\n"
+        cp -p "$PAPER_BUILDS_JSON.bak" "$PAPER_BUILDS_JSON"
+      else
+        printf "Error downloading the PaperMC build list, exiting.\n"
+        exit 1
+      fi
+    fi
+  fi
+}
+
+# ---------------------------------------------------------------------------
+# Get the download URL for a PaperMC server version.
+#
+# @param 1 The world server.
+# @return The download URL for the PaperMC server.
+# ---------------------------------------------------------------------------
+getPaperServerURL() {
+  local CHANNEL PAPER_BUILDS_JSON SERVER_VERSION
+  SERVER_VERSION=$(getServerVersion "$1")
+  if [ $? -ne 0 ]; then
+    printf "%s\n" "$SERVER_VERSION"
+    exit 1
+  fi
+  CHANNEL=$(getMSCSValue "$1" "mscs-paper-channel" "$DEFAULT_PAPER_CHANNEL")
+  PAPER_BUILDS_JSON="$VERSIONS_LOCATION/paper_builds_$SERVER_VERSION.json"
+  cat "$PAPER_BUILDS_JSON" | $PERL -0777 -sne '
+    use JSON;
+    my $builds = decode_json ($_);
+    my ($b) = grep { $_->{channel} eq "$channel" } @{$builds};
+    print $b->{downloads}{"server:default"}{url};
+  ' -- -channel="$CHANNEL"
+}
+
+# ---------------------------------------------------------------------------
+# Get the sha256sum for a PaperMC server version.
+#
+# @param 1 The world server.
+# @return The sha256sum for the PaperMC server.
+# ---------------------------------------------------------------------------
+getPaperServerChecksum() {
+  local CHANNEL PAPER_BUILDS_JSON SERVER_VERSION
+  SERVER_VERSION=$(getServerVersion "$1")
+  if [ $? -ne 0 ]; then
+    printf "%s\n" "$SERVER_VERSION"
+    exit 1
+  fi
+  CHANNEL=$(getMSCSValue "$1" "mscs-paper-channel" "$DEFAULT_PAPER_CHANNEL")
+  PAPER_BUILDS_JSON="$VERSIONS_LOCATION/paper_builds_$SERVER_VERSION.json"
+  cat "$PAPER_BUILDS_JSON" | $PERL -0777 -sne '
+    use JSON;
+    my $builds = decode_json ($_);
+    my ($b) = grep { $_->{channel} eq "$channel" } @{$builds};
+    print $b->{downloads}{"server:default"}{checksums}{sha256};
+  ' -- -channel="$CHANNEL"
+}
+
+# ---------------------------------------------------------------------------
+# Update the modded server build information for the world.
+#
+# @param 1 The world server.
+# ---------------------------------------------------------------------------
+updateModdedServerBuilds() {
+  case "$(getMSCSValue "$1" "mscs-server-type" "vanilla")" in
+    papermc)
+      updatePaperProjectJSON
+      updatePaperBuildsJSON "$1"
+      ;;
+  esac
+}
+
+# ---------------------------------------------------------------------------
+# Get the current version number for the server type of the world.
+#
+# @param 1 The world server.
+# @return The current version number.
+# ---------------------------------------------------------------------------
+getServerCurrentVersion() {
+  case "$(getMSCSValue "$1" "mscs-server-type" "vanilla")" in
+    papermc) getCurrentPaperVersion "$1" ;;
+    *)       getCurrentMinecraftVersion "$1" ;;
+  esac
 }
 
 # ---------------------------------------------------------------------------
@@ -1015,7 +1240,7 @@ getClientURL() {
 # ---------------------------------------------------------------------------
 getServerVersion() {
   local CURRENT_VERSION
-  CURRENT_VERSION=$(getCurrentMinecraftVersion "$1")
+  CURRENT_VERSION=$(getServerCurrentVersion "$1")
   if [ $? -ne 0 ]; then
     printf "$CURRENT_VERSION\n"
     exit 1
@@ -1036,8 +1261,8 @@ getServerVersion() {
 # @return SERVER_JAR
 # ---------------------------------------------------------------------------
 getServerJar() {
-  local CURRENT_VERSION SERVER_VERSION SERVER_JAR
-  CURRENT_VERSION=$(getCurrentMinecraftVersion "$1")
+  local CURRENT_VERSION DEFAULT_JAR SERVER_TYPE SERVER_VERSION
+  CURRENT_VERSION=$(getServerCurrentVersion "$1")
   if [ $? -ne 0 ]; then
     printf "$CURRENT_VERSION\n"
     exit 1
@@ -1047,8 +1272,15 @@ getServerJar() {
     printf "$SERVER_VERSION\n"
     exit 1
   fi
+  # Choose the default jar name based on the server type.
+  SERVER_TYPE=$(getMSCSValue "$1" "mscs-server-type" "vanilla")
+  case "$SERVER_TYPE" in
+    papermc) DEFAULT_JAR='paper.$SERVER_VERSION.jar' ;;
+    # forge)  DEFAULT_JAR='forge-$SERVER_VERSION.jar' ;;
+    *)       DEFAULT_JAR="$DEFAULT_SERVER_JAR" ;;
+  esac
   # Get the server jar, use the default value if not provided.
-  getMSCSValue "$1" "mscs-server-jar" "$DEFAULT_SERVER_JAR" |
+  getMSCSValue "$1" "mscs-server-jar" "$DEFAULT_JAR" |
     $PERL -sne '
     $_ =~ s/\$CURRENT_VERSION/$current_version/g;
     $_ =~ s/\$SERVER_VERSION/$server_version/g;
@@ -1064,7 +1296,7 @@ getServerJar() {
 # ---------------------------------------------------------------------------
 getServerLocation() {
   local CURRENT_VERSION SERVER_VERSION
-  CURRENT_VERSION=$(getCurrentMinecraftVersion "$1")
+  CURRENT_VERSION=$(getServerCurrentVersion "$1")
   if [ $? -ne 0 ]; then
     printf "$CURRENT_VERSION\n"
     exit 1
@@ -1091,7 +1323,7 @@ getServerLocation() {
 # ---------------------------------------------------------------------------
 getServerURL() {
   local CURRENT_VERSION SERVER_VERSION URL
-  CURRENT_VERSION=$(getCurrentMinecraftVersion "$1")
+  CURRENT_VERSION=$(getServerCurrentVersion "$1")
   if [ $? -ne 0 ]; then
     printf "$CURRENT_VERSION\n"
     exit 1
@@ -1109,9 +1341,13 @@ getServerURL() {
     print;
   ' -- -current_version="$CURRENT_VERSION" -server_version="$SERVER_VERSION")
   # If the download URL was not specified, extract it from the version
-  # manifest.
+  # manifest or server-type-specific source.
   if [ -z "$URL" ]; then
-    URL=$(getMinecraftVersionDownloadURL $SERVER_VERSION 'server')
+    case "$(getMSCSValue "$1" "mscs-server-type" "vanilla")" in
+      papermc) URL=$(getPaperServerURL "$1") ;;
+      # forge)  URL=$(getForgeServerURL "$1") ;;
+      *)       URL=$(getMinecraftVersionDownloadURL $SERVER_VERSION 'server') ;;
+    esac
   fi
   printf "$URL"
 }
@@ -1816,7 +2052,8 @@ updateClientSoftware() {
 # @param 1 The world server to update.
 # ---------------------------------------------------------------------------
 updateServerSoftware() {
-  local SERVER_JAR SERVER_LOCATION SERVER_URL SERVER_VERSION SHA1 SHA1_FILE
+  local SERVER_JAR SERVER_LOCATION SERVER_TYPE SERVER_URL SERVER_VERSION
+  local SHA1 SHA1_FILE SHA256 SHA256_FILE
   SERVER_JAR=$(getServerJar "$1")
   if [ $? -ne 0 ]; then
     printf "$SERVER_JAR\n"
@@ -1839,6 +2076,18 @@ updateServerSoftware() {
   fi
   # Make sure the server software directory exists.
   mkdir -p "$SERVER_LOCATION"
+  # For PaperMC, re-download if the installed JAR does not match the latest build.
+  if [ "$(getMSCSValue "$1" "mscs-server-type" "vanilla")" = "papermc" ] &&
+     [ -s "$SERVER_LOCATION/$SERVER_JAR" ]; then
+    SHA256=$(getPaperServerChecksum "$1")
+    if [ -n "$SHA256" ]; then
+      SHA256_FILE=$(sha256sum "$SERVER_LOCATION/$SERVER_JAR" | cut -d ' ' -f1)
+      if [ "$SHA256" != "$SHA256_FILE" ]; then
+        printf "Newer PaperMC build available, removing outdated server JAR.\n"
+        rm -f "$SERVER_LOCATION/$SERVER_JAR"
+      fi
+    fi
+  fi
   # Download the server jar if it is missing.
   if [ ! -s "$SERVER_LOCATION/$SERVER_JAR" ]; then
     # Download the Minecraft server software.
@@ -1848,15 +2097,31 @@ updateServerSoftware() {
       printf "Error updating the Minecraft server software.\n"
       exit 1
     fi
-    SHA1=$(getMinecraftVersionDownloadSHA1 $SERVER_VERSION 'server')
-    if [ -z $SHA1 ]; then
-      printf "Error retrieving the sha1 for the Minecraft server software.\n"
-      exit 1
-    fi
-    SHA1_FILE=$(sha1sum $SERVER_LOCATION/$SERVER_JAR | cut -d ' ' -f1)
-    if [ $SHA1 != "$SHA1_FILE" ]; then
-      printf "Error verifying the sha1 for the Minecraft server software.\n"
-    fi
+    SERVER_TYPE=$(getMSCSValue "$1" "mscs-server-type" "vanilla")
+    case "$SERVER_TYPE" in
+      papermc)
+        SHA256=$(getPaperServerChecksum "$1")
+        if [ -z "$SHA256" ]; then
+          printf "Error retrieving the sha256 for the Paper server software.\n"
+          exit 1
+        fi
+        SHA256_FILE=$(sha256sum "$SERVER_LOCATION/$SERVER_JAR" | cut -d ' ' -f1)
+        if [ "$SHA256" != "$SHA256_FILE" ]; then
+          printf "Error verifying the sha256 for the Paper server software.\n"
+        fi
+        ;;
+      *)
+        SHA1=$(getMinecraftVersionDownloadSHA1 "$SERVER_VERSION" 'server')
+        if [ -z "$SHA1" ]; then
+          printf "Error retrieving the sha1 for the Minecraft server software.\n"
+          exit 1
+        fi
+        SHA1_FILE=$(sha1sum "$SERVER_LOCATION/$SERVER_JAR" | cut -d ' ' -f1)
+        if [ "$SHA1" != "$SHA1_FILE" ]; then
+          printf "Error verifying the sha1 for the Minecraft server software.\n"
+        fi
+        ;;
+    esac
   fi
 }
 
@@ -2549,6 +2814,8 @@ fi
 LOCATION=$(getDefaultsValue 'mscs-location' $HOME'/mscs')
 # Override with command-line location option.
 [ -n "$LOCATION_CL" ] && LOCATION="$LOCATION_CL"
+# The location to store version JSON files.
+VERSIONS_LOCATION=$(getDefaultsValue 'mscs-versions-location' $LOCATION'/versions')
 
 # Global Server Configuration
 # ---------------------------------------------------------------------------
@@ -2556,6 +2823,12 @@ LOCATION=$(getDefaultsValue 'mscs-location' $HOME'/mscs')
 # Minecraft Versions information
 # ---------------------------------------------------------------------------
 MINECRAFT_VERSIONS_URL=$(getDefaultsValue 'mscs-versions-url' 'https://launchermeta.mojang.com/mc/game/version_manifest.json')
+
+# PaperMC Versions information
+# ---------------------------------------------------------------------------
+PAPER_VERSIONS_URL=$(getDefaultsValue 'mscs-paper-versions-url' 'https://fill.papermc.io/v3/projects/paper')
+PAPER_PROJECT_JSON=$(getDefaultsValue 'mscs-paper-project-json' $VERSIONS_LOCATION'/paper_project.json')
+DEFAULT_PAPER_CHANNEL=$(getDefaultsValue 'mscs-default-paper-channel' 'STABLE')
 
 # Minecraft Server Settings
 # ---------------------------------------------------------------------------
@@ -2598,6 +2871,8 @@ DEFAULT_RESTART_AFTER_CRASH=$(getDefaultsValue 'mscs-default-restart-after-crash
 #   mscs-server-location - Assign the location of the server .jar file.
 #   mscs-server-command  - Assign the command to run for the server.
 #   mscs-restart-after-crash - Restart the server after a crash (default disabled).
+#   mscs-server-type     - Assign the server type (vanilla, papermc).
+#   mscs-paper-channel   - Assign the PaperMC build channel (STABLE, BETA, ALPHA).
 #
 # Like above, the following variables may be used in some of the key values:
 #   $JAVA                - The Java virtual machine.
@@ -2628,13 +2903,15 @@ DEFAULT_RESTART_AFTER_CRASH=$(getDefaultsValue 'mscs-default-restart-after-crash
 #   mscs-server-location=/opt/mscs/server
 #   mscs-server-command=$JAVA -Xms$INITIAL_MEMORY -Xmx$MAXIMUM_MEMORY $JVM_ARGS -jar $SERVER_LOCATION/$SERVER_JAR $SERVER_ARGS
 #   mscs-restart-after-crash=false
+#   mscs-server-type=vanilla
+#   mscs-paper-channel=STABLE
 
 # World (Server Instance) Configuration
 # ---------------------------------------------------------------------------
 # The location to store files for each world server.
 WORLDS_LOCATION=$(getDefaultsValue 'mscs-worlds-location' $LOCATION'/worlds')
 # The location to store the version_manifest.json file.
-VERSIONS_JSON=$(getDefaultsValue 'mscs-versions-json' $LOCATION'/version_manifest.json')
+VERSIONS_JSON=$(getDefaultsValue 'mscs-versions-json' $VERSIONS_LOCATION'/version_manifest.json')
 # The duration (in minutes) to keep the version_manifest.json file before updating.
 VERSIONS_DURATION=$(getDefaultsValue 'mscs-versions-duration' '30')
 # The duration (in minutes) to keep lock files before removing.
@@ -2739,6 +3016,10 @@ case "$COMMAND" in
         fi
       done
     fi
+    # Grab the latest modded server build information.
+    for WORLD in $WORLDS; do
+      updateModdedServerBuilds "$WORLD"
+    done
     # Start each world requested, if not already running.
     printf "Starting Minecraft Server:"
     for WORLD in $WORLDS; do
@@ -2830,6 +3111,10 @@ case "$COMMAND" in
       printf "Unable to restart worlds: no enabled worlds found.\n"
       exit 1
     fi
+    # Grab the latest modded server build information.
+    for WORLD in $WORLDS; do
+      updateModdedServerBuilds "$WORLD"
+    done
     # Restart each world requested, start those not already
     # running.
     printf "Restarting Minecraft Server:"
@@ -3036,6 +3321,10 @@ case "$COMMAND" in
       printf "Unable to enable worlds: no disabled worlds found.\n"
       exit 1
     fi
+    # Grab the latest modded server build information.
+    for WORLD in $WORLDS; do
+      updateModdedServerBuilds "$WORLD"
+    done
     printf "Enabling Minecraft world:"
     # Enable the world(s).
     for WORLD in $WORLDS; do
@@ -3388,7 +3677,14 @@ case "$COMMAND" in
         cp -fp "$VERSIONS_JSON" "$VERSIONS_JSON.bak"
         printf "Removing cached version manifest.\n"
       fi
-      rm -f $VERSIONS_JSON
+      rm -f "$VERSIONS_JSON"
+      # Remove cached PaperMC project information.
+      if [ -s "$PAPER_PROJECT_JSON" ]; then
+        cp -fp "$PAPER_PROJECT_JSON" "$PAPER_PROJECT_JSON.bak"
+        printf "Removing cached PaperMC project information.\n"
+      fi
+      rm -f "$PAPER_PROJECT_JSON"
+      rm -f "$VERSIONS_LOCATION"/paper_builds_*.json
     fi
     # Grab the latest version information.
     updateVersionsJSON
@@ -3411,6 +3707,10 @@ case "$COMMAND" in
       printf "Unable to update worlds: no enabled worlds found.\n"
       exit 1
     fi
+    # Grab the latest modded server build information.
+    for WORLD in $WORLDS; do
+      updateModdedServerBuilds "$WORLD"
+    done
     # Stop all of the world servers and backup the worlds.
     RUNNING=
     printf "Stopping Minecraft Server:"
