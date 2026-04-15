@@ -25,7 +25,7 @@ cat > "$_paper_test_location/paper_builds_1.21.4.json" << 'EOF'
 EOF
 
 # getCurrentPaperVersion returns the latest non-pre-release from the latest family
-got=$(getCurrentPaperVersion)
+got=$(getCurrentPaperVersion "$testworld")
 want="1.21.4"
 if [ "$got" != "$want" ]; then
   terr "getCurrentPaperVersion: got '$got' want '$want'"
@@ -39,7 +39,7 @@ cat > "$PAPER_PROJECT_JSON" << 'EOF'
   }
 }
 EOF
-got=$(getCurrentPaperVersion)
+got=$(getCurrentPaperVersion "$testworld")
 want="1.21.4"
 if [ "$got" != "$want" ]; then
   terr "getCurrentPaperVersion pre-release-first: got '$got' want '$want'"
@@ -117,7 +117,7 @@ EOF
 cat > "$_paper_test_location/paper_builds_1.21.11.json" << 'EOF'
 [{"channel": "STABLE", "downloads": {"server:default": {"url": "https://test.example.com/paper-1.21.11-128.jar", "checksums": {"sha256": "stablechecksum"}}}}]
 EOF
-got=$(getCurrentPaperVersion)
+got=$(getCurrentPaperVersion "$testworld")
 want="1.21.11"
 if [ "$got" != "$want" ]; then
   terr "getCurrentPaperVersion alpha-family: got '$got' want '$want'"
